@@ -1,0 +1,1 @@
+"# Nuxtjs-Laravel-Tailwind" 
