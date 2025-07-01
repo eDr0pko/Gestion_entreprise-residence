@@ -2,160 +2,17 @@ import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null as any,
-    token: null as string | null,
-    isAuthenticated: false,
-    isLoading: false
+    user: null,
+    token: null,
   }),
-
-  getters: {
-    isLoggedIn: (state) => state.isAuthenticated && !!state.token,
-    userRole: (state) => state.user?.role || null
-  },
-
   actions: {
-    // Initialiser depuis localStorage au démarrage
-    initAuth() {
-      if (process.client) {
-        const token = localStorage.getItem('auth_token')
-        const user = localStorage.getItem('user')
-        
-        if (token && user) {
-          try {
-            this.token = token
-            this.user = JSON.parse(user)
-            this.isAuthenticated = true
-            console.log('Auth initialisé depuis localStorage:', { 
-              token: !!token, 
-              user: this.user?.email 
-            })
-          } catch (error) {
-            console.error('Erreur lors de l\'initialisation auth:', error)
-            this.clearAuth()
-          }
-        } else {
-          console.log('Aucune donnée d\'auth trouvée dans localStorage')
-        }
-      }
+    login(user, token) {
+      this.user = user
+      this.token = token
     },
-
-    // Connexion
-    async login(email: string, password: string) {
-      try {
-        this.isLoading = true
-        const config = useRuntimeConfig()
-        
-        console.log('Tentative de connexion:', { email, apiBase: config.public.apiBase })
-        
-        const response = await $fetch(`${config.public.apiBase}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: {
-            email,
-            password
-          }
-        })
-
-        console.log('Réponse de connexion:', response)
-
-        if (response.success && response.access_token) {
-          this.token = response.access_token
-          this.user = response.user
-          this.isAuthenticated = true
-          
-          // Sauvegarder dans localStorage
-          if (process.client) {
-            localStorage.setItem('auth_token', response.access_token)
-            localStorage.setItem('user', JSON.stringify(response.user))
-          }
-          
-          console.log('Connexion réussie:', { 
-            token: !!this.token, 
-            user: this.user?.email,
-            authenticated: this.isAuthenticated 
-          })
-          
-          return { success: true, user: this.user }
-        } else {
-          throw new Error(response.message || 'Erreur de connexion')
-        }
-      } catch (error: any) {
-        console.error('Erreur de connexion dans le store:', error)
-        this.clearAuth()
-        throw error
-      } finally {
-        this.isLoading = false
-      }
-    },
-
-    // Déconnexion
-    async logout() {
-      try {
-        if (this.token) {
-          const config = useRuntimeConfig()
-          await $fetch(`${config.public.apiBase}/logout`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${this.token}`,
-              'Accept': 'application/json',
-            }
-          })
-        }
-      } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error)
-      } finally {
-        this.clearAuth()
-      }
-    },
-
-    // Vérifier l'authentification
-    async checkAuth() {
-      if (!this.token) {
-        this.initAuth()
-      }
-      
-      if (!this.token) {
-        return false
-      }
-
-      try {
-        const config = useRuntimeConfig()
-        const response = await $fetch(`${config.public.apiBase}/check`, {
-          headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Accept': 'application/json',
-          }
-        })
-        
-        if (response.success) {
-          this.isAuthenticated = true
-          return true
-        } else {
-          this.clearAuth()
-          return false
-        }
-      } catch (error) {
-        console.error('Erreur lors de la vérification auth:', error)
-        this.clearAuth()
-        return false
-      }
-    },
-
-    // Nettoyer l'authentification
-    clearAuth() {
+    logout() {
       this.user = null
       this.token = null
-      this.isAuthenticated = false
-      
-      if (process.client) {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user')
-      }
-      
-      console.log('Auth nettoyée')
-    }
-  }
+    },
+  },
 })
