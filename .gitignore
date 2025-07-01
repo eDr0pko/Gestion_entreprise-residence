@@ -1,0 +1,35 @@
+@"
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+.nuxt/
+.output/
+dist/
+public/build/
+public/hot
+
+# Logs
+*.log
+storage/logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.phpunit.cache/
+bootstrap/cache/
+"@ | Out-File -FilePath ".gitignore" -Encoding UTF8
+
+
