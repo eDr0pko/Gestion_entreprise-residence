@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Invite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\InviteController;
 
 /*
 |--------------------------------------------------------------------------
