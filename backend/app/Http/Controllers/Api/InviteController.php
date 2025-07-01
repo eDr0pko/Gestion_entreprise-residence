@@ -9,7 +9,12 @@ class InviteController extends Controller
 {
     public function index()
     {
-        return response()->json(Invite::all());
+        try {
+            $invites = Invite::all();
+            return response()->json($invites);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function show($id)

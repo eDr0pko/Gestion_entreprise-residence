@@ -3,7 +3,7 @@
 use App\Models\Invite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\InviteController;
+use App\Http\Controllers\Api\InviteController;
 
 
 
@@ -23,8 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('invites', InviteController::class);
 
-Route::get('/invite', function () {
-    return Invite::all();
-});
+Route::get('/Invite', [InviteController::class, 'index']);
+
