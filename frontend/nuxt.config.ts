@@ -10,5 +10,14 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  modules: [
+    '@pinia/nuxt'
+  ],
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://127.0.0.1:8000/api'
+    }
+  },
+  ssr: false // Pour simplifier l'authentification côté client
 })
 

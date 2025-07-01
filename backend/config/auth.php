@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -38,7 +37,12 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'personnes',
+        ],
+
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'personnes',
         ],
     ],
 
@@ -60,15 +64,10 @@ return [
     */
 
     'providers' => [
-        'users' => [
+        'personnes' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\Personne::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
@@ -92,8 +91,8 @@ return [
 
     'passwords' => [
         'users' => [
-            'provider' => 'users',
-            'table' => 'password_reset_tokens',
+            'provider' => 'personnes',
+            'table' => 'password_resets',
             'expire' => 60,
             'throttle' => 60,
         ],
@@ -111,5 +110,4 @@ return [
     */
 
     'password_timeout' => 10800,
-
 ];

@@ -2,21 +2,19 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * 
+     * Note: La base de données est gérée manuellement via phpMyAdmin.
+     * Ce seeder n'est pas utilisé dans ce projet.
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Base de données gérée manuellement via phpMyAdmin
+        // Aucun seeding automatique nécessaire
     }
 }
