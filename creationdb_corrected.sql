@@ -98,7 +98,8 @@ CREATE TABLE visite (
   email_invite VARCHAR(255) NOT NULL, -- Email de l'invité
   email_visiteur VARCHAR(255) NULL, -- Email du visiteur (peut être différent de l'invité)
   motif_visite TEXT NULL,
-  date_visite TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date_visite_start TIMESTAMP NOT NULL,
+  date_visite_end TIMESTAMP NOT NULL,
   statut_visite ENUM('programmee', 'en_cours', 'terminee', 'annulee') DEFAULT 'programmee',
   PRIMARY KEY(id_visite),
   INDEX visite_FKIndex1(email_invite),

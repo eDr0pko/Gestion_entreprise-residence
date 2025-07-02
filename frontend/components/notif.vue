@@ -13,18 +13,44 @@
     </transition>
     <transition name="slide">
       <div v-if="open" class="sidebar">
-        <div class="sidebar-header">
-          <span>Notifications</span>
-          <button @click="toggleSidebar" class="close-btn">✖</button>
+        <div class="sidebar-header flex justify-between items-center px-4 py-2 border-b">
+          <div class="flex space-x-4">
+            <button
+              @click="showTrash = false"
+              :class="!showTrash ? 'font-bold underline' : 'text-gray-500'"
+            >
+              Notifications
+            </button>
+            <button
+              @click="showTrash = true"
+              :class="showTrash ? 'font-bold underline' : 'text-gray-500'"
+            >
+              Corbeille
+            </button>
+          </div>
+          <button @click="toggleSidebar" class="close-btn text-xl" title="Fermer">✖</button>
         </div>
+
+
         <ul class="notif-list">
-          <li v-for="invite in notifications" :key="invite.id_invitation">
-            <strong>{{ invite.email_invite }}</strong><br>
-            <small>Statut : {{ invite.statut_invitation }}</small><br>
-            <small>Date : {{ invite.date_invitation }}</small>
+          <li v-for="visite in filteredNotifications" :key="visite.id_visite" class="mb-4 border-b pb-2">
+            <div><b>ID visite:</b> {{ visite.id_visite }}</div>
+            <div><b>Email visiteur:</b> {{ visite.email_visiteur }}</div>
+            <div><b>ID invitation:</b> {{ visite.id_invitation }}</div>
+            <div><b>Motif:</b> {{ visite.motif_visite }}</div>
+            <div><b>Date visite:</b> {{ visite.date_visite }}</div>
+            <div>
+              <b>Statut:</b>
+              <select v-model="visite.statut_visite" @change="updateStatut(visite)">
+                <option value="programmee">Programmee</option>
+                <option value="terminee">Terminee</option>
+                <option value="annulee">Annulee</option>
+                <option value="en_attente">En attente</option>
+              </select>
+            </div>
           </li>
-          <li v-if="notifications.length === 0">
-            Aucune notification.
+          <li v-if="filteredNotifications.length === 0">
+            {{ showTrash ? 'Aucune visite annulée.' : 'Aucune visite.' }}
           </li>
         </ul>
       </div>
@@ -38,8 +64,16 @@ export default {
     return {
       open: false,
       btnClicked: false,
-      notifications: []
+      notifications: [],
+      showTrash: false,
     };
+  },
+  computed: {
+    filteredNotifications() {
+      return this.notifications.filter(v =>
+        this.showTrash ? v.statut_visite === 'annulee' : v.statut_visite !== 'annulee'
+      );
+    }
   },
   methods: {
     toggleSidebar() {
@@ -55,7 +89,7 @@ export default {
     },
     async fetchNotifications() {
       try {
-        const response = await fetch('http://localhost:8000/api/invites');
+        const response = await fetch('http://localhost:8000/api/visite');
         if (response.ok) {
           this.notifications = await response.json();
         } else {
@@ -63,6 +97,18 @@ export default {
         }
       } catch (e) {
         this.notifications = [];
+      }
+    },
+    async updateStatut(visite) {
+      try {
+        await fetch(`http://localhost:8000/api/visite/${visite.id_visite}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statut_visite: visite.statut_visite })
+        });
+        this.$emit('refreshPlanning'); // Ajoute cette ligne
+      } catch (e) {
+        alert("Erreur lors de la modification du statut");
       }
     }
   }
