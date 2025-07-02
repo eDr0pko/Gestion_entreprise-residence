@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\Invite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\InviteController;
+use App\Http\Controllers\GuestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +19,15 @@ use App\Http\Controllers\InviteController;
 
 // Routes publiques
 Route::post('/login', [AuthController::class, 'login']);
+
+// Routes pour les invités (publiques)
+Route::prefix('guest')->group(function () {
+    Route::post('/register', [GuestController::class, 'register']);
+    Route::post('/check-email', [GuestController::class, 'checkEmail']);
+    Route::post('/send-verification-code', [GuestController::class, 'sendVerificationCode']);
+    Route::post('/verify-code', [GuestController::class, 'verifyCode']);
+    Route::post('/get-by-email', [GuestController::class, 'getGuestByEmail']);
+});
 
 // Routes protégées par authentification
 Route::middleware('auth:sanctum')->group(function () {
@@ -40,6 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Nouvelles routes
     Route::post('/messages/{messageId}/reactions', [MessageController::class, 'addReaction']);
+    
+    // Administration des invités
+    Route::prefix('admin/guests')->group(function () {
+        Route::get('/', [GuestController::class, 'index']);
+        Route::post('/{id}/deactivate', [GuestController::class, 'deactivate']);
+    });
     Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
     
     // Profil utilisateur
@@ -48,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/verify-password', [AuthController::class, 'verifyPassword']);
     Route::put('/profile/password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
+    
+    // Gestion des invités temporaires (pour les administrateurs)
+    Route::get('/guests', [GuestController::class, 'index']);
+    Route::post('/guests/{id}/deactivate', [GuestController::class, 'deactivate']);
 });
 
 

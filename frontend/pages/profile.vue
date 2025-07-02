@@ -805,7 +805,7 @@ const toggleMobileMenu = () => {
 const logout = async () => {
   try {
     await authStore.logout()
-    await navigateTo('/login')
+    await navigateTo('/')
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error)
   }

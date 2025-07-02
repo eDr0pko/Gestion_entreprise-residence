@@ -3,7 +3,7 @@
 -- Creation de la base de données
 CREATE DATABASE IF NOT EXISTS gestion_entreprise_residence;
 USE gestion_entreprise_residence;
-DROP TABLE IF EXISTS personne, admin, gardien, resident, ban, groupe_message, personne_groupe, message, invite, visite, personal_access_tokens, message_statut, message_reaction, message_fichier;
+DROP TABLE IF EXISTS invite, message_fichier, message_reaction, message_statut, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
 
 
 -- TABLE personne
@@ -11,7 +11,7 @@ CREATE TABLE personne (
   email VARCHAR(255) NOT NULL,
   nom VARCHAR(45) NOT NULL,
   prenom VARCHAR(45) NOT NULL,
-  mot_de_passe VARCHAR(255) NOT NULL,
+  mot_de_passe VARCHAR(255) NULL, -- Peut être NULL si la personne est un invité
   numero_telephone VARCHAR(20) NOT NULL,
   PRIMARY KEY(email)
 );
@@ -81,9 +81,10 @@ CREATE TABLE personne_groupe (
 CREATE TABLE message (
   id_message INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   id_groupe_message INTEGER UNSIGNED NOT NULL,
-  email_auteur VARCHAR(255) NOT NULL,
+  email_auteur VARCHAR(255) NOT NULL, -- Email de l'auteur (personne ou invité)
   contenu_message TEXT NOT NULL,
   date_envoi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  a_fichiers BOOLEAN DEFAULT FALSE,
   PRIMARY KEY(id_message),
   INDEX message_FKIndex1(id_groupe_message),
   INDEX message_FKIndex2(email_auteur),
@@ -91,34 +92,17 @@ CREATE TABLE message (
   FOREIGN KEY(email_auteur) REFERENCES personne(email) ON DELETE CASCADE
 );
 
--- TABLE invite (invitation)
-CREATE TABLE invite (
-  id_invitation INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  email_invite VARCHAR(255) NOT NULL,
-  id_ban INTEGER UNSIGNED NOT NULL,
-  photo_invite VARCHAR(255) NULL,
-  date_invitation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  statut_invitation ENUM('en_attente', 'acceptee', 'refusee') DEFAULT 'en_attente',
-  PRIMARY KEY(id_invitation),
-  INDEX Invite_FKIndex1(email_invite),
-  INDEX Invite_FKIndex2(id_ban),
-  FOREIGN KEY(email_invite) REFERENCES personne(email) ON DELETE CASCADE,
-  FOREIGN KEY(id_ban) REFERENCES ban(id_ban) ON DELETE CASCADE
-);
-
--- TABLE visite
+-- TABLE visite (mise à jour pour référencer directement les invités)
 CREATE TABLE visite (
   id_visite INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  email_visiteur VARCHAR(255) NOT NULL,
-  id_invitation INTEGER UNSIGNED NOT NULL,
+  email_invite VARCHAR(255) NOT NULL, -- Email de l'invité
+  email_visiteur VARCHAR(255) NULL, -- Email du visiteur (peut être différent de l'invité)
   motif_visite TEXT NULL,
   date_visite TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   statut_visite ENUM('programmee', 'en_cours', 'terminee', 'annulee') DEFAULT 'programmee',
   PRIMARY KEY(id_visite),
-  INDEX visite_FKIndex1(email_visiteur),
-  INDEX visite_FKIndex2(id_invitation),
-  FOREIGN KEY(email_visiteur) REFERENCES personne(email) ON DELETE CASCADE,
-  FOREIGN KEY(id_invitation) REFERENCES invite(id_invitation) ON DELETE CASCADE
+  INDEX visite_FKIndex1(email_invite),
+  FOREIGN KEY(email_invite) REFERENCES invite(email) ON DELETE CASCADE
 );
 
 -- TABLE personal_access_tokens (pour Laravel Sanctum)
@@ -141,7 +125,7 @@ CREATE TABLE personal_access_tokens (
 CREATE TABLE message_statut (
   id_statut INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   id_message INTEGER UNSIGNED NOT NULL,
-  email_personne VARCHAR(255) NOT NULL,
+  email_personne VARCHAR(255) NOT NULL, -- Email de la personne (résidente ou invitée)
   statut ENUM('envoye', 'recu', 'lu') DEFAULT 'recu',
   date_statut TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(id_statut),
@@ -156,7 +140,7 @@ CREATE TABLE message_statut (
 CREATE TABLE message_reaction (
   id_reaction INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   id_message INTEGER UNSIGNED NOT NULL,
-  email_personne VARCHAR(255) NOT NULL,
+  email_personne VARCHAR(255) NOT NULL, -- Email de la personne (résidente ou invitée)
   emoji VARCHAR(10) NOT NULL,
   date_reaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(id_reaction),
@@ -182,8 +166,13 @@ CREATE TABLE message_fichier (
   FOREIGN KEY(id_message) REFERENCES message(id_message) ON DELETE CASCADE
 );
 
--- Ajouter une colonne pour indiquer si un message a des fichiers
-ALTER TABLE message ADD COLUMN a_fichiers BOOLEAN DEFAULT FALSE;
+-- TABLE pour les invités (flag pour indiquer qu'une personne est un invité)
+CREATE TABLE invite (
+  email VARCHAR(255) NOT NULL,
+  actif BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY(email),
+  FOREIGN KEY(email) REFERENCES personne(email) ON DELETE CASCADE
+);
 
 
 -- INSERTION DES PERSONNES
@@ -282,9 +271,12 @@ INSERT INTO resident (email_personne, adresse_logement) VALUES
 ('zoe.fer@residence.com', 'Batiment C - Appartement 305'),
 ('gabriel.plomb@residence.com', 'Batiment C - Appartement 306');
 
--- Insertion des bans (logements)
+-- Insertion des bans (logements) - Corriger pour avoir suffisamment de bans
 INSERT INTO ban (email_proprietaire) VALUES
-('paul.moreau@residence.com');
+('paul.moreau@residence.com'),
+('marie.durand@residence.com'),
+('sarah.bleu@residence.com'),
+('elise.bronze@residence.com');
 
 -- Insertion des groupes de message
 INSERT INTO groupe_message (nom_groupe, date_creation) VALUES
@@ -465,17 +457,48 @@ INSERT INTO message (id_groupe_message, email_auteur, contenu_message, date_envo
 (10, 'lucas.noir@residence.com', 'Excellente idee Arthur ! Je suis joueur regulier, on peut faire des doubles !', '2025-06-29 16:30:00'),
 (10, 'paul.moreau@residence.com', 'Super ! On pourrait faire jogging le matin, tennis lapres-midi ?', '2025-06-29 17:00:00');
 
--- Insertion des invitations et visites exemples
-INSERT INTO invite (email_invite, id_ban, statut_invitation) VALUES
-('marie.durand@residence.com', 1, 'acceptee'),
-('paul.moreau@residence.com', 2, 'acceptee'),
-('sarah.bleu@residence.com', 11, 'acceptee'),
-('elise.bronze@residence.com', 19, 'acceptee');
+-- Insertion d'invités (personnes sans mot de passe)
+INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
+('visiteur1@email.com', 'Dupont', 'Pierre', NULL, '0612345678'),
+('visiteur2@email.com', 'Martin', 'Sophie', NULL, '0698765432'),
+('famille.invitee@email.com', 'Famille', 'Invitée', NULL, '0656781234');
 
-INSERT INTO visite (email_visiteur, id_invitation, motif_visite, statut_visite, date_visite) VALUES
-('gardien@residence.com', 1, 'Visite de courtoisie - accueil nouveau resident', 'terminee', '2025-06-25 10:00:00'),
-('admin@residence.com', 2, 'Inspection technique annuelle', 'terminee', '2025-06-26 14:00:00'),
-('gardien2@residence.com', 3, 'Controle securite batiment B', 'terminee', '2025-06-27 09:00:00'),
-('admin2@residence.com', 4, 'Visite de bienvenue', 'programmee', '2025-07-01 10:00:00');
+-- Marquage de ces personnes comme invités
+INSERT INTO invite (email, actif) VALUES
+('visiteur1@email.com', TRUE),
+('visiteur2@email.com', TRUE),
+('famille.invitee@email.com', TRUE);
+
+-- Insertion des visites liées aux invités
+INSERT INTO visite (email_invite, email_visiteur, motif_visite, statut_visite, date_visite) VALUES
+('visiteur1@email.com', 'visiteur1@email.com', 'Visite de courtoisie - participation événements', 'terminee', '2025-06-25 10:00:00'),
+('visiteur2@email.com', 'visiteur2@email.com', 'Visite amicale - séjour temporaire', 'terminee', '2025-06-26 14:00:00'),
+('famille.invitee@email.com', 'famille.invitee@email.com', 'Visite familiale weekend', 'programmee', '2025-07-01 10:00:00');
+
+-- Ajout des invités aux groupes de message (via personne_groupe)
+INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexion) VALUES
+('visiteur1@email.com', 1, '2025-06-30 10:00:00'), -- Groupe général
+('visiteur1@email.com', 7, '2025-06-30 10:00:00'), -- Événements et festivités
+('visiteur2@email.com', 1, '2025-06-30 15:30:00'), -- Groupe général
+('visiteur2@email.com', 7, '2025-06-30 15:30:00'), -- Événements et festivités
+('famille.invitee@email.com', 1, '2025-06-30 18:45:00'), -- Groupe général
+('famille.invitee@email.com', 2, '2025-06-30 18:45:00'); -- Bâtiment A
+
+-- Messages d'exemple envoyés par des invités
+INSERT INTO message (id_groupe_message, email_auteur, contenu_message, date_envoi) VALUES
+(7, 'visiteur1@email.com', 'Merci beaucoup pour l\'invitation à la fête des voisins ! J\'ai hâte de vous rencontrer tous !', '2025-06-30 10:00:00'),
+(1, 'visiteur2@email.com', 'Bonjour tout le monde ! Je suis Sophie, amie de Marie. Merci de m\'inclure dans vos échanges pendant ma visite.', '2025-06-30 15:30:00'),
+(1, 'famille.invitee@email.com', 'Bonsoir, nous sommes la famille invitée par Paul. Nous serons là ce weekend, au plaisir de vous rencontrer !', '2025-06-30 18:45:00');
+
+-- Ajout des invités temporaires au groupe Événements et Festivités pour qu'ils puissent recevoir les messages
+INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexion) VALUES
+('admin@residence.com', 7, '2025-06-30 14:10:00'),
+('marie.durand@residence.com', 7, '2025-06-30 12:30:00'),
+('julie.petit@residence.com', 7, '2025-06-30 11:45:00'),
+('sarah.bleu@residence.com', 7, '2025-06-30 16:20:00'),
+('manon.gris@residence.com', 7, '2025-06-30 13:15:00'),
+('elise.bronze@residence.com', 7, '2025-06-30 10:45:00'),
+('camille.platine@residence.com', 7, '2025-06-30 09:30:00'),
+('alice.dore@residence.com', 7, '2025-06-30 08:15:00');
 
 

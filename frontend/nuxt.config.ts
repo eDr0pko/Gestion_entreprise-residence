@@ -13,6 +13,15 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt'
   ],
+  imports: {
+    dirs: ['stores'],
+    presets: [
+      {
+        from: '~/stores/auth',
+        imports: ['useAuthStore']
+      }
+    ]
+  },
   runtimeConfig: {
     public: {
       apiBase: 'http://127.0.0.1:8000/api'

@@ -2,20 +2,85 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Invite extends Model
 {
-    protected $table = 'invite'; // car pas le nom standard "invites"
+    use HasFactory;
+
+    protected $table = 'invite';
+    protected $primaryKey = 'email';
+    public $incrementing = false;
+    protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
-        'email_invite',
-        'id_ban',
-        'photo_invite',
-        'date_invitation',
-        'statut_invitation',
+        'email',
+        'actif'
     ];
 
-    public $timestamps = false; // si ta table n'a pas les colonnes created_at / updated_at
-}
+    protected $casts = [
+        'actif' => 'boolean'
+    ];
 
+    protected $attributes = [
+        'actif' => true
+    ];
+
+    /**
+     * Relation avec la personne
+     */
+    public function personne()
+    {
+        return $this->belongsTo(Personne::class, 'email', 'email');
+    }
+
+    /**
+     * Relation avec les visites
+     */
+    public function visites()
+    {
+        return $this->hasMany(Visite::class, 'email_invite', 'email');
+    }
+
+    /**
+     * Vérifier si l'invité est actif
+     */
+    public function isActive()
+    {
+        return $this->actif;
+    }
+
+    /**
+     * Désactiver l'invité
+     */
+    public function deactivate()
+    {
+        $this->update(['actif' => false]);
+    }
+
+    /**
+     * Activer l'invité
+     */
+    public function activate()
+    {
+        $this->update(['actif' => true]);
+    }
+
+    /**
+     * Scope pour les invités actifs
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('actif', true);
+    }
+
+    /**
+     * Scope pour chercher par email
+     */
+    public function scopeByEmail($query, $email)
+    {
+        return $query->where('email', $email);
+    }
+}
