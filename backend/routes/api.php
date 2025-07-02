@@ -41,4 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Nouvelles routes
     Route::post('/messages/{messageId}/reactions', [MessageController::class, 'addReaction']);
     Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
+    
+    // Profil utilisateur
+    Route::get('/profile/stats', [AuthController::class, 'getProfileStats']);
+    Route::put('/profile/update', [AuthController::class, 'updateProfile']);
+    Route::post('/profile/verify-password', [AuthController::class, 'verifyPassword']);
+    Route::put('/profile/password', [AuthController::class, 'updatePassword']);
+    Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
 });
+
+

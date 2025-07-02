@@ -139,6 +139,15 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Mettre à jour les informations utilisateur
+    updateUser(userData) {
+      this.user = { ...this.user, ...userData }
+      
+      if (process.client) {
+        localStorage.setItem('user', JSON.stringify(this.user))
+      }
+    },
+
     // Nettoyer l'authentification
     clearAuth() {
       this.user = null

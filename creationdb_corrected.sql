@@ -190,55 +190,55 @@ ALTER TABLE message ADD COLUMN a_fichiers BOOLEAN DEFAULT FALSE;
 
 -- Administration
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('admin@residence.com', 'Dupont', 'Jean', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0123456789'),
-('admin2@residence.com', 'Bernard', 'Sophie', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0123456790');
+('admin@residence.com', 'Dupont', 'Jean', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0123456789'),
+('admin2@residence.com', 'Bernard', 'Sophie', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0123456790');
 
 -- Gardiens
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('gardien@residence.com', 'Martin', 'Pierre', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0234567890'),
-('gardien2@residence.com', 'Leroy', 'Antoine', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0234567891');
+('gardien@residence.com', 'Martin', 'Pierre', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0234567890'),
+('gardien2@residence.com', 'Leroy', 'Antoine', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0234567891');
 
 -- Résidents Bâtiment A
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('marie.durand@residence.com', 'Durand', 'Marie', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0345678901'),
-('paul.moreau@residence.com', 'Moreau', 'Paul', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0456789012'),
-('julie.petit@residence.com', 'Petit', 'Julie', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0567890123'),
-('thomas.roux@residence.com', 'Roux', 'Thomas', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0678901234'),
-('emma.blanc@residence.com', 'Blanc', 'Emma', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0789012345');
+('marie.durand@residence.com', 'Durand', 'Marie', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0345678901'),
+('paul.moreau@residence.com', 'Moreau', 'Paul', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0456789012'),
+('julie.petit@residence.com', 'Petit', 'Julie', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0567890123'),
+('thomas.roux@residence.com', 'Roux', 'Thomas', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0678901234'),
+('emma.blanc@residence.com', 'Blanc', 'Emma', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0789012345');
 
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('lucas.noir@residence.com', 'Noir', 'Lucas', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0890123456'),
-('lea.vert@residence.com', 'Vert', 'Lea', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0901234567'),
-('hugo.rose@residence.com', 'Rose', 'Hugo', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0012345678'),
-('chloe.orange@residence.com', 'Orange', 'Chloe', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0123456780'),
-('maxime.violet@residence.com', 'Violet', 'Maxime', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0234567801');
+('lucas.noir@residence.com', 'Noir', 'Lucas', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0890123456'),
+('lea.vert@residence.com', 'Vert', 'Lea', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0901234567'),
+('hugo.rose@residence.com', 'Rose', 'Hugo', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0012345678'),
+('chloe.orange@residence.com', 'Orange', 'Chloe', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0123456780'),
+('maxime.violet@residence.com', 'Violet', 'Maxime', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0234567801');
 
 -- Résidents Bâtiment B
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('sarah.bleu@residence.com', 'Bleu', 'Sarah', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0345678902'),
-('kevin.jaune@residence.com', 'Jaune', 'Kevin', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0456789013'),
-('manon.gris@residence.com', 'Gris', 'Manon', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0567890124'),
-('antoine.rouge@residence.com', 'Rouge', 'Antoine', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0678901235'),
-('clara.marron@residence.com', 'Marron', 'Clara', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0789012346');
+('sarah.bleu@residence.com', 'Bleu', 'Sarah', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0345678902'),
+('kevin.jaune@residence.com', 'Jaune', 'Kevin', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0456789013'),
+('manon.gris@residence.com', 'Gris', 'Manon', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0567890124'),
+('antoine.rouge@residence.com', 'Rouge', 'Antoine', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0678901235'),
+('clara.marron@residence.com', 'Marron', 'Clara', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0789012346');
 
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('nathan.cyan@residence.com', 'Cyan', 'Nathan', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0890123457'),
-('alice.dore@residence.com', 'Dore', 'Alice', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0901234568'),
-('theo.argent@residence.com', 'Argente', 'Theo', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0012345679');
+('nathan.cyan@residence.com', 'Cyan', 'Nathan', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0890123457'),
+('alice.dore@residence.com', 'Dore', 'Alice', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0901234568'),
+('theo.argent@residence.com', 'Argente', 'Theo', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0012345679');
 
 -- Résidents Bâtiment C
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('elise.bronze@residence.com', 'Bronze', 'Elise', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0123456781'),
-('romain.cuivre@residence.com', 'Cuivre', 'Romain', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0234567802'),
-('camille.platine@residence.com', 'Platine', 'Camille', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0345678903'),
-('arthur.acier@residence.com', 'Acier', 'Arthur', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0456789014'),
-('zoe.fer@residence.com', 'Fer', 'Zoe', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0567890125'),
-('gabriel.plomb@residence.com', 'Plomb', 'Gabriel', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC', '0678901236');
+('elise.bronze@residence.com', 'Bronze', 'Elise', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0123456781'),
+('romain.cuivre@residence.com', 'Cuivre', 'Romain', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0234567802'),
+('camille.platine@residence.com', 'Platine', 'Camille', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0345678903'),
+('arthur.acier@residence.com', 'Acier', 'Arthur', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0456789014'),
+('zoe.fer@residence.com', 'Fer', 'Zoe', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0567890125'),
+('gabriel.plomb@residence.com', 'Plomb', 'Gabriel', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0678901236');
 
 -- Insertion des administrateurs
 INSERT INTO admin (email_personne, mot_de_passe_admin) VALUES
-('admin@residence.com', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC'),
-('admin2@residence.com', '$2y$10$YU6KtsC8YI8Lc4kJNhyTk.gMhVpdk7nfvKQhTWlJ0HToe.m5mddkC');
+('admin@residence.com', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq'),
+('admin2@residence.com', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq');
 
 -- Insertion des gardiens
 INSERT INTO gardien (email_personne) VALUES

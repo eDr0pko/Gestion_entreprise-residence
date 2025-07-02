@@ -47,6 +47,7 @@
 
       <!-- Bouton profil avec engrenage -->
       <NuxtLink 
+        v-if="!hideProfileButton"
         to="/profile" 
         class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 tooltip-container"
         title="Profil et paramètres"
@@ -82,12 +83,14 @@ interface Props {
   backTo?: string
   showBackButton?: boolean
   showMobileMenu?: boolean
+  hideProfileButton?: boolean
   badge?: Badge
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showBackButton: false,
-  showMobileMenu: false
+  showMobileMenu: false,
+  hideProfileButton: false
 })
 
 const emit = defineEmits<{

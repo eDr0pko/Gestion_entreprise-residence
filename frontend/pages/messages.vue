@@ -2,15 +2,26 @@
   <div class="h-screen bg-white flex flex-col">
     <!-- Header responsive -->
     <AppHeader 
-      title="Messages" 
-      back-to="/principale"
-      :show-back-button="isMobile && selectedConversation"
+      title="Retour" 
+      back-to="/planning"
+      :show-back-button="isMobile && !!selectedConversation"
       :show-mobile-menu="!selectedConversation"
-      :badge="{ count: totalMessagesNonLus, title: `${totalMessagesNonLus} message${totalMessagesNonLus > 1 ? 's' : ''} non lu${totalMessagesNonLus > 1 ? 's' : ''} au total` }"
       @go-back="goBackToConversations"
       @toggle-mobile-menu="toggleMobileMenu"
     >
       <template #actions>
+        <!-- Indicateur de statut de connexion -->
+        <div class="flex items-center space-x-2 mr-2">
+          <div 
+            class="w-2 h-2 rounded-full"
+            :class="error ? 'bg-red-500' : loadingConversations ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"
+            :title="error ? 'Erreur de connexion' : loadingConversations ? 'Chargement...' : 'Connecté'"
+          ></div>
+          <span v-if="error" class="text-xs text-red-500 hidden lg:inline">Hors ligne</span>
+          <span v-else-if="loadingConversations" class="text-xs text-yellow-600 hidden lg:inline">Chargement...</span>
+          <span v-else class="text-xs text-green-600 hidden lg:inline">En ligne</span>
+        </div>
+        
         <!-- Bouton créer conversation (visible seulement sur la liste) -->
         <button
           v-if="!selectedConversation || !isMobile"
@@ -40,6 +51,22 @@
       >
         <!-- Barre de recherche et bouton création -->
         <div class="p-3 lg:p-4 border-b border-gray-100">
+          <!-- Section Messages avec badge - Centrée horizontalement -->
+          <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center space-x-3">
+              <h2 class="text-lg lg:text-xl font-semibold text-gray-900">Vos conversations</h2>
+              <Transition name="badge">
+                <div 
+                  v-if="totalMessagesNonLus > 0"
+                  class="bg-red-500 text-white text-xs lg:text-sm font-bold rounded-full min-w-[20px] lg:min-w-[24px] h-5 lg:h-6 flex items-center justify-center px-1 lg:px-2"
+                  :title="`${totalMessagesNonLus} message${totalMessagesNonLus > 1 ? 's' : ''} non lu${totalMessagesNonLus > 1 ? 's' : ''} au total`"
+                >
+                  {{ totalMessagesNonLus > 99 ? '99+' : totalMessagesNonLus }}
+                </div>
+              </Transition>
+            </div>
+          </div>
+
           <div class="flex items-center space-x-2 mb-3">
             <div class="relative flex-1">
               <input
@@ -84,11 +111,27 @@
 
         <!-- Message d'erreur -->
         <div v-else-if="error" class="flex-1 flex items-center justify-center p-4">
-          <div class="text-center text-red-500">
-            <p class="text-sm mb-2">{{ error }}</p>
-            <button @click="loadConversations" class="text-sm text-[#0097b2] hover:text-[#007a94]">
-              Réessayer
-            </button>
+          <div class="text-center">
+            <div class="text-red-500 mb-4">
+              <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-sm mb-2 max-w-xs">{{ error }}</p>
+            </div>
+            <div class="space-y-2">
+              <button 
+                @click="loadConversations" 
+                class="block w-full px-4 py-2 text-sm bg-[#0097b2] text-white rounded-lg hover:bg-[#007a94] transition-colors"
+              >
+                Réessayer
+              </button>
+              <button 
+                @click="debugAuth" 
+                class="block w-full px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Debug connexion
+              </button>
+            </div>
           </div>
         </div>
 
@@ -336,8 +379,8 @@
                     <!-- RÉACTIONS SOUS LA BULLE (plus dans la bulle) -->
                     <MessageReactions
                       :message-id="message.id_message"
-                      :reactions="message.reactions || {}"
-                      :current-user-email="authStore.user?.email || ''"
+                      :reactions="transformReactions(message.reactions || {})"
+                      :current-user-email="(authStore.user as any)?.email || ''"
                       @reaction-toggled="handleReactionToggled(message.id_message, $event)"
                     />
                   </div>
@@ -349,7 +392,7 @@
             <Transition name="fade">
               <button
                 v-if="!isAtBottom && messages.length > 0"
-                @click="scrollToBottom"
+                @click="() => scrollToBottom()"
                 class="absolute bottom-3 right-3 lg:bottom-4 lg:right-4 w-8 h-8 lg:w-10 lg:h-10 bg-[#0097b2] text-white rounded-full shadow-lg hover:bg-[#007a94] transition-all duration-200 flex items-center justify-center"
                 title="Aller en bas"
               >
@@ -441,9 +484,45 @@
 </template>
 
 <script setup lang="ts">
-// filepath: c:\wamp64V2\www\Gestion_entreprise-residence\frontend\pages\messages.vue
-// Types pour TypeScript (garder les interfaces existantes)
-// ...existing interfaces...
+// Types pour TypeScript
+interface Conversation {
+  id_groupe_message: number
+  nom_groupe: string
+  date_creation: string
+  derniere_activite?: string
+  messages_non_lus: number
+  dernier_contenu?: string
+  dernier_auteur?: string
+  nombre_membres?: number
+}
+
+interface Message {
+  id_message: number
+  contenu_message?: string
+  date_envoi: string
+  email_auteur: string
+  auteur_nom: string
+  is_current_user: boolean
+  statut_lecture?: string
+  fichiers?: FichierMessage[]
+  reactions?: Record<string, string[]>
+}
+
+interface FichierMessage {
+  id_fichier: number
+  nom_original: string
+  type_fichier: string
+  taille_fichier: number
+}
+
+interface ApiResponse {
+  success: boolean
+  error?: string
+  conversations?: Conversation[]
+  messages?: Message[]
+  message?: Message
+  reactions?: Record<string, string[]>
+}
 
 definePageMeta({
   middleware: 'auth'
@@ -525,8 +604,8 @@ const loadConversations = async () => {
     
     console.log('=== CHARGEMENT DES CONVERSATIONS ===')
     console.log('Token disponible:', !!authStore.token)
-    console.log('Token value:', authStore.token?.substring(0, 20) + '...')
-    console.log('Utilisateur:', authStore.user?.email)
+    console.log('Token value:', authStore.token ? String(authStore.token).substring(0, 20) + '...' : 'null')
+    console.log('Utilisateur:', (authStore.user as any)?.email)
     console.log('Authenticated:', authStore.isAuthenticated)
     
     if (!authStore.token) {
@@ -543,24 +622,36 @@ const loadConversations = async () => {
     console.log('Headers:', headers)
     console.log('URL:', `${config.public.apiBase}/conversations`)
     
+    // Test de connectivité de base
+    try {
+      console.log('🔍 Test de connectivité vers:', config.public.apiBase)
+      const testResponse = await fetch(`${config.public.apiBase.replace('/api', '')}`)
+      console.log('Status de connectivité:', testResponse.status)
+    } catch (connectError) {
+      console.error('❌ Erreur de connectivité:', connectError)
+      throw new Error('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.')
+    }
+    
     const response = await $fetch<ApiResponse>(`${config.public.apiBase}/conversations`, {
-      headers
+      headers,
+      timeout: 10000 // Timeout de 10 secondes
     })
     
     console.log('✅ Response from API:', response)
     
-    if (response.success && response.conversations) {
+    if (response.success && Array.isArray(response.conversations)) {
       conversations.value = response.conversations
       console.log('✅ Conversations chargées:', conversations.value.length)
     } else {
       console.error('❌ Réponse API non valide:', response)
-      throw new Error(response.error || 'Erreur lors du chargement des conversations')
+      throw new Error(response.error || 'Réponse API invalide')
     }
     
   } catch (err: any) {
     console.error('❌ Erreur lors du chargement des conversations:', err)
     console.error('Status:', err.status)
     console.error('Data:', err.data)
+    console.error('Message:', err.message)
     
     // Si erreur 401, rediriger vers login
     if (err.status === 401) {
@@ -570,7 +661,12 @@ const loadConversations = async () => {
       return
     }
     
-    error.value = err.data?.message || err.message || 'Impossible de charger les conversations'
+    // Si erreur de réseau
+    if (err.code === 'NETWORK_ERROR' || err.message?.includes('fetch')) {
+      error.value = 'Erreur de connexion au serveur. Vérifiez que le backend est démarré.'
+    } else {
+      error.value = err.data?.message || err.message || 'Impossible de charger les conversations'
+    }
     conversations.value = []
   } finally {
     loadingConversations.value = false
@@ -730,6 +826,20 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
+// Transformer les réactions du format API vers le format attendu par le composant
+const transformReactions = (reactions: Record<string, string[]>) => {
+  const transformed: Record<string, { count: number; users: { email: string; nom: string; }[] }> = {}
+  
+  for (const [emoji, users] of Object.entries(reactions)) {
+    transformed[emoji] = {
+      count: users.length,
+      users: users.map(email => ({ email, nom: email.split('@')[0] }))
+    }
+  }
+  
+  return transformed
+}
+
 // Formater l'heure
 const formatTime = (dateString: string): string => {
   if (!dateString) return ''
@@ -798,7 +908,7 @@ onMounted(async () => {
   
   console.log('Auth state après init:', {
     authenticated: authStore.isAuthenticated,
-    user: authStore.user?.email,
+    user: (authStore.user as any)?.email,
     token: !!authStore.token
   })
   
@@ -811,20 +921,31 @@ onMounted(async () => {
   
   // Tester la validité du token
   try {
+    console.log('🔍 Vérification de la validité du token...')
     const isValid = await authStore.checkAuth()
     if (!isValid) {
       console.log('❌ Token invalide, redirection vers login')
       await navigateTo('/login')
       return
     }
+    console.log('✅ Token valide')
   } catch (error) {
-    console.error('Erreur vérification auth:', error)
+    console.error('❌ Erreur vérification auth:', error)
     await navigateTo('/login')
     return
   }
   
   console.log('✅ Auth valide, chargement des conversations')
-  await loadConversations()
+  
+  // Ajouter un délai pour s'assurer que tout est prêt
+  await nextTick()
+  
+  try {
+    await loadConversations()
+  } catch (err) {
+    console.error('❌ Erreur finale lors du chargement:', err)
+    error.value = 'Impossible de charger les conversations. Veuillez rafraîchir la page.'
+  }
 })
 
 onUnmounted(() => {
@@ -919,7 +1040,10 @@ const downloadFile = async (fichierId: number) => {
 
 const handleReactionToggled = async (messageId: number, emoji: string) => {
   try {
-    const response = await $fetch(`${config.public.apiBase}/messages/${messageId}/reactions`, {
+    const response = await $fetch<{
+      success: boolean
+      reactions: Record<string, string[]>
+    }>(`${config.public.apiBase}/messages/${messageId}/reactions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
@@ -941,6 +1065,55 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
   } catch (error) {
     console.error('❌ Erreur lors de la réaction:', error)
   }
+}
+
+// Fonction de debug pour diagnostiquer les problèmes
+const debugAuth = async () => {
+  console.log('=== DEBUG AUTHENTIFICATION ===')
+  console.log('Auth Store State:', {
+    user: authStore.user,
+    token: authStore.token,
+    isAuthenticated: authStore.isAuthenticated,
+    isLoggedIn: authStore.isLoggedIn
+  })
+  
+  console.log('LocalStorage:', {
+    token: process.client ? localStorage.getItem('auth_token') : 'N/A',
+    user: process.client ? localStorage.getItem('user') : 'N/A'
+  })
+  
+  console.log('Runtime Config:', {
+    apiBase: config.public.apiBase
+  })
+  
+  // Test de connectivité
+  try {
+    console.log('🔍 Test de connectivité basique...')
+    const response = await fetch(`${config.public.apiBase.replace('/api', '')}`)
+    console.log('Connectivité OK:', response.status)
+  } catch (err) {
+    console.error('❌ Erreur de connectivité:', err)
+    alert('Erreur de connectivité au serveur. Vérifiez que le backend Laravel est démarré sur http://127.0.0.1:8000')
+    return
+  }
+  
+  // Test de l'endpoint auth
+  if (authStore.token) {
+    try {
+      console.log('🔍 Test de l\'endpoint auth...')
+      const response = await $fetch(`${config.public.apiBase}/check`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+      console.log('Auth check OK:', response)
+    } catch (err) {
+      console.error('❌ Erreur auth check:', err)
+    }
+  }
+  
+  alert('Logs de debug affichés dans la console du navigateur (F12)')
 }
 </script>
 
