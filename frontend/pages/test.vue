@@ -1,21 +1,30 @@
 <template>
   <div>
-    <h2>Liste des invités</h2>
+    <h2>Liste des visites</h2>
     <table>
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <!-- Ajoute d'autres colonnes selon ta table -->
+          <th>Email visiteur</th>
+          <th>ID invitation</th>
+          <th>Motif</th>
+          <th>Date début</th>
+          <th>Date fin</th>
+          <th>Statut</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="invite in invites" :key="invite.id">
-          <td>{{ invite.id }}</td>
-          <td>{{ invite.nom }}</td>
-          <td>{{ invite.prenom }}</td>
-          <!-- Ajoute d'autres champs ici -->
+        <tr
+          v-for="visite in filteredVisites"
+          :key="visite.id_visite"
+        >
+          <td>{{ visite.id_visite }}</td>
+          <td>{{ visite.email_visiteur }}</td>
+          <td>{{ visite.id_invitation }}</td>
+          <td>{{ visite.motif_visite }}</td>
+          <td>{{ visite.date_visite_start }}</td>
+          <td>{{ visite.date_visite_end }}</td>
+          <td>{{ visite.statut_visite }}</td>
         </tr>
       </tbody>
     </table>
@@ -23,15 +32,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
-const tournaments = ref([])
+const visites = ref([])
+
+const filteredVisites = computed(() =>
+  visites.value.filter(visite =>
+    visite.statut_visite === 'programmee' || visite.statut_visite === 'terminee'
+  )
+)
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/Invite')
-    tournaments.value = response.data
+    const response = await axios.get('http://localhost:8000/api/visite')
+    visites.value = response.data
   } catch (error) {
     console.error('Erreur API :', error)
   }

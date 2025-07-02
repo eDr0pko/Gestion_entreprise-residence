@@ -112,7 +112,8 @@ CREATE TABLE visite (
   email_visiteur VARCHAR(255) NOT NULL,
   id_invitation INTEGER UNSIGNED NOT NULL,
   motif_visite TEXT NULL,
-  date_visite TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date_visite_start TIMESTAMP NOT NULL,
+  date_visite_end TIMESTAMP NOT NULL,
   statut_visite ENUM('programmee', 'en_cours', 'terminee', 'annulee') DEFAULT 'programmee',
   PRIMARY KEY(id_visite),
   INDEX visite_FKIndex1(email_visiteur),
@@ -472,10 +473,10 @@ INSERT INTO invite (email_invite, id_ban, statut_invitation) VALUES
 ('sarah.bleu@residence.com', 11, 'acceptee'),
 ('elise.bronze@residence.com', 19, 'acceptee');
 
-INSERT INTO visite (email_visiteur, id_invitation, motif_visite, statut_visite, date_visite) VALUES
-('gardien@residence.com', 1, 'Visite de courtoisie - accueil nouveau resident', 'terminee', '2025-06-25 10:00:00'),
-('admin@residence.com', 2, 'Inspection technique annuelle', 'terminee', '2025-06-26 14:00:00'),
-('gardien2@residence.com', 3, 'Controle securite batiment B', 'terminee', '2025-06-27 09:00:00'),
-('admin2@residence.com', 4, 'Visite de bienvenue', 'programmee', '2025-07-01 10:00:00');
+INSERT INTO visite (email_visiteur, id_invitation, motif_visite, statut_visite, date_visite_start,date_visite_end) VALUES
+('gardien@residence.com', 1, 'Visite de courtoisie - accueil nouveau resident', 'terminee', '2025-06-25 10:00:00', '2025-06-25 11:00:00'),
+('admin@residence.com', 2, 'Inspection technique annuelle', 'terminee', '2025-06-26 14:00:00', '2025-06-26 14:50:00'),
+('gardien2@residence.com', 3, 'Controle securite batiment B', 'terminee', '2025-06-27 09:00:00', '2025-06-27 09:05:00'),
+('admin2@residence.com', 4, 'Visite de bienvenue', 'programmee', '2025-07-01 10:00:00', '2025-07-01 10:25:00');
 
 

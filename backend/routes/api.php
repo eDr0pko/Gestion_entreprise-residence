@@ -5,7 +5,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\InviteController;
+use App\Http\Controllers\Api\InviteController;
+use App\Http\Controllers\Api\VisiteController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +22,13 @@ use App\Http\Controllers\InviteController;
 
 // Routes publiques
 Route::post('/login', [AuthController::class, 'login']);
+
+// Route publique pour récupérer tous les invités
+Route::get('/invite', [InviteController::class, 'index']);
+
+
+Route::get('/visite', [VisiteController::class, 'index']);
+Route::patch('/visite/{id}', [VisiteController::class, 'updateStatut']);
 
 // Routes protégées par authentification
 Route::middleware('auth:sanctum')->group(function () {
