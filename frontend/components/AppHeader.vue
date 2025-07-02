@@ -1,11 +1,14 @@
 <template>
-  <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center space-x-3">
+  <header class="bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-200 px-4 lg:px-6 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm">
+    <!-- Effet de glassmorphisme subtil -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0097b2]/3 via-transparent to-[#00b4d8]/3 pointer-events-none"></div>
+    
+    <div class="relative flex items-center space-x-3">
       <!-- Bouton retour (visible sur mobile) -->
       <button 
         v-if="showBackButton"
         @click="goBack"
-        class="lg:hidden text-[#0097b2] hover:text-[#007a94] transition-colors p-1"
+        class="lg:hidden text-[#0097b2] hover:text-[#007a94] hover:bg-white/80 backdrop-blur-sm rounded-lg p-2 transition-all duration-200 shadow-sm"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -16,7 +19,7 @@
       <NuxtLink 
         v-if="backTo && !showBackButton" 
         :to="backTo" 
-        class="hidden lg:block text-[#0097b2] hover:text-[#007a94] transition-colors"
+        class="hidden lg:block text-[#0097b2] hover:text-[#007a94] hover:bg-white/80 backdrop-blur-sm rounded-lg p-2 transition-all duration-200 shadow-sm"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -24,8 +27,8 @@
       </NuxtLink>
 
       <!-- Titre et badges -->
-      <div class="flex items-center space-x-2">
-        <h1 class="text-lg lg:text-xl font-semibold text-gray-900">{{ title }}</h1>
+      <div class="flex items-center space-x-3">
+        <h1 class="text-lg lg:text-xl font-semibold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">{{ title }}</h1>
         
         <!-- Badge global (ex: messages non lus) -->
         <Transition name="badge">
@@ -41,14 +44,15 @@
     </div>
 
     <!-- Actions à droite -->
-    <div class="flex items-center space-x-2">
+    <div class="relative flex items-center space-x-2">
       <!-- Actions personnalisées -->
       <slot name="actions"></slot>
 
       <!-- Bouton profil avec engrenage -->
       <NuxtLink 
+        v-if="!hideProfileButton"
         to="/profile" 
-        class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 tooltip-container"
+        class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-white/80 backdrop-blur-sm rounded-lg transition-all duration-200 tooltip-container shadow-sm"
         title="Profil et paramètres"
       >
         <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +65,7 @@
       <button 
         v-if="showMobileMenu"
         @click="toggleMobileMenu"
-        class="lg:hidden p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200"
+        class="lg:hidden p-2 text-gray-500 hover:text-[#0097b2] hover:bg-white/80 backdrop-blur-sm rounded-lg transition-all duration-200 shadow-sm"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -82,12 +86,14 @@ interface Props {
   backTo?: string
   showBackButton?: boolean
   showMobileMenu?: boolean
+  hideProfileButton?: boolean
   badge?: Badge
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showBackButton: false,
-  showMobileMenu: false
+  showMobileMenu: false,
+  hideProfileButton: false
 })
 
 const emit = defineEmits<{
