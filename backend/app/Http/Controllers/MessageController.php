@@ -13,11 +13,32 @@ use App\Models\Personne;
 
 class MessageController extends Controller
 {
+    /**
+     * Récupérer l'utilisateur actuel (membre ou invité)
+     */
+    private function getCurrentUser(Request $request)
+    {
+        // Avec Sanctum, l'utilisateur est disponible directement
+        $user = $request->user();
+        
+        if (!$user) {
+            \Log::info('No authenticated user found');
+            return null;
+        }
+        
+        \Log::info('Authenticated user found:', [
+            'email' => $user->email,
+            'class' => get_class($user)
+        ]);
+        
+        return $user;
+    }
+
     // Récupérer les groupes de conversation de l'utilisateur connecté
-    public function getConversations()
+    public function getConversations(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -93,10 +114,10 @@ class MessageController extends Controller
     }
 
     // Récupérer les messages d'un groupe et marquer comme lu
-    public function getMessages($groupId)
+    public function getMessages(Request $request, $groupId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -116,6 +137,14 @@ class MessageController extends Controller
                     'message' => 'Accès non autorisé à ce groupe'
                 ], 403);
             }
+
+            // Récupérer la dernière connexion de l'utilisateur pour ce groupe (une seule fois)
+            $personneGroupe = DB::table('personne_groupe')
+                ->where('email_personne', $user->email)
+                ->where('id_groupe_message', $groupId)
+                ->first();
+            
+            $derniereConnexion = $personneGroupe ? $personneGroupe->derniere_connexion : null;
 
             // Récupérer les messages avec réactions et fichiers
             $messages = DB::table('message')
@@ -173,11 +202,15 @@ class MessageController extends Controller
                         ->toArray();
                 }
 
-                // Récupérer le statut de lecture pour l'utilisateur actuel
-                $statut = DB::table('message_statut')
-                    ->where('id_message', $message->id_message)
-                    ->where('email_personne', $user->email)
-                    ->value('statut') ?? 'recu';
+                // Déterminer le statut de lecture basé sur la dernière connexion
+                $statut = 'recu'; // Par défaut
+                if ($message->email_auteur === $user->email) {
+                    $statut = 'envoye'; // Message envoyé par l'utilisateur
+                } elseif ($derniereConnexion && $message->date_envoi <= $derniereConnexion) {
+                    $statut = 'lu'; // Message lu (envoyé avant ou à la dernière connexion)
+                } else {
+                    $statut = 'recu'; // Message non lu (envoyé après la dernière connexion ou jamais connecté)
+                }
 
                 $messagesArray[] = [
                     'id_message' => $message->id_message,
@@ -213,10 +246,10 @@ class MessageController extends Controller
     }
 
     // Marquer une conversation comme lue (endpoint séparé si besoin)
-    public function markAsRead($groupId)
+    public function markAsRead(Request $request, $groupId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -262,7 +295,7 @@ class MessageController extends Controller
     public function sendMessage(Request $request, $groupId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -342,20 +375,6 @@ class MessageController extends Controller
                     }
                 }
 
-                // Créer les statuts de lecture pour tous les membres du groupe
-                $membres = DB::table('personne_groupe')
-                    ->where('id_groupe_message', $groupId)
-                    ->pluck('email_personne');
-
-                foreach ($membres as $membre) {
-                    DB::table('message_statut')->insert([
-                        'id_message' => $message->id_message,
-                        'email_personne' => $membre,
-                        'statut' => $membre === $user->email ? 'envoye' : 'recu',
-                        'date_statut' => now()
-                    ]);
-                }
-
                 DB::commit();
 
                 return response()->json([
@@ -394,7 +413,7 @@ class MessageController extends Controller
     public function addReaction(Request $request, $messageId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -488,10 +507,10 @@ class MessageController extends Controller
     }
 
     // Télécharger un fichier
-    public function downloadFile($fichierId)
+    public function downloadFile(Request $request, $fichierId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -538,25 +557,22 @@ class MessageController extends Controller
         }
     }
 
-    // Marquer les messages comme lus
+    // Marquer les messages comme lus en mettant à jour la dernière connexion
     private function markMessagesAsRead($groupId, $userEmail)
     {
-        DB::table('message_statut')
-            ->join('message', 'message_statut.id_message', '=', 'message.id_message')
-            ->where('message.id_groupe_message', $groupId)
-            ->where('message_statut.email_personne', $userEmail)
-            ->where('message_statut.statut', '!=', 'lu')
-            ->update([
-                'message_statut.statut' => 'lu',
-                'message_statut.date_statut' => now()
-            ]);
+        // Mettre à jour la dernière connexion de l'utilisateur pour ce groupe
+        // Cela marquera automatiquement tous les messages précédents comme lus
+        DB::table('personne_groupe')
+            ->where('email_personne', $userEmail)
+            ->where('id_groupe_message', $groupId)
+            ->update(['derniere_connexion' => now()]);
     }
 
     // Créer une nouvelle conversation
     public function createConversation(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -653,10 +669,10 @@ class MessageController extends Controller
     }
 
     // Récupérer la liste des utilisateurs disponibles pour créer une conversation
-    public function getAvailableUsers()
+    public function getAvailableUsers(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -698,10 +714,10 @@ class MessageController extends Controller
     }
 
     // Récupérer les membres d'un groupe
-    public function getGroupMembers($groupId)
+    public function getGroupMembers(Request $request, $groupId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -767,7 +783,7 @@ class MessageController extends Controller
     public function addGroupMembers(Request $request, $groupId)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -865,6 +881,127 @@ class MessageController extends Controller
                 'message' => 'Erreur lors de l\'ajout des membres',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Vérifier s'il y a des changements dans les conversations (endpoint léger)
+     */
+    public function checkConversationsChanges(Request $request)
+    {
+        try {
+            $user = $this->getCurrentUser($request);
+            if (!$user) {
+                return response()->json(['success' => false, 'error' => 'Non authentifié'], 401);
+            }
+
+            // Récupérer le hash des conversations avec leur dernière activité
+            $conversationsHash = DB::table('personne_groupe')
+                ->join('groupe_message', 'personne_groupe.id_groupe_message', '=', 'groupe_message.id_groupe_message')
+                ->leftJoin('message', function($join) {
+                    $join->on('groupe_message.id_groupe_message', '=', 'message.id_groupe_message')
+                         ->whereRaw('message.date_envoi = (
+                             SELECT MAX(m2.date_envoi) 
+                             FROM message m2 
+                             WHERE m2.id_groupe_message = groupe_message.id_groupe_message
+                         )');
+                })
+                ->where('personne_groupe.email_personne', $user->email)
+                ->select(
+                    'groupe_message.id_groupe_message',
+                    DB::raw('COALESCE(MAX(message.date_envoi), groupe_message.date_creation) as derniere_activite')
+                )
+                ->groupBy('groupe_message.id_groupe_message', 'groupe_message.date_creation')
+                ->orderBy('derniere_activite', 'desc')
+                ->get();
+
+            // Créer un hash simple basé sur les IDs et timestamps
+            $hashString = $conversationsHash->map(function($conv) {
+                return $conv->id_groupe_message . ':' . $conv->derniere_activite;
+            })->implode('|');
+            
+            $hash = md5($hashString);
+
+            return response()->json([
+                'success' => true,
+                'hash' => $hash,
+                'count' => $conversationsHash->count(),
+                'last_activity' => $conversationsHash->first()->derniere_activite ?? null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur check conversations changes: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Erreur serveur'], 500);
+        }
+    }
+
+    /**
+     * Vérifier s'il y a des changements dans les messages d'une conversation (endpoint léger)
+     */
+    public function checkMessagesChanges(Request $request, $groupId)
+    {
+        try {
+            $user = $this->getCurrentUser($request);
+            if (!$user) {
+                return response()->json(['success' => false, 'error' => 'Non authentifié'], 401);
+            }
+
+            // Vérifier l'accès au groupe
+            $hasAccess = DB::table('personne_groupe')
+                ->where('email_personne', $user->email)
+                ->where('id_groupe_message', $groupId)
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json(['success' => false, 'error' => 'Accès refusé'], 403);
+            }
+
+            // Récupérer les infos de base des messages (sans le contenu)
+            $messagesInfo = DB::table('message')
+                ->where('id_groupe_message', $groupId)
+                ->select('id_message', 'date_envoi')
+                ->orderBy('date_envoi', 'asc')
+                ->get();
+
+            // Créer un hash basé sur les IDs et timestamps des messages
+            $hashString = $messagesInfo->map(function($msg) {
+                return $msg->id_message . ':' . $msg->date_envoi;
+            })->implode('|');
+            
+            $hash = md5($hashString);
+
+            // Compter les messages non lus pour cet utilisateur
+            $derniereConnexion = DB::table('personne_groupe')
+                ->where('email_personne', $user->email)
+                ->where('id_groupe_message', $groupId)
+                ->value('derniere_connexion');
+
+            $messagesNonLus = 0;
+            if ($derniereConnexion) {
+                $messagesNonLus = DB::table('message')
+                    ->where('id_groupe_message', $groupId)
+                    ->where('email_auteur', '!=', $user->email)
+                    ->where('date_envoi', '>', $derniereConnexion)
+                    ->count();
+            } else {
+                // Si pas de dernière connexion, tous les messages des autres sont non lus
+                $messagesNonLus = DB::table('message')
+                    ->where('id_groupe_message', $groupId)
+                    ->where('email_auteur', '!=', $user->email)
+                    ->count();
+            }
+
+            return response()->json([
+                'success' => true,
+                'hash' => $hash,
+                'count' => $messagesInfo->count(),
+                'unread_count' => $messagesNonLus,
+                'last_message_date' => $messagesInfo->last()->date_envoi ?? null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur check messages changes: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Erreur serveur'], 500);
         }
     }
 

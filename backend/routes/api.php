@@ -21,21 +21,21 @@ use App\Http\Controllers\GuestController;
 Route::post('/login', [AuthController::class, 'login']);
 
 // Routes pour les invités (publiques)
-Route::prefix('guest')->group(function () {
+Route::prefix('guests')->group(function () {
     Route::post('/register', [GuestController::class, 'register']);
-    Route::post('/check-email', [GuestController::class, 'checkEmail']);
-    Route::post('/send-verification-code', [GuestController::class, 'sendVerificationCode']);
-    Route::post('/verify-code', [GuestController::class, 'verifyCode']);
-    Route::post('/get-by-email', [GuestController::class, 'getGuestByEmail']);
+    Route::post('/login', [GuestController::class, 'login']);
 });
 
-// Routes protégées par authentification
+// Routes protégées par authentification (membres avec token)
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'me']);
     Route::get('/check', [AuthController::class, 'check']);
-    
+});
+
+// Routes accessibles aux membres et invités (token-based auth)
+Route::middleware('auth:sanctum')->group(function () {
     // Messages
     Route::get('/conversations', [MessageController::class, 'getConversations']);
     Route::post('/conversations', [MessageController::class, 'createConversation']);
@@ -45,6 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/{groupId}', [MessageController::class, 'getMessages']);
     Route::post('/messages/{groupId}', [MessageController::class, 'sendMessage']);
     Route::post('/conversations/{groupId}/mark-read', [MessageController::class, 'markAsRead']);
+    
+    // Endpoints optimisés pour le rafraîchissement automatique
+    Route::get('/conversations/check-changes', [MessageController::class, 'checkConversationsChanges']);
+    Route::get('/messages/{groupId}/check-changes', [MessageController::class, 'checkMessagesChanges']);
     
     // Nouvelles routes
     Route::post('/messages/{messageId}/reactions', [MessageController::class, 'addReaction']);

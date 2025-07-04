@@ -1,80 +1,142 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Inscription Invité</h1>
-        <p class="text-gray-600">Créez votre compte pour accéder à la résidence</p>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 flex items-center justify-center p-4">
+    <div class="max-w-lg w-full">
+      <!-- Card principale -->
+      <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+        <!-- Header -->
+        <div class="text-center mb-6">
+          <div class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">Inscription Invité</h1>
+          <p class="text-gray-600 text-sm">Créez votre compte pour accéder à la résidence</p>
+        </div>
 
-      <!-- Formulaire d'inscription -->
-      <form @submit.prevent="handleSubmit" v-if="step === 'register'">
-        <div class="space-y-6">
+        <!-- Formulaire d'inscription -->
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-              Adresse email *
+            <label for="email" class="block text-sm font-semibold text-gray-800 mb-2">
+              Adresse email
             </label>
             <input
               id="email"
               v-model="form.email"
               type="email"
               required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
               placeholder="votre@email.com"
               :disabled="loading"
             />
           </div>
 
-          <div>
-            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">
-              Nom *
-            </label>
-            <input
-              id="nom"
-              v-model="form.nom"
-              type="text"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="Votre nom"
-              :disabled="loading"
-            />
+          <!-- Nom et Prénom sur la même ligne -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="nom" class="block text-sm font-semibold text-gray-800 mb-2">
+                Nom
+              </label>
+              <input
+                id="nom"
+                v-model="form.nom"
+                type="text"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                placeholder="Nom"
+                :disabled="loading"
+              />
+            </div>
+            <div>
+              <label for="prenom" class="block text-sm font-semibold text-gray-800 mb-2">
+                Prénom
+              </label>
+              <input
+                id="prenom"
+                v-model="form.prenom"
+                type="text"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                placeholder="Prénom"
+                :disabled="loading"
+              />
+            </div>
           </div>
 
+          <!-- Téléphone -->
           <div>
-            <label for="prenom" class="block text-sm font-medium text-gray-700 mb-1">
-              Prénom *
+            <label for="numero_telephone" class="block text-sm font-semibold text-gray-800 mb-2">
+              Numéro de téléphone
             </label>
             <input
-              id="prenom"
-              v-model="form.prenom"
-              type="text"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="Votre prénom"
-              :disabled="loading"
-            />
-          </div>
-
-          <div>
-            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">
-              Téléphone
-            </label>
-            <input
-              id="telephone"
-              v-model="form.telephone"
+              id="numero_telephone"
+              v-model="form.numero_telephone"
               type="tel"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
               placeholder="+33 1 23 45 67 89"
               :disabled="loading"
             />
+            <p class="text-xs text-gray-500 mt-1 ml-1">Format international requis</p>
           </div>
 
+          <!-- Mot de passe -->
+          <div>
+            <label for="mot_de_passe" class="block text-sm font-semibold text-gray-800 mb-2">
+              Mot de passe
+            </label>
+            <input
+              id="mot_de_passe"
+              v-model="form.mot_de_passe"
+              type="password"
+              required
+              minlength="6"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+              placeholder="Minimum 6 caractères"
+              :disabled="loading"
+            />
+          </div>
+
+          <!-- Confirmation mot de passe -->
+          <div>
+            <label for="mot_de_passe_confirmation" class="block text-sm font-semibold text-gray-800 mb-2">
+              Confirmer le mot de passe
+            </label>
+            <input
+              id="mot_de_passe_confirmation"
+              v-model="form.mot_de_passe_confirmation"
+              type="password"
+              required
+              minlength="6"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+              placeholder="Confirmez votre mot de passe"
+              :disabled="loading"
+            />
+          </div>
+
+          <!-- Messages d'erreur/succès -->
+          <div v-if="message.text" class="p-4 rounded-xl border transition-all duration-300" 
+               :class="message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'">
+            <div class="flex items-center">
+              <svg v-if="message.type === 'success'" class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <svg v-else class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-sm font-medium">{{ message.text }}</span>
+            </div>
+          </div>
+
+          <!-- Bouton d'inscription -->
           <button
             type="submit"
-            :disabled="loading || !isFormValid"
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+            :disabled="loading"
+            class="w-full py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:transform-none"
           >
             <span v-if="loading" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -82,300 +144,155 @@
             </span>
             <span v-else>S'inscrire</span>
           </button>
-        </div>
-      </form>
+        </form>
 
-      <!-- Formulaire de vérification -->
-      <form @submit.prevent="handleVerification" v-if="step === 'verify'">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-          <h2 class="text-xl font-semibold text-gray-900 mb-2">Vérifiez votre email</h2>
-          <p class="text-gray-600 text-sm">
-            Un code de vérification a été envoyé à<br>
-            <strong>{{ form.email }}</strong>
+        <!-- Lien de connexion -->
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600">
+            Déjà un compte invité ?
+            <NuxtLink to="/connexion" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+              Se connecter
+            </NuxtLink>
           </p>
         </div>
-
-        <div class="space-y-6">
-          <div>
-            <label for="code" class="block text-sm font-medium text-gray-700 mb-1">
-              Code de vérification
-            </label>
-            <input
-              id="code"
-              v-model="verificationCode"
-              type="text"
-              required
-              maxlength="6"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-center text-2xl tracking-widest"
-              placeholder="123456"
-              :disabled="loading"
-            />
-          </div>
-
-          <button
-            type="submit"
-            :disabled="loading || verificationCode.length !== 6"
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-          >
-            <span v-if="loading" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Vérification...
-            </span>
-            <span v-else>Vérifier</span>
-          </button>
-
-          <button
-            type="button"
-            @click="resendCode"
-            :disabled="loading || !canResend"
-            class="w-full text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed font-medium py-2 transition-colors duration-200"
-          >
-            <span v-if="canResend">Renvoyer le code</span>
-            <span v-else>Renvoyer le code ({{ resendTimer }}s)</span>
-          </button>
-        </div>
-      </form>
-
-      <!-- Message de succès -->
-      <div v-if="step === 'success'" class="text-center">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Inscription réussie !</h2>
-        <p class="text-gray-600 mb-6">
-          Votre compte a été créé avec succès. Vous pouvez maintenant accéder à la résidence.
-        </p>
-        <NuxtLink
-          to="/"
-          class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-        >
-          Accéder à l'accueil
-        </NuxtLink>
       </div>
 
-      <!-- Messages d'erreur/succès -->
-      <div v-if="message" class="mt-4 p-4 rounded-lg" :class="messageType === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg v-if="messageType === 'error'" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-            <svg v-else class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium">{{ message }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lien de retour -->
+      <!-- Message d'info -->
       <div class="mt-6 text-center">
-        <NuxtLink
-          to="/"
-          class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
-        >
-          ← Retour à l'accueil
-        </NuxtLink>
+        <p class="text-xs text-gray-500">
+          En vous inscrivant, vous acceptez les conditions d'utilisation de la résidence
+        </p>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-definePageMeta({
-  layout: false
+<script setup lang="ts">
+import { ref } from 'vue'
+
+// Métadonnées de la page
+useHead({
+  title: 'Inscription Invité - Gestion Entreprise de Résidence'
 })
 
-// État réactif
-const step = ref('register') // 'register', 'verify', 'success'
-const loading = ref(false)
-const message = ref('')
-const messageType = ref('error')
-const verificationCode = ref('')
-const canResend = ref(true)
-const resendTimer = ref(0)
-
-// Formulaire d'inscription
-const form = reactive({
+// État du formulaire
+const form = ref({
   email: '',
   nom: '',
   prenom: '',
-  telephone: ''
+  numero_telephone: '',
+  mot_de_passe: '',
+  mot_de_passe_confirmation: ''
 })
 
-// Validation du formulaire
-const isFormValid = computed(() => {
-  return form.email && 
-         form.nom && 
-         form.prenom && 
-         form.email.includes('@') &&
-         form.nom.length >= 2 &&
-         form.prenom.length >= 2
+// État de l'UI
+const loading = ref(false)
+const message = ref({
+  text: '',
+  type: 'info' as 'success' | 'error' | 'info'
 })
 
-// Configuration API
+// Configuration
 const config = useRuntimeConfig()
-const apiBase = config.public.apiUrl || 'http://localhost:8000/api'
 
-// Gestion de l'inscription
-const handleSubmit = async () => {
-  if (!isFormValid.value) return
-
-  loading.value = true
-  message.value = ''
-
-  try {
-    const response = await $fetch(`${apiBase}/guest/register`, {
-      method: 'POST',
-      body: form
-    })
-
-    if (response.success) {
-      // Envoyer automatiquement le code de vérification
-      await sendVerificationCode()
-      step.value = 'verify'
-      showMessage('Inscription réussie ! Un code de vérification a été envoyé.', 'success')
-    } else {
-      showMessage(response.message || 'Erreur lors de l\'inscription', 'error')
-    }
-  } catch (error) {
-    console.error('Erreur inscription:', error)
-    if (error.data?.errors) {
-      const firstError = Object.values(error.data.errors)[0]
-      showMessage(Array.isArray(firstError) ? firstError[0] : firstError, 'error')
-    } else {
-      showMessage(error.data?.message || 'Erreur lors de l\'inscription', 'error')
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-// Envoi du code de vérification
-const sendVerificationCode = async () => {
-  try {
-    const response = await $fetch(`${apiBase}/guest/send-verification-code`, {
-      method: 'POST',
-      body: { email: form.email }
-    })
-
-    if (!response.success) {
-      throw new Error(response.message || 'Erreur lors de l\'envoi du code')
-    }
-
-    // Démarrer le timer de renvoie
-    startResendTimer()
-  } catch (error) {
-    console.error('Erreur envoi code:', error)
-    throw error
-  }
-}
-
-// Vérification du code
-const handleVerification = async () => {
-  if (verificationCode.value.length !== 6) return
-
-  loading.value = true
-  message.value = ''
-
-  try {
-    const response = await $fetch(`${apiBase}/guest/verify-code`, {
-      method: 'POST',
-      body: {
-        email: form.email,
-        code: verificationCode.value
-      }
-    })
-
-    if (response.success) {
-      step.value = 'success'
-      showMessage('Email vérifié avec succès !', 'success')
-    } else {
-      showMessage(response.message || 'Code de vérification invalide', 'error')
-    }
-  } catch (error) {
-    console.error('Erreur vérification:', error)
-    showMessage(error.data?.message || 'Erreur lors de la vérification', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Renvoyer le code
-const resendCode = async () => {
-  if (!canResend.value) return
-
-  loading.value = true
-  try {
-    await sendVerificationCode()
-    showMessage('Code renvoyé avec succès', 'success')
-    verificationCode.value = ''
-  } catch (error) {
-    showMessage('Erreur lors du renvoi du code', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Timer pour le renvoie de code
-const startResendTimer = () => {
-  canResend.value = false
-  resendTimer.value = 60
-
-  const interval = setInterval(() => {
-    resendTimer.value--
-    if (resendTimer.value <= 0) {
-      canResend.value = true
-      clearInterval(interval)
-    }
-  }, 1000)
-}
-
-// Affichage des messages
-const showMessage = (msg, type = 'error') => {
-  message.value = msg
-  messageType.value = type
-  
-  // Effacer le message après 5 secondes pour les succès
-  if (type === 'success') {
+// Fonction pour afficher un message
+const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+  message.value = { text, type }
+  // Auto-hide après 5 secondes pour les messages de succès et d'info
+  if (type !== 'error') {
     setTimeout(() => {
-      message.value = ''
+      message.value = { text: '', type: 'info' }
     }, 5000)
   }
 }
 
-// Meta tags
-useHead({
-  title: 'Inscription - Gestion Résidence',
-  meta: [
-    { name: 'description', content: 'Inscription des invités à la résidence' }
-  ]
-})
+// Fonction de soumission du formulaire
+const handleSubmit = async () => {
+  // Réinitialiser les messages
+  message.value = { text: '', type: 'info' }
+  
+  // Validation côté client
+  if (!form.value.email || !form.value.nom || !form.value.prenom || !form.value.numero_telephone || !form.value.mot_de_passe || !form.value.mot_de_passe_confirmation) {
+    showMessage('Veuillez remplir tous les champs obligatoires.', 'error')
+    return
+  }
+
+  if (form.value.mot_de_passe !== form.value.mot_de_passe_confirmation) {
+    showMessage('Les mots de passe ne correspondent pas.', 'error')
+    return
+  }
+
+  if (form.value.mot_de_passe.length < 6) {
+    showMessage('Le mot de passe doit contenir au moins 6 caractères.', 'error')
+    return
+  }
+
+  // Validation du format de téléphone
+  if (!/^\+\d{1,4}\d{6,15}$/.test(form.value.numero_telephone)) {
+    showMessage('Le numéro de téléphone doit être au format international (+33123456789)', 'error')
+    return
+  }
+
+  loading.value = true
+
+  try {
+    console.log('🚀 [INSCRIPTION] Envoi des données:', form.value)
+    
+    const response: any = await $fetch(`${config.public.apiBase}/guests/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: {
+        email: form.value.email,
+        nom: form.value.nom,
+        prenom: form.value.prenom,
+        numero_telephone: form.value.numero_telephone,
+        mot_de_passe: form.value.mot_de_passe,
+        mot_de_passe_confirmation: form.value.mot_de_passe_confirmation
+      }
+    })
+
+    console.log('✅ [INSCRIPTION] Réponse API:', response)
+
+    if (response.success && response.user) {
+      showMessage('Inscription réussie ! Redirection en cours...', 'success')
+      
+      // Stocker les informations de l'utilisateur dans le store
+      const authStore = useAuthStore()
+      authStore.setAuth(response.token, response.user)
+      
+      // Petit délai pour afficher le message de succès
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Redirection vers les messages
+      await navigateTo('/messages')
+    } else {
+      showMessage(response.message || 'Erreur lors de l\'inscription', 'error')
+    }
+  } catch (error: any) {
+    console.error('❌ [INSCRIPTION] Erreur:', error)
+    
+    if (error.status === 422) {
+      // Erreurs de validation
+      console.log('Erreurs de validation détaillées:', error.data)
+      if (error.data?.errors) {
+        // Afficher la première erreur trouvée
+        const firstErrorKey = Object.keys(error.data.errors)[0]
+        const firstError = error.data.errors[firstErrorKey]
+        const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
+        showMessage(errorMessage, 'error')
+      } else {
+        showMessage(error.data?.message || 'Données invalides', 'error')
+      }
+    } else if (error.status === 409 || error.message?.includes('unique')) {
+      showMessage('Un compte avec cette adresse email existe déjà', 'error')
+    } else {
+      showMessage(error.data?.message || 'Une erreur est survenue lors de l\'inscription', 'error')
+    }
+  } finally {
+    loading.value = false
+  }
+}
 </script>
-
-<style scoped>
-/* Animation pour les transitions */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-/* Style pour le champ code de vérification */
-input[type="text"][maxlength="6"] {
-  letter-spacing: 0.2em;
-}
-</style>

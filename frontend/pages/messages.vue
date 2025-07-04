@@ -36,6 +36,31 @@
       </template>
     </AppHeader>
     
+    <!-- Notification d'erreur -->
+    <Transition name="slide-down">
+      <div 
+        v-if="error" 
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4"
+      >
+        <div class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm">{{ error }}</span>
+          </div>
+          <button 
+            @click="error = ''"
+            class="ml-2 text-white hover:text-gray-200 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Contenu principal responsive -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Sidebar - Liste des conversations (responsive) -->
@@ -380,7 +405,7 @@
                     <MessageReactions
                       :message-id="message.id_message"
                       :reactions="transformReactions(message.reactions || {})"
-                      :current-user-email="(authStore.user as any)?.email || ''"
+                      :current-user-email="(currentUser as any)?.email || ''"
                       @reaction-toggled="handleReactionToggled(message.id_message, $event)"
                     />
                   </div>
@@ -484,6 +509,11 @@
 </template>
 
 <script setup lang="ts">
+// Middleware pour vérifier l'authentification
+definePageMeta({
+  middleware: 'auth'
+})
+
 // Types pour TypeScript
 interface Conversation {
   id_groupe_message: number
@@ -524,10 +554,6 @@ interface ApiResponse {
   reactions?: Record<string, string[]>
 }
 
-definePageMeta({
-  middleware: 'auth'
-})
-
 useHead({
   title: 'Messages - Gestion Entreprise de Résidence'
 })
@@ -538,6 +564,36 @@ import FileUploadZone from '~/components/FileUploadZone.vue'
 
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
+
+// Fonction pour récupérer l'utilisateur actuel (unifié via Pinia store)
+const getCurrentUser = () => {
+  if (authStore.isAuthenticated && authStore.user) {
+    return authStore.user
+  }
+  return null
+}
+
+// Computed pour l'utilisateur actuel
+const currentUser = computed(() => getCurrentUser())
+
+// Fonction pour récupérer les headers d'authentification
+const getAuthHeaders = (isFormData = false) => {
+  const headers: any = {
+    'Accept': 'application/json'
+  }
+  
+  // Pour FormData, ne pas définir Content-Type (le navigateur le fera)
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json'
+  }
+  
+  // Ajouter le token d'authentification (membre ou invité)
+  if (authStore.token) {
+    headers['Authorization'] = `Bearer ${authStore.token}`
+  }
+  
+  return headers
+}
 
 // État réactif
 const searchQuery = ref('')
@@ -562,6 +618,179 @@ const isAtBottom = ref(true)
 // Nouveau state pour gérer la séparation des messages
 const premierMessageNonLuIndex = ref<number | null>(null)
 const ancienneDerniereConnexion = ref<string | null>(null)
+
+// Variables pour le rafraîchissement automatique
+const autoRefreshEnabled = ref(true)
+const autoRefreshInterval = ref<NodeJS.Timeout | null>(null)
+const lastConversationsUpdate = ref<string>('')
+const lastMessagesUpdate = ref<string>('')
+const isRefreshing = ref(false)
+const refreshIntervalMs = 10000 // 10 secondes pour éviter le rate limiting
+const consecutiveErrors = ref(0)
+const maxErrors = 3
+
+// Hashes pour détecter les changements
+const conversationsHash = ref<string>('')
+const messagesHash = ref<string>('')
+
+// Fonction pour calculer l'intervalle avec backoff exponentiel
+const getRefreshInterval = () => {
+  if (consecutiveErrors.value === 0) return refreshIntervalMs
+  // Augmenter l'intervalle exponentiellement en cas d'erreurs
+  return refreshIntervalMs * Math.pow(2, Math.min(consecutiveErrors.value, 4))
+}
+
+// Fonctions de polling automatique
+const checkConversationsChanges = async (): Promise<boolean> => {
+  try {
+    if (!authStore.token) return false
+
+    const response = await $fetch<any>(`${config.public.apiBase}/conversations/check-changes`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+        'Accept': 'application/json',
+      },
+      timeout: 5000 // Timeout de 5 secondes
+    })
+
+    if (response.success && response.hash !== conversationsHash.value) {
+      conversationsHash.value = response.hash
+      console.log('🔄 Changements détectés dans les conversations')
+      consecutiveErrors.value = 0 // Reset des erreurs en cas de succès
+      return true
+    }
+    consecutiveErrors.value = 0 // Reset des erreurs en cas de succès
+    return false
+  } catch (error: any) {
+    consecutiveErrors.value++
+    console.error('❌ Erreur lors de la vérification des conversations:', error)
+    
+    // Si trop d'erreurs consécutives, désactiver temporairement
+    if (consecutiveErrors.value >= maxErrors) {
+      console.warn(`⚠️ ${maxErrors} erreurs consécutives, augmentation de l'intervalle`)
+    }
+    
+    // Si erreur 429 (Too Many Requests), augmenter l'intervalle
+    if (error.status === 429) {
+      console.warn('⚠️ Rate limit atteint, augmentation de l\'intervalle')
+      consecutiveErrors.value += 2 // Pénalité supplémentaire pour rate limiting
+    }
+    
+    return false
+  }
+}
+
+const checkMessagesChanges = async (): Promise<boolean> => {
+  try {
+    if (!authStore.token || !selectedConversation.value) return false
+
+    const response = await $fetch<any>(`${config.public.apiBase}/messages/${selectedConversation.value.id_groupe_message}/check-changes`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+        'Accept': 'application/json',
+      },
+      timeout: 5000 // Timeout de 5 secondes
+    })
+
+    if (response.success && response.hash !== messagesHash.value) {
+      messagesHash.value = response.hash
+      console.log('🔄 Changements détectés dans les messages')
+      return true
+    }
+    return false
+  } catch (error: any) {
+    console.error('❌ Erreur lors de la vérification des messages:', error)
+    
+    // Si erreur 429 (Too Many Requests), augmenter l'intervalle
+    if (error.status === 429) {
+      console.warn('⚠️ Rate limit atteint pour les messages')
+      consecutiveErrors.value += 1
+    }
+    
+    return false
+  }
+}
+
+const refreshConversationsIfNeeded = async () => {
+  const hasChanges = await checkConversationsChanges()
+  if (hasChanges) {
+    console.log('🔄 Rafraîchissement des conversations...')
+    await loadConversations()
+  }
+}
+
+const refreshMessagesIfNeeded = async () => {
+  const hasChanges = await checkMessagesChanges()
+  if (hasChanges) {
+    console.log('🔄 Rafraîchissement des messages...')
+    const shouldScrollToBottom = isAtBottom.value
+    await loadMessages(selectedConversation.value!.id_groupe_message)
+    if (shouldScrollToBottom) {
+      await nextTick()
+      scrollToBottom()
+    }
+  }
+}
+
+const performAutoRefresh = async () => {
+  if (!autoRefreshEnabled.value || isRefreshing.value) return
+
+  isRefreshing.value = true
+  try {
+    // Vérifier et rafraîchir les conversations
+    await refreshConversationsIfNeeded()
+    
+    // Vérifier et rafraîchir les messages de la conversation active
+    if (selectedConversation.value) {
+      await refreshMessagesIfNeeded()
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du rafraîchissement automatique:', error)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
+const startAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+  }
+  
+  if (autoRefreshEnabled.value) {
+    const interval = getRefreshInterval()
+    console.log(`🚀 Démarrage du rafraîchissement automatique (toutes les ${interval/1000} secondes)`)
+    
+    autoRefreshInterval.value = setInterval(async () => {
+      await performAutoRefresh()
+      
+      // Redémarrer avec un nouvel intervalle si nécessaire (en cas d'erreurs)
+      const newInterval = getRefreshInterval()
+      if (newInterval !== interval) {
+        console.log(`🔄 Changement d'intervalle: ${newInterval/1000} secondes`)
+        startAutoRefresh() // Redémarrer avec le nouvel intervalle
+      }
+    }, interval)
+  }
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    console.log('⏹️ Arrêt du rafraîchissement automatique')
+    clearInterval(autoRefreshInterval.value)
+    autoRefreshInterval.value = null
+  }
+}
+
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh()
+  } else {
+    stopAutoRefresh()
+  }
+}
 
 // Conversations filtrées
 const filteredConversations = computed(() => {
@@ -603,23 +832,10 @@ const loadConversations = async () => {
     loadingConversations.value = true
     
     console.log('=== CHARGEMENT DES CONVERSATIONS ===')
+    console.log('Utilisateur:', (currentUser.value as any)?.email)
+    console.log('Type:', authStore.isAuthenticated ? 'member' : 'guest')
     console.log('Token disponible:', !!authStore.token)
-    console.log('Token value:', authStore.token ? String(authStore.token).substring(0, 20) + '...' : 'null')
-    console.log('Utilisateur:', (authStore.user as any)?.email)
-    console.log('Authenticated:', authStore.isAuthenticated)
     
-    if (!authStore.token) {
-      console.error('❌ Token manquant')
-      throw new Error('Token d\'authentification manquant')
-    }
-    
-    const headers = {
-      'Authorization': `Bearer ${authStore.token}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
-    
-    console.log('Headers:', headers)
     console.log('URL:', `${config.public.apiBase}/conversations`)
     
     // Test de connectivité de base
@@ -633,7 +849,7 @@ const loadConversations = async () => {
     }
     
     const response = await $fetch<ApiResponse>(`${config.public.apiBase}/conversations`, {
-      headers,
+      headers: getAuthHeaders(),
       timeout: 10000 // Timeout de 10 secondes
     })
     
@@ -653,11 +869,13 @@ const loadConversations = async () => {
     console.error('Data:', err.data)
     console.error('Message:', err.message)
     
-    // Si erreur 401, rediriger vers login
+    // Si erreur 401, rediriger vers l'accueil
     if (err.status === 401) {
-      console.log('🔄 Erreur 401, redirection vers login')
-      authStore.clearAuth()
-      await navigateTo('/login')
+      console.log('🔄 Erreur 401, redirection vers accueil')
+      if (authStore.isAuthenticated) {
+        authStore.clearAuth()
+      }
+      await navigateTo('/')
       return
     }
     
@@ -678,14 +896,15 @@ const loadMessages = async (groupId: number) => {
   try {
     loadingMessages.value = true
     
+    console.log('=== CHARGEMENT DES MESSAGES ===')
+    console.log('Groupe ID:', groupId)
+    console.log('Token:', !!authStore.token)
+    
     const response = await $fetch<ApiResponse>(`${config.public.apiBase}/messages/${groupId}`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
+      headers: getAuthHeaders()
     })
     
-    console.log('Messages response:', response)
+    console.log('✅ Messages response:', response)
     
     if (response.success && response.messages) {
       messages.value = response.messages
@@ -701,15 +920,28 @@ const loadMessages = async (groupId: number) => {
     }
     
   } catch (err: any) {
-    console.error('Erreur lors du chargement des messages:', err)
+    console.error('❌ Erreur lors du chargement des messages:', err)
+    console.error('Status:', err.status)
+    console.error('Data:', err.data)
+    console.error('Message:', err.message)
     
     if (err.status === 401) {
-      authStore.clearAuth()
-      await navigateTo('/login')
+      console.log('🔄 Erreur 401, redirection vers accueil')
+      if (authStore.isAuthenticated) {
+        authStore.clearAuth()
+      }
+      await navigateTo('/')
       return
     }
     
-    error.value = err.data?.message || err.message || 'Impossible de charger les messages'
+    let errorMessage = 'Impossible de charger les messages'
+    if (err.data?.message) {
+      errorMessage = err.data.message
+    } else if (err.message) {
+      errorMessage = err.message
+    }
+    
+    error.value = errorMessage
     messages.value = []
   } finally {
     loadingMessages.value = false
@@ -719,6 +951,9 @@ const loadMessages = async (groupId: number) => {
 // Sélectionner une conversation et marquer comme lue
 const selectConversation = async (conversation: Conversation) => {
   selectedConversation.value = conversation
+  
+  // Réinitialiser le hash des messages pour cette nouvelle conversation
+  messagesHash.value = ''
   
   // Charger les messages (cela met automatiquement à jour la derniere_connexion)
   await loadMessages(conversation.id_groupe_message)
@@ -735,10 +970,7 @@ const markConversationAsRead = async (groupId: number) => {
   try {
     await $fetch(`${config.public.apiBase}/conversations/${groupId}/mark-read`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
+      headers: getAuthHeaders()
     })
     
     // Mettre à jour localement
@@ -760,6 +992,12 @@ const sendMessage = async () => {
   try {
     sendingMessage.value = true
     
+    console.log('=== ENVOI DE MESSAGE ===')
+    console.log('Conversation:', selectedConversation.value.id_groupe_message)
+    console.log('Contenu:', newMessage.value.trim())
+    console.log('Fichiers:', selectedFiles.value.length)
+    console.log('Token:', !!authStore.token)
+    
     const formData = new FormData()
     if (newMessage.value.trim()) {
       formData.append('contenu', newMessage.value.trim())
@@ -769,14 +1007,22 @@ const sendMessage = async () => {
       formData.append(`fichiers[${index}]`, file)
     })
     
+    console.log('FormData entries:')
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value)
+    }
+    
     const response = await $fetch<ApiResponse>(`${config.public.apiBase}/messages/${selectedConversation.value.id_groupe_message}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': authStore.token ? `Bearer ${authStore.token}` : ''
+        // Ne pas définir Content-Type pour FormData, le navigateur le fera automatiquement
       },
       body: formData
     })
+    
+    console.log('✅ Response from sendMessage:', response)
     
     if (response.success && response.message) {
       messages.value.push(response.message)
@@ -806,13 +1052,36 @@ const sendMessage = async () => {
     }
     
   } catch (err: any) {
-    console.error('Erreur lors de l\'envoi du message:', err)
+    console.error('❌ Erreur lors de l\'envoi du message:', err)
+    console.error('Status:', err.status)
+    console.error('Data:', err.data)
+    console.error('Message:', err.message)
     
     if (err.status === 401) {
-      authStore.clearAuth()
-      await navigateTo('/login')
+      console.log('🔄 Erreur 401, redirection vers accueil')
+      if (authStore.isAuthenticated) {
+        authStore.clearAuth()
+      }
+      await navigateTo('/')
       return
     }
+    
+    // Afficher l'erreur à l'utilisateur
+    let errorMessage = 'Erreur lors de l\'envoi du message'
+    if (err.data?.message) {
+      errorMessage = err.data.message
+    } else if (err.message) {
+      errorMessage = err.message
+    }
+    
+    // TODO: Afficher une notification d'erreur à l'utilisateur
+    console.error('Erreur à afficher:', errorMessage)
+    error.value = errorMessage
+    
+    // Effacer l'erreur après 5 secondes
+    setTimeout(() => {
+      error.value = ''
+    }, 5000)
   } finally {
     sendingMessage.value = false
   }
@@ -898,6 +1167,13 @@ const updateScreenSize = () => {
 // Initialiser au montage
 onMounted(async () => {
   console.log('=== MESSAGES PAGE MOUNTED ===')
+  console.log('process.client:', process.client)
+  
+  // S'assurer qu'on est côté client
+  if (!process.client) {
+    console.log('⚠️ Pas côté client, attendre...')
+    return
+  }
   
   // Détecter la taille d'écran
   updateScreenSize()
@@ -908,48 +1184,62 @@ onMounted(async () => {
   
   console.log('Auth state après init:', {
     authenticated: authStore.isAuthenticated,
-    user: (authStore.user as any)?.email,
+    user: (currentUser.value as any)?.email,
     token: !!authStore.token
   })
   
-  // Vérifier encore une fois
-  if (!authStore.isAuthenticated || !authStore.token) {
-    console.log('❌ Pas d\'authentification, redirection vers login')
-    await navigateTo('/login')
+  // Délai pour s'assurer que le localStorage est accessible et synchronisé
+  console.log('⏱️ Attente synchronisation localStorage...')
+  await new Promise(resolve => setTimeout(resolve, 200))
+  // Initialiser l'authentification
+  authStore.initAuth()
+  
+  // Vérifier qu'un utilisateur est authentifié
+  const currentUserData = getCurrentUser()
+  
+  if (!currentUserData) {
+    console.log('❌ Aucun utilisateur authentifié, redirection vers index')
+    await navigateTo('/')
     return
   }
   
-  // Tester la validité du token
-  try {
-    console.log('🔍 Vérification de la validité du token...')
-    const isValid = await authStore.checkAuth()
-    if (!isValid) {
-      console.log('❌ Token invalide, redirection vers login')
-      await navigateTo('/login')
+  console.log('✅ Utilisateur authentifié trouvé:', {
+    email: (currentUserData as any).email,
+    role: (currentUserData as any).role
+  })
+  
+  // Vérifier la validité du token
+  if (authStore.token) {
+    try {
+      const isValid = await authStore.checkAuth()
+      if (!isValid) {
+        console.log('❌ Token invalide, redirection vers index')
+        await navigateTo('/')
+        return
+      }
+    } catch (error) {
+      console.error('❌ Erreur vérification auth:', error)
+      await navigateTo('/')
       return
     }
-    console.log('✅ Token valide')
-  } catch (error) {
-    console.error('❌ Erreur vérification auth:', error)
-    await navigateTo('/login')
-    return
   }
   
   console.log('✅ Auth valide, chargement des conversations')
   
-  // Ajouter un délai pour s'assurer que tout est prêt
-  await nextTick()
-  
   try {
     await loadConversations()
+    // Démarrer le rafraîchissement automatique après le premier chargement
+    startAutoRefresh()
   } catch (err) {
-    console.error('❌ Erreur finale lors du chargement:', err)
+    console.error('❌ Erreur lors du chargement:', err)
     error.value = 'Impossible de charger les conversations. Veuillez rafraîchir la page.'
   }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateScreenSize)
+  // Arrêter le rafraîchissement automatique
+  stopAutoRefresh()
 })
 
 // Nouvel état pour la modal
@@ -1016,10 +1306,9 @@ const formatFileSize = (bytes: number): string => {
 
 const downloadFile = async (fichierId: number) => {
   try {
+    const authHeaders = getAuthHeaders()
     const response = await fetch(`${config.public.apiBase}/files/${fichierId}`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
+      headers: authHeaders
     })
     
     if (response.ok) {
@@ -1045,10 +1334,7 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
       reactions: Record<string, string[]>
     }>(`${config.public.apiBase}/messages/${messageId}/reactions`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: { emoji }
     })
     
@@ -1071,7 +1357,7 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
 const debugAuth = async () => {
   console.log('=== DEBUG AUTHENTIFICATION ===')
   console.log('Auth Store State:', {
-    user: authStore.user,
+    user: currentUser.value,
     token: authStore.token,
     isAuthenticated: authStore.isAuthenticated,
     isLoggedIn: authStore.isLoggedIn
@@ -1171,6 +1457,21 @@ const debugAuth = async () => {
 .badge-leave-to {
   opacity: 0;
   transform: scale(0.3);
+}
+
+/* Animation pour les notifications */
+.slide-down-enter-active, .slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
 }
 
 /* Pulse animation pour attirer l'attention */
