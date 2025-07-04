@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden font-sans">
     <!-- Bulles de fond décoratives -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-400 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-400 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-60"></div>
 
     <!-- Bandeau sticky -->
     <div class="flex justify-between items-center p-4 bg-white bg-opacity-80 backdrop-blur-sm border-b border-white border-opacity-50 sticky top-0 z-30 w-[90vw] mx-auto mt-4 rounded-2xl shadow-md">
@@ -19,7 +19,21 @@
 
     <!-- Tableau -->
     <div class="w-[90vw] max-w-full h-[80vh] mx-auto mt-6 bg-white bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden relative z-10">
-      <div class="overflow-auto h-full" ref="scrollDiv">
+      <div class="relative overflow-auto h-full" ref="scrollDiv">
+        <!-- Heure à gauche de la ligne -->
+        <div
+          class="absolute left-2 text-xs text-[#ff2e2e] font-semibold z-50 pointer-events-none select-none"
+          :style="{ top: (currentTimePosition - 6) + 'px' }"
+        >
+          {{ currentTimeLabel }}
+        </div>
+
+        <!-- Ligne de l'heure actuelle -->
+        <div
+          class="absolute left-20 right-0 h-[2px] bg-[#ff2e2e] z-40 pointer-events-none rounded-full"
+          :style="{ top: currentTimePosition + 'px' }"
+        />
+
         <table class="min-w-full table-fixed border-separate border-spacing-0 text-sm text-gray-700">
           <thead>
             <tr class="sticky top-0 z-20 bg-white bg-opacity-80 backdrop-blur border-b border-white">
@@ -53,22 +67,10 @@
                 :class="[
                   'h-1 w-28 border-r border-gray-200 transition-all duration-100 hover:bg-cyan-100 cursor-pointer',
                   dateIsToday(date) ? 'bg-cyan-50' : '',
-                  (i) % 12 === 0 ? 'border-b border-gray-300' : '',
-                  getSlotColor(date, Math.floor((i-1)/12), ((i-1)%12)*5),
-                  hasVisite(date, Math.floor((i-1)/12), ((i-1)%12)*5) ? 'text-white font-medium' : '',
-                  (getCurrentSlotIndex().i === i && getCurrentSlotIndex().idx === idx)
-                    ? 'border-t-2 border-[#0097b2] font-bold' : ''
+                  (i) % 12 === 0 ? 'border-b border-gray-300' : ''
                 ]"
                 @click="handleSlotClick(date, Math.floor((i-1)/12), ((i-1)%12)*5)"
               >
-                <template v-if="isStartOfVisite(date, Math.floor((i-1)/12), ((i-1)%12)*5)">
-                  <div class="truncate">
-                    {{ getVisiteForSlot(date, Math.floor((i-1)/12), ((i-1)%12)*5)?.motif_visite }}
-                  </div>
-                  <div class="text-xs">
-                    {{ getDureeVisite(getVisiteForSlot(date, Math.floor((i-1)/12), ((i-1)%12)*5)) }}
-                  </div>
-                </template>
               </td>
             </tr>
           </tbody>
@@ -77,14 +79,17 @@
     </div>
 
     <!-- Popups -->
-    <Notif @refreshPlanning="fetchVisites" />
-    <VisitePopup :show="popupOpen" :slotDate="popupDate" :visite="popupVisite" @close="popupOpen = false" />
+    <Notif  />
+  </div>
+
+  <div>hello
+
   </div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import VisitePopup from '@/components/VisitePopup.vue'
@@ -93,8 +98,9 @@ import Notif from '@/components/notif.vue'
 const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const today = new Date()
 const weekOffset = ref(0)
-const visites = ref([])
 
+
+//fonction du front (semaine, affichage, etc)
 function getStartOfWeek(date) {
   const d = new Date(date)
   const day = d.getDay() || 7 // Lundi=1, Dimanche=7
@@ -121,7 +127,6 @@ function dateIsToday(date) {
     date.getFullYear() === now.getFullYear()
   )
 }
-
 function prevWeek() {
   weekOffset.value--
 }
@@ -136,7 +141,7 @@ function formatDate(date) {
 const scrollDiv = ref(null)
 
 onMounted(async () => {
-  await fetchVisites()
+  //await fetchVisites() ////feeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
   nextTick(() => {
     if (scrollDiv.value) {
       scrollDiv.value.scrollTop = scrollDiv.value.scrollHeight / 3.2
@@ -144,100 +149,123 @@ onMounted(async () => {
   })
 })
 
-async function fetchVisites() {
-  try {
-    const response = await axios.get('http://localhost:8000/api/visite')
-    visites.value = response.data
-  } catch (error) {
-    console.error('Erreur API visites:', error)
-  }
-}
+const currentTimeLabel = ref('')
 
-function hasVisite(date, hour, minute) {
-  const slotStart = new Date(date)
-  slotStart.setHours(hour, minute, 0, 0)
-  return visites.value.some(visite => {
-    const start = new Date(visite.date_visite_start)
-    const end = new Date(visite.date_visite_end)
-    return slotStart >= start && slotStart < end
-  })
-}
-
-function isStartOfVisite(date, hour, minute) {
-  const slotTime = new Date(date)
-  slotTime.setHours(hour, minute, 0, 0)
-  return visites.value.some(visite => {
-    const start = new Date(visite.date_visite_start)
-    return slotTime.getTime() === start.getTime()
-  })
-}
-
-function getVisiteForSlot(date, hour, minute) {
-  const slotStart = new Date(date)
-  slotStart.setHours(hour, minute, 0, 0)
-  return visites.value.find(visite => {
-    const start = new Date(visite.date_visite_start)
-    const end = new Date(visite.date_visite_end)
-    return slotStart >= start && slotStart < end
-  })
-}
-
-function getDureeVisite(visite) {
-  if (!visite) return ''
-  const start = new Date(visite.date_visite_start)
-  const end = new Date(visite.date_visite_end)
-  const diffMs = end - start
-  const minutes = Math.floor(diffMs / 60000)
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return `${h > 0 ? h + 'h' : ''}${m > 0 ? m + 'min' : ''}`
-}
-
-const popupOpen = ref(false)
-const popupDate = ref(null)
-const popupVisite = ref(null)
-
-function handleSlotClick(date, hour, minute) {
-  const visite = getVisiteForSlot(date, hour, minute)
-  if (visite) {
-    popupVisite.value = visite
-    popupDate.value = new Date(date)
-    popupDate.value.setHours(hour, minute, 0, 0)
-    popupOpen.value = true
-  }
-}
-
-function getSlotColor(date, hour, minute) {
-  const slotStart = new Date(date)
-  slotStart.setHours(hour, minute, 0, 0)
-  const visite = visites.value.find(visite => {
-    const start = new Date(visite.date_visite_start)
-    const end = new Date(visite.date_visite_end)
-    return slotStart >= start && slotStart < end
-  })
-  if (!visite) return ''
-  switch (visite.statut_visite) {
-    case 'programmee': return 'bg-blue-400'
-    case 'terminee': return 'bg-green-500'
-    case 'annulee': return 'bg-gray-400'
-    case 'en_attente': return 'bg-yellow-400'
-    default: return 'bg-green-500'
-  }
-}
-
-function getCurrentSlotIndex() {
+function updateCurrentTimePosition() {
   const now = new Date()
-  const todayIdx = weekDates.value.findIndex(date =>
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear()
-  )
-  if (todayIdx === -1) return { i: -1, idx: -1 }
-  const minutes = now.getHours() * 60 + now.getMinutes()
-  const slot = Math.floor(minutes / 5) + 1
-  return { i: slot, idx: todayIdx }
+  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
+  const totalMinutesInDay = 24 * 60
+  const tableHeight = 80 * 16
+
+  currentTimePosition.value = (minutesSinceMidnight / totalMinutesInDay) * tableHeight
+
+  const h = now.getHours().toString().padStart(2, '0')
+  const m = now.getMinutes().toString().padStart(2, '0')
+  currentTimeLabel.value = `${h}:${m}`
 }
+const currentTimePosition = ref(0)
+
+onMounted(() => {
+  updateCurrentTimePosition()
+  setInterval(updateCurrentTimePosition, 60000) // update every minute
+})
+
+//backend
+
+definePageMeta({
+  middleware: 'auth'
+})
+
+const authStore = useAuthStore()
+const config = useRuntimeConfig()
+
+interface Visite {
+  id_visite: number                // Identifiant unique de la visite
+  email_visiteur: string          // Email du visiteur
+  id_invitation: number           // Identifiant de l'invitation liée
+  motif_visite: string            // Motif ou sujet de la visite
+  date_visite_start: string       // Date et heure de début (ISO string)
+  date_visite_end: string         // Date et heure de fin (ISO string)
+  statut_visite: 'terminee' | 'en_attente' | 'annulee' | 'programmee' // Statut de la visite
+}
+
+
+/*
+
+  async function fetchVisites() {
+    try {
+      const response = await axios.get('http://localhost:8000/api/visite')
+      visites.value = response.data
+    } catch (error) {
+      console.error('Erreur API visites:', error)
+    }
+  }
+  function hasVisite(date, hour, minute) {
+    const slotStart = new Date(date)
+    slotStart.setHours(hour, minute, 0, 0)
+    return visites.value.some(visite => {
+      const start = new Date(visite.date_visite_start)
+      const end = new Date(visite.date_visite_end)
+      return slotStart >= start && slotStart < end
+    })
+  }
+  function isStartOfVisite(date, hour, minute) {
+    const slotTime = new Date(date)
+    slotTime.setHours(hour, minute, 0, 0)
+    return visites.value.some(visite => {
+      const start = new Date(visite.date_visite_start)
+      return slotTime.getTime() === start.getTime()
+    })
+  }
+  function getVisiteForSlot(date, hour, minute) {
+    const slotStart = new Date(date)
+    slotStart.setHours(hour, minute, 0, 0)
+    return visites.value.find(visite => {
+      const start = new Date(visite.date_visite_start)
+      const end = new Date(visite.date_visite_end)
+      return slotStart >= start && slotStart < end
+    })
+  }
+  function getDureeVisite(visite) {
+    if (!visite) return ''
+    const start = new Date(visite.date_visite_start)
+    const end = new Date(visite.date_visite_end)
+    const diffMs = end - start
+    const minutes = Math.floor(diffMs / 60000)
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return `${h > 0 ? h + 'h' : ''}${m > 0 ? m + 'min' : ''}`
+  }
+  function handleSlotClick(date, hour, minute) {
+    const visite = getVisiteForSlot(date, hour, minute)
+    if (visite) {
+      popupVisite.value = visite
+      popupDate.value = new Date(date)
+      popupDate.value.setHours(hour, minute, 0, 0)
+      popupOpen.value = true
+    }
+  }
+  function getSlotColor(date, hour, minute) {
+    const slotStart = new Date(date)
+    slotStart.setHours(hour, minute, 0, 0)
+    const visite = visites.value.find(visite => {
+      const start = new Date(visite.date_visite_start)
+      const end = new Date(visite.date_visite_end)
+      return slotStart >= start && slotStart < end
+    })
+    if (!visite) return ''
+    switch (visite.statut_visite) {
+      case 'programmee': return 'bg-blue-400'
+      case 'terminee': return 'bg-green-500'
+      case 'annulee': return 'bg-gray-400'
+      case 'en_attente': return 'bg-yellow-400'
+      default: return 'bg-green-500'
+    }
+  }
+*/
+
 </script>
+
 
 <style>
 /* Masquer la scrollbar pour tous les navigateurs */
@@ -247,21 +275,6 @@ function getCurrentSlotIndex() {
 .overflow-auto {
   -ms-overflow-style: none;  /* IE et Edge */
   scrollbar-width: none;     /* Firefox */
-}
-
-/* Ajoute ceci dans ton <style> */
-.no-border-right {
-  border-right: none !important;
-}
-</style>
-
-<style>
-.overflow-auto::-webkit-scrollbar {
-  width: 8px;
-}
-.overflow-auto::-webkit-scrollbar-thumb {
-  background-color: #0097b2;
-  border-radius: 4px;
 }
 .no-border-right {
   border-right: none !important;
