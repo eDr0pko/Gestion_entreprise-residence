@@ -6,41 +6,20 @@ export default defineNuxtRouteMiddleware((to, from) => {
     authStore.initAuth()
   }
 
-  // Vérifier si l'utilisateur est authentifié
-  if (!authStore.isAuthenticated || !authStore.token) {
-    console.log('Middleware auth: utilisateur non authentifié, redirection vers /login')
-    return navigateTo('/login')
+  // Vérifier si l'utilisateur est authentifié (membre ou invité)
+  if (!authStore.isAuthenticated) {
+    console.log('Middleware auth: utilisateur non authentifié, redirection vers /')
+    return navigateTo('/')
   }
 
-  console.log('Middleware auth: utilisateur authentifié', {
-    user: authStore.user?.email,
-    token: !!authStore.token
-  })
+  console.log('Middleware auth: utilisateur authentifié:', authStore.user)
 
-  // Vérifier les autorisations selon la route
-  const user = authStore.user
-  if (user) {
-    // Routes spécifiques aux admins
-    if (to.path.startsWith('/admin') && user.role !== 'admin') {
+  // Vérifications de rôles pour les routes admin (seulement pour les membres)
+  if (to.path.startsWith('/admin')) {
+    if (authStore.userRole !== 'admin') {
       throw createError({
         statusCode: 403,
-        statusMessage: 'Accès refusé'
-      })
-    }
-
-    // Routes spécifiques aux gardiens
-    if (to.path.startsWith('/gardien') && user.role !== 'gardien') {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Accès refusé'
-      })
-    }
-
-    // Routes spécifiques aux résidents
-    if (to.path.startsWith('/resident') && user.role !== 'resident') {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Accès refusé'
+        statusMessage: 'Accès refusé - Réservé aux administrateurs'
       })
     }
   }

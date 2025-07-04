@@ -3,7 +3,7 @@
 -- Creation de la base de données
 CREATE DATABASE IF NOT EXISTS gestion_entreprise_residence;
 USE gestion_entreprise_residence;
-DROP TABLE IF EXISTS invite, message_fichier, message_reaction, message_statut, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
+DROP TABLE IF EXISTS invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
 
 
 -- TABLE personne
@@ -11,16 +11,17 @@ CREATE TABLE personne (
   email VARCHAR(255) NOT NULL,
   nom VARCHAR(45) NOT NULL,
   prenom VARCHAR(45) NOT NULL,
-  mot_de_passe VARCHAR(255) NULL, -- Peut être NULL si la personne est un invité
+  mot_de_passe VARCHAR(255) NOT NULL, -- Mot de passe requis pour tous les utilisateurs
   numero_telephone VARCHAR(20) NOT NULL,
   PRIMARY KEY(email)
 );
 
--- TABLE admin
+-- TABLE admin (suppression du mot de passe redondant)
 CREATE TABLE admin (
   id_admin INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   email_personne VARCHAR(255) NOT NULL,
-  mot_de_passe_admin VARCHAR(255) NOT NULL,
+  niveau_acces ENUM('super_admin', 'admin_standard') DEFAULT 'admin_standard',
+  date_nomination TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(id_admin),
   UNIQUE KEY(email_personne),
   FOREIGN KEY(email_personne) REFERENCES personne(email) ON DELETE CASCADE
@@ -45,10 +46,12 @@ CREATE TABLE resident (
   FOREIGN KEY(email_personne) REFERENCES personne(email) ON DELETE CASCADE
 );
 
--- TABLE ban (appartement/logement)
+-- TABLE ban (appartement/logement avec motif de bannissement)
 CREATE TABLE ban (
   id_ban INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   email_proprietaire VARCHAR(255) NOT NULL,
+  motif TEXT NULL, -- Motif du bannissement (peut être nul)
+  date_ban TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(id_ban),
   INDEX ban_FKIndex1(email_proprietaire),
   FOREIGN KEY(email_proprietaire) REFERENCES personne(email) ON DELETE CASCADE
@@ -122,21 +125,6 @@ CREATE TABLE personal_access_tokens (
   INDEX personal_access_tokens_tokenable_type_tokenable_id_index(tokenable_type, tokenable_id)
 );
 
--- TABLE pour les statuts de lecture avancés
-CREATE TABLE message_statut (
-  id_statut INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  id_message INTEGER UNSIGNED NOT NULL,
-  email_personne VARCHAR(255) NOT NULL, -- Email de la personne (résidente ou invitée)
-  statut ENUM('envoye', 'recu', 'lu') DEFAULT 'recu',
-  date_statut TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY(id_statut),
-  UNIQUE KEY unique_message_personne(id_message, email_personne),
-  INDEX message_statut_FKIndex1(id_message),
-  INDEX message_statut_FKIndex2(email_personne),
-  FOREIGN KEY(id_message) REFERENCES message(id_message) ON DELETE CASCADE,
-  FOREIGN KEY(email_personne) REFERENCES personne(email) ON DELETE CASCADE
-);
-
 -- TABLE pour les réactions aux messages
 CREATE TABLE message_reaction (
   id_reaction INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -167,12 +155,19 @@ CREATE TABLE message_fichier (
   FOREIGN KEY(id_message) REFERENCES message(id_message) ON DELETE CASCADE
 );
 
--- TABLE pour les invités (flag pour indiquer qu'une personne est un invité)
+-- TABLE pour les invités (avec informations complémentaires)
 CREATE TABLE invite (
   email VARCHAR(255) NOT NULL,
   actif BOOLEAN DEFAULT TRUE,
+  date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date_expiration TIMESTAMP NULL, -- Date d'expiration optionnelle
+  invite_par VARCHAR(255) NULL, -- Email du résident qui a invité
+  commentaire TEXT NULL, -- Commentaire sur l'invité
   PRIMARY KEY(email),
-  FOREIGN KEY(email) REFERENCES personne(email) ON DELETE CASCADE
+  INDEX idx_actif (actif),
+  INDEX idx_expiration (date_expiration),
+  FOREIGN KEY(email) REFERENCES personne(email) ON DELETE CASCADE,
+  FOREIGN KEY(invite_par) REFERENCES personne(email) ON DELETE SET NULL
 );
 
 
@@ -225,10 +220,10 @@ INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
 ('zoe.fer@residence.com', 'Fer', 'Zoe', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0567890125'),
 ('gabriel.plomb@residence.com', 'Plomb', 'Gabriel', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0678901236');
 
--- Insertion des administrateurs
-INSERT INTO admin (email_personne, mot_de_passe_admin) VALUES
-('admin@residence.com', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq'),
-('admin2@residence.com', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq');
+-- Insertion des administrateurs (suppression du mot de passe redondant)
+INSERT INTO admin (email_personne, niveau_acces) VALUES
+('admin@residence.com', 'super_admin'),
+('admin2@residence.com', 'admin_standard');
 
 -- Insertion des gardiens
 INSERT INTO gardien (email_personne) VALUES
@@ -272,12 +267,12 @@ INSERT INTO resident (email_personne, adresse_logement) VALUES
 ('zoe.fer@residence.com', 'Batiment C - Appartement 305'),
 ('gabriel.plomb@residence.com', 'Batiment C - Appartement 306');
 
--- Insertion des bans (logements) - Corriger pour avoir suffisamment de bans
-INSERT INTO ban (email_proprietaire) VALUES
-('paul.moreau@residence.com'),
-('marie.durand@residence.com'),
-('sarah.bleu@residence.com'),
-('elise.bronze@residence.com');
+-- Insertion des bans (logements) avec motifs
+INSERT INTO ban (email_proprietaire, motif) VALUES
+('paul.moreau@residence.com', 'Nuisances sonores répétées malgré avertissements'),
+('marie.durand@residence.com', NULL), -- Pas de motif spécifique renseigné
+('sarah.bleu@residence.com', 'Non-respect du règlement de copropriété'),
+('elise.bronze@residence.com', 'Dégradations volontaires des parties communes');
 
 -- Insertion des groupes de message
 INSERT INTO groupe_message (nom_groupe, date_creation) VALUES
@@ -380,6 +375,17 @@ INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexi
 ('admin2@residence.com', 6, '2025-06-30 14:30:00'),
 ('gardien@residence.com', 6, '2025-06-30 09:30:00');
 
+-- Événements et Festivités (Groupe 7)
+INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexion) VALUES
+('admin@residence.com', 7, '2025-06-30 14:10:00'),
+('marie.durand@residence.com', 7, '2025-06-30 12:30:00'),
+('julie.petit@residence.com', 7, '2025-06-30 11:45:00'),
+('sarah.bleu@residence.com', 7, '2025-06-30 16:20:00'),
+('manon.gris@residence.com', 7, '2025-06-30 13:15:00'),
+('elise.bronze@residence.com', 7, '2025-06-30 10:45:00'),
+('camille.platine@residence.com', 7, '2025-06-30 09:30:00'),
+('alice.dore@residence.com', 7, '2025-06-30 08:15:00');
+
 -- Messages du Groupe General Residence
 INSERT INTO message (id_groupe_message, email_auteur, contenu_message, date_envoi) VALUES
 (1, 'admin@residence.com', 'Bienvenue dans le systeme de gestion de la residence ! Nhesitez pas a utiliser cette plateforme pour communiquer.', '2025-06-25 09:00:00'),
@@ -458,23 +464,32 @@ INSERT INTO message (id_groupe_message, email_auteur, contenu_message, date_envo
 (10, 'lucas.noir@residence.com', 'Excellente idee Arthur ! Je suis joueur regulier, on peut faire des doubles !', '2025-06-29 16:30:00'),
 (10, 'paul.moreau@residence.com', 'Super ! On pourrait faire jogging le matin, tennis lapres-midi ?', '2025-06-29 17:00:00');
 
--- Insertion d'invités (personnes sans mot de passe)
+-- Insertion d'invités (avec mot de passe)
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
-('visiteur1@email.com', 'Dupont', 'Pierre', NULL, '0612345678'),
-('visiteur2@email.com', 'Martin', 'Sophie', NULL, '0698765432'),
-('famille.invitee@email.com', 'Famille', 'Invitée', NULL, '0656781234');
+('visiteur1@email.com', 'Dupont', 'Pierre', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0612345678'),
+('visiteur2@email.com', 'Martin', 'Sophie', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0698765432'),
+('famille.invitee@email.com', 'Famille', 'Invitée', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0656781234'),
+('invite.temp@email.com', 'Temporaire', 'Invité', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0612987654'),
+('ami.resident@email.com', 'Ami', 'Résident', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0687654321'),
+('visiteur.weekend@email.com', 'Weekend', 'Visiteur', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '0643218765');
 
--- Marquage de ces personnes comme invités
-INSERT INTO invite (email, actif) VALUES
-('visiteur1@email.com', TRUE),
-('visiteur2@email.com', TRUE),
-('famille.invitee@email.com', TRUE);
+-- Marquage de ces personnes comme invités (avec informations complémentaires)
+INSERT INTO invite (email, actif, invite_par, commentaire) VALUES
+('visiteur1@email.com', TRUE, 'marie.durand@residence.com', 'Ami proche, visite régulière'),
+('visiteur2@email.com', TRUE, 'marie.durand@residence.com', 'Visite amicale temporaire'),
+('famille.invitee@email.com', TRUE, 'paul.moreau@residence.com', 'Famille en visite weekend'),
+('invite.temp@email.com', TRUE, NULL, 'Invité temporaire sans parrain spécifique'),
+('ami.resident@email.com', TRUE, 'thomas.roux@residence.com', 'Ami découvrant la résidence'),
+('visiteur.weekend@email.com', TRUE, 'sarah.bleu@residence.com', 'Visiteur événements weekend');
 
 -- Insertion des visites liées aux invités
-INSERT INTO visite (email_invite, email_visiteur, motif_visite, statut_visite, date_visite) VALUES
-('visiteur1@email.com', 'visiteur1@email.com', 'Visite de courtoisie - participation événements', 'terminee', '2025-06-25 10:00:00'),
-('visiteur2@email.com', 'visiteur2@email.com', 'Visite amicale - séjour temporaire', 'terminee', '2025-06-26 14:00:00'),
-('famille.invitee@email.com', 'famille.invitee@email.com', 'Visite familiale weekend', 'programmee', '2025-07-01 10:00:00');
+INSERT INTO visite (email_invite, email_visiteur, motif_visite, statut_visite, date_visite_start, date_visite_end) VALUES
+('visiteur1@email.com', 'visiteur1@email.com', 'Visite de courtoisie - participation événements', 'terminee', '2025-06-25 10:00:00', '2025-06-25 18:00:00'),
+('visiteur2@email.com', 'visiteur2@email.com', 'Visite amicale - séjour temporaire', 'terminee', '2025-06-26 14:00:00', '2025-06-28 16:00:00'),
+('famille.invitee@email.com', 'famille.invitee@email.com', 'Visite familiale weekend', 'programmee', '2025-07-01 10:00:00', '2025-07-03 18:00:00'),
+('ami.resident@email.com', 'ami.resident@email.com', 'Visite d ami - découverte résidence', 'en_cours', '2025-07-01 09:00:00', '2025-07-02 20:00:00'),
+('visiteur.weekend@email.com', 'visiteur.weekend@email.com', 'Visite weekend - événements', 'programmee', '2025-07-05 16:00:00', '2025-07-07 12:00:00'),
+('visiteur1@email.com', 'visiteur1@email.com', 'Seconde visite - reunion résidents', 'programmee', '2025-07-15 18:00:00', '2025-07-15 21:00:00');
 
 -- Ajout des invités aux groupes de message (via personne_groupe)
 INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexion) VALUES
@@ -483,23 +498,52 @@ INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexi
 ('visiteur2@email.com', 1, '2025-06-30 15:30:00'), -- Groupe général
 ('visiteur2@email.com', 7, '2025-06-30 15:30:00'), -- Événements et festivités
 ('famille.invitee@email.com', 1, '2025-06-30 18:45:00'), -- Groupe général
-('famille.invitee@email.com', 2, '2025-06-30 18:45:00'); -- Bâtiment A
+('famille.invitee@email.com', 2, '2025-06-30 18:45:00'), -- Bâtiment A
+('ami.resident@email.com', 1, '2025-07-01 09:00:00'), -- Groupe général
+('ami.resident@email.com', 7, '2025-07-01 09:00:00'), -- Événements et festivités
+('visiteur.weekend@email.com', 1, '2025-07-01 16:00:00'), -- Groupe général
+('visiteur.weekend@email.com', 7, '2025-07-01 16:00:00'); -- Événements et festivités
 
 -- Messages d'exemple envoyés par des invités
 INSERT INTO message (id_groupe_message, email_auteur, contenu_message, date_envoi) VALUES
-(7, 'visiteur1@email.com', 'Merci beaucoup pour l\'invitation à la fête des voisins ! J\'ai hâte de vous rencontrer tous !', '2025-06-30 10:00:00'),
-(1, 'visiteur2@email.com', 'Bonjour tout le monde ! Je suis Sophie, amie de Marie. Merci de m\'inclure dans vos échanges pendant ma visite.', '2025-06-30 15:30:00'),
-(1, 'famille.invitee@email.com', 'Bonsoir, nous sommes la famille invitée par Paul. Nous serons là ce weekend, au plaisir de vous rencontrer !', '2025-06-30 18:45:00');
+(7, 'visiteur1@email.com', 'Merci beaucoup pour l invitation à la fête des voisins ! J ai hâte de vous rencontrer tous !', '2025-06-30 10:00:00'),
+(1, 'visiteur2@email.com', 'Bonjour tout le monde ! Je suis Sophie, amie de Marie. Merci de m inclure dans vos échanges pendant ma visite.', '2025-06-30 15:30:00'),
+(1, 'famille.invitee@email.com', 'Bonsoir, nous sommes la famille invitée par Paul. Nous serons là ce weekend, au plaisir de vous rencontrer !', '2025-06-30 18:45:00'),
+(7, 'visiteur.weekend@email.com', 'Bonjour ! J aimerais participer aux événements du weekend si c est possible !', '2025-07-01 16:30:00'),
+(1, 'marie.durand@residence.com', 'Bienvenue à tous nos invités ! N hésitez pas à poser des questions si vous en avez.', '2025-07-01 17:00:00');
 
 -- Ajout des invités temporaires au groupe Événements et Festivités pour qu'ils puissent recevoir les messages
-INSERT INTO personne_groupe (email_personne, id_groupe_message, derniere_connexion) VALUES
-('admin@residence.com', 7, '2025-06-30 14:10:00'),
-('marie.durand@residence.com', 7, '2025-06-30 12:30:00'),
-('julie.petit@residence.com', 7, '2025-06-30 11:45:00'),
-('sarah.bleu@residence.com', 7, '2025-06-30 16:20:00'),
-('manon.gris@residence.com', 7, '2025-06-30 13:15:00'),
-('elise.bronze@residence.com', 7, '2025-06-30 10:45:00'),
-('camille.platine@residence.com', 7, '2025-06-30 09:30:00'),
-('alice.dore@residence.com', 7, '2025-06-30 08:15:00');
+-- SUPPRESSION DE CETTE SECTION - DOUBLONS DÉTECTÉS
+-- Les personnes suivantes sont déjà assignées au groupe 7 via d'autres insertions ou doivent être ajoutées dans la section appropriée
+-- Cette section créait des doublons avec les clés uniques (email_personne, id_groupe_message)
+
+-- Exemples de réactions aux messages
+
+
+-- Exemples de fichiers partagés dans les messages
+INSERT INTO message_fichier (id_message, nom_fichier, nom_original, chemin_fichier, type_fichier, taille_fichier, date_upload) VALUES
+(5, 'reglement_poubelles_20250626.pdf', 'Règlement Poubelles.pdf', '/uploads/documents/reglement_poubelles_20250626.pdf', 'application/pdf', 245760, '2025-06-26 08:05:00'),
+(9, 'planning_maintenance_juillet.xlsx', 'Planning Maintenance Juillet.xlsx', '/uploads/documents/planning_maintenance_juillet.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 128540, '2025-06-27 17:55:00');
+
+-- Mettre à jour les messages qui ont des fichiers
+UPDATE message SET a_fichiers = TRUE WHERE id_message IN (5, 9);
+
+-- ===============================================
+-- AJOUT D'INDEX POUR OPTIMISATION DES PERFORMANCES
+-- ===============================================
+
+-- Index composites pour les requêtes fréquentes
+CREATE INDEX idx_message_groupe_date ON message(id_groupe_message, date_envoi DESC);
+CREATE INDEX idx_message_auteur_date ON message(email_auteur, date_envoi DESC);
+
+-- Index pour les statistiques utilisateur
+CREATE INDEX idx_personne_groupe_connexion ON personne_groupe(email_personne, derniere_connexion DESC);
+
+-- Index pour les recherches de messages
+CREATE INDEX idx_message_contenu_fulltext ON message(contenu_message);
+
+-- Index pour les visites
+CREATE INDEX idx_visite_statut_date ON visite(statut_visite, date_visite_start);
+CREATE INDEX idx_visite_invite_date ON visite(email_invite, date_visite_start DESC);
 
 

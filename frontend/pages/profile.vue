@@ -59,11 +59,13 @@
               </p>
             </div>
             <div class="flex flex-wrap justify-center lg:justify-start gap-2">
-              <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-[#0097b2] to-[#008699] text-white shadow-lg">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-lg"
+                    :class="[roleColors.background, roleColors.text]">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     :class="roleColors.icon">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                {{ stats?.role || 'Utilisateur' }}
+                {{ userRole }}
               </span>
             </div>
           </div>
@@ -433,6 +435,10 @@ interface User {
   prenom: string
   email: string
   numero_telephone: string
+  type?: string
+  user_type?: string
+  role?: string
+  [key: string]: any // Pour les autres propriétés éventuelles
 }
 
 interface Stats {
@@ -454,6 +460,81 @@ interface ApiResponse {
 const user = computed(() => authStore.user as User | null)
 const stats = ref<Stats | null>(null)
 const loading = ref(false)
+
+// Computed pour déterminer le rôle correct de l'utilisateur
+const userRole = computed(() => {
+  // D'abord essayer d'utiliser le rôle des stats (qui vient de l'API)
+  if (stats.value?.role) {
+    return stats.value.role
+  }
+  
+  // Sinon, utiliser le rôle stocké dans l'utilisateur (défini lors de la connexion)
+  if (user.value?.role) {
+    switch (user.value.role) {
+      case 'admin': 
+        return 'Administrateur'
+      case 'gardien': 
+        return 'Gardien'
+      case 'resident': 
+        return 'Résident'
+      case 'invite': 
+        return 'Invité'
+      default: 
+        return user.value.role
+    }
+  }
+  
+  // Vérifier si l'utilisateur a des propriétés spécifiques aux invités
+  if (user.value) {
+    if (user.value.type === 'invite' || user.value.user_type === 'invite') {
+      return 'Invité'
+    }
+  }
+  
+  // Fallback par défaut
+  return 'Utilisateur'
+})
+
+// Computed pour les couleurs du rôle
+const roleColors = computed(() => {
+  const role = userRole.value.toLowerCase()
+  
+  switch (role) {
+    case 'administrateur':
+    case 'admin':
+      return {
+        background: 'bg-gradient-to-r from-red-500 to-red-600',
+        text: 'text-white',
+        icon: 'text-white'
+      }
+    case 'gardien':
+      return {
+        background: 'bg-gradient-to-r from-orange-500 to-orange-600',
+        text: 'text-white',
+        icon: 'text-white'
+      }
+    case 'résident':
+    case 'resident':
+      return {
+        background: 'bg-gradient-to-r from-[#0097b2] to-[#008699]',
+        text: 'text-white',
+        icon: 'text-white'
+      }
+    case 'invité':
+    case 'invite':
+      return {
+        background: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+        text: 'text-white',
+        icon: 'text-white'
+      }
+    default:
+      return {
+        background: 'bg-gradient-to-r from-gray-500 to-gray-600',
+        text: 'text-white',
+        icon: 'text-white'
+      }
+  }
+})
 
 // Modals
 const showEditModal = ref(false)
@@ -495,6 +576,7 @@ onMounted(async () => {
 const loadStats = async () => {
   try {
     loading.value = true
+    
     const response = await $fetch(`${config.public.apiBase}/profile/stats`, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
@@ -505,7 +587,7 @@ const loadStats = async () => {
       stats.value = response.data
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des statistiques:', error)
+    console.error('❌ [PROFILE] Erreur lors du chargement des statistiques:', error)
   } finally {
     loading.value = false
   }
@@ -805,9 +887,11 @@ const toggleMobileMenu = () => {
 const logout = async () => {
   try {
     await authStore.logout()
-    await navigateTo('/')
+    // La redirection est maintenant gérée par le store
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error)
+    // En cas d'erreur, forcer la redirection
+    await navigateTo('/')
   }
 }
 </script>

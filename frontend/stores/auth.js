@@ -103,6 +103,10 @@ export const useAuthStore = defineStore('auth', {
         console.error('Erreur lors de la déconnexion:', error)
       } finally {
         this.clearAuth()
+        // Rediriger vers la page d'accueil après déconnexion
+        if (process.client) {
+          await navigateTo('/')
+        }
       }
     },
 
@@ -146,6 +150,25 @@ export const useAuthStore = defineStore('auth', {
       if (process.client) {
         localStorage.setItem('user', JSON.stringify(this.user))
       }
+    },
+
+    // Définir l'authentification (pour inscription/connexion directe)
+    setAuth(token, user) {
+      this.token = token
+      this.user = user
+      this.isAuthenticated = true
+      
+      // Sauvegarder dans localStorage
+      if (process.client) {
+        localStorage.setItem('auth_token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+      }
+      
+      console.log('Authentification définie:', { 
+        token: !!this.token, 
+        user: this.user,
+        authenticated: this.isAuthenticated 
+      })
     },
 
     // Nettoyer l'authentification

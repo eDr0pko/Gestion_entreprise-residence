@@ -12,6 +12,26 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     /**
+     * Récupérer l'utilisateur actuel (membre ou invité)
+     */
+    private function getCurrentUser(Request $request)
+    {
+        // Avec Sanctum, l'utilisateur est disponible directement
+        $user = $request->user();
+        
+        if (!$user) {
+            \Log::info('No authenticated user found in AuthController');
+            return null;
+        }
+        
+        \Log::info('Authenticated user found in AuthController:', [
+            'email' => $user->email,
+            'class' => get_class($user)
+        ]);
+        
+        return $user;
+    }
+    /**
      * Connexion de l'utilisateur
      */
     public function login(Request $request)
@@ -176,7 +196,7 @@ class AuthController extends Controller
     public function getProfileStats(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -206,18 +226,15 @@ class AuthController extends Controller
                 ->orderBy('derniere_connexion', 'desc')
                 ->value('derniere_connexion');
 
-            // Compter les messages non lus
+            // Compter les messages non lus basé sur la dernière connexion
             $messagesNonLus = DB::table('message')
                 ->join('personne_groupe', 'message.id_groupe_message', '=', 'personne_groupe.id_groupe_message')
-                ->leftJoin('message_statut', function($join) use ($user) {
-                    $join->on('message.id_message', '=', 'message_statut.id_message')
-                         ->where('message_statut.email_personne', '=', $user->email);
-                })
                 ->where('personne_groupe.email_personne', $user->email)
-                ->where('message.email_auteur', '!=', $user->email)
+                ->where('message.email_auteur', '!=', $user->email) // Exclure ses propres messages
                 ->where(function($query) {
-                    $query->whereNull('message_statut.statut')
-                          ->orWhere('message_statut.statut', '!=', 'lu');
+                    // Messages envoyés après la dernière connexion OU jamais connecté
+                    $query->whereColumn('message.date_envoi', '>', 'personne_groupe.derniere_connexion')
+                          ->orWhereNull('personne_groupe.derniere_connexion');
                 })
                 ->count();
 
@@ -227,6 +244,8 @@ class AuthController extends Controller
                 $role = 'Administrateur';
             } elseif (DB::table('gardien')->where('email_personne', $user->email)->exists()) {
                 $role = 'Gardien';
+            } elseif (DB::table('invite')->where('email', $user->email)->exists()) {
+                $role = 'Invité';
             }
 
             // Date d'inscription (estimation basée sur la première participation à un groupe)
@@ -265,7 +284,7 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -322,7 +341,7 @@ class AuthController extends Controller
     public function verifyPassword(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -371,7 +390,7 @@ class AuthController extends Controller
     public function updatePassword(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
@@ -428,7 +447,7 @@ class AuthController extends Controller
     public function uploadAvatar(Request $request)
     {
         try {
-            $user = Auth::user();
+            $user = $this->getCurrentUser($request);
             
             if (!$user) {
                 return response()->json([
