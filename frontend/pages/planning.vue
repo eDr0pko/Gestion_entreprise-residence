@@ -1,36 +1,34 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <!-- Bandeau du haut sticky -->
-    <div class="flex justify-between items-center p-4 border-b bg-white sticky top-0 z-30">
-      <button @click="prevWeek" class="px-3 py-1 border bg-white text-gray-700 hover:bg-gray-100 transition">
+  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden font-sans">
+    <!-- Bulles de fond décoratives -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
+
+    <!-- Bandeau sticky -->
+    <div class="flex justify-between items-center p-4 bg-white bg-opacity-80 backdrop-blur-sm border-b border-white border-opacity-50 sticky top-0 z-30 w-[90vw] mx-auto mt-4 rounded-2xl shadow-md">
+      <button @click="prevWeek" class="px-4 py-2 bg-gradient-to-r from-[#0097b2] to-[#008699] text-white rounded-xl shadow hover:scale-105 transition-transform">
         ← Semaine précédente
       </button>
-      <div class="font-bold text-base text-gray-800">
+      <div class="font-semibold text-gray-700 text-lg">
         Semaine du {{ formatDate(weekDates[0]) }} au {{ formatDate(weekDates[6]) }}
       </div>
-      <button @click="nextWeek" class="px-3 py-1 border bg-white text-gray-700 hover:bg-gray-100 transition">
+      <button @click="nextWeek" class="px-4 py-2 bg-gradient-to-r from-[#0097b2] to-[#008699] text-white rounded-xl shadow hover:scale-105 transition-transform">
         Semaine suivante →
       </button>
     </div>
-    <div class="w-[80vw] max-w-full h-[80vh] mx-auto bg-gray-100 flex flex-col">
-      <div class="overflow-auto flex-1" ref="scrollDiv">
-        <table class="min-w-full border-collapse table-fixed">
+
+    <!-- Tableau -->
+    <div class="w-[90vw] max-w-full h-[80vh] mx-auto mt-6 bg-white bg-opacity-70 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden relative z-10">
+      <div class="overflow-auto h-full" ref="scrollDiv">
+        <table class="min-w-full table-fixed border-separate border-spacing-0 text-sm text-gray-700">
           <thead>
-            <tr class="sticky top-0 z-20 bg-white">
-              <th class="w-20 min-w-20 max-w-20 bg-white border-r border-b"></th>
-              <th
-                v-for="(date, idx) in weekDates"
-                :key="idx"
-                class="py-2 px-2 border-b border-r text-center w-28 min-w-28 max-w-28"
-                :class="[
-                  idx === 5 || idx === 6 ? 'text-pink-600 font-semibold' : '',
-                  dateIsToday(date) ? 'bg-blue-100 border-blue-400' : ''
-                ]"
-              >
-                <div :class="dateIsToday(date) ? 'text-blue-700 font-bold' : 'text-gray-700 font-semibold'">
+            <tr class="sticky top-0 z-20 bg-white bg-opacity-80 backdrop-blur border-b border-white">
+              <th class="w-20"></th>
+              <th v-for="(date, idx) in weekDates" :key="idx" class="py-3 px-2 w-28 text-center border-r border-gray-200">
+                <div :class="dateIsToday(date) ? 'text-[#0097b2] font-bold' : 'font-medium'">
                   {{ days[idx] }}
                 </div>
-                <div :class="dateIsToday(date) ? 'text-blue-700 font-bold' : 'text-gray-500'">
+                <div class="text-xs text-gray-500">
                   {{ date.getDate().toString().padStart(2, '0') }} / {{ (date.getMonth()+1).toString().padStart(2, '0') }}
                 </div>
               </th>
@@ -40,11 +38,11 @@
             <tr
               v-for="i in 288"
               :key="i"
-              :class="i % 24 === 0 ? 'bg-gray-50' : (Math.floor((i-1)/12) % 2 === 0 ? 'bg-gray-50' : 'bg-white')"
+              :class="(i % 24 === 0) ? 'bg-white bg-opacity-30' : (Math.floor((i-1)/12) % 2 === 0 ? 'bg-white bg-opacity-20' : 'bg-transparent')"
             >
               <td
                 v-if="(i-1) % 12 === 0"
-                class="text-right pr-3 border-r border-b border-gray-600 bg-white text-xs font-mono text-gray-400 w-20 align-top h-3"
+                class="text-right pr-3 text-xs font-mono text-gray-400 w-20 align-top h-3"
                 :rowspan="12"
               >
                 {{ String(Math.floor((i-1)/12)).padStart(2, '0') }}:00
@@ -53,22 +51,21 @@
                 v-for="(date, idx) in weekDates"
                 :key="idx"
                 :class="[
-                  'border-r border-gray-200 h-1 w-28 min-w-28 max-w-28',
-                  dateIsToday(date) ? 'bg-blue-100' : '',
-                  (i) % 12 === 0 ? 'border-b border-gray-800' : '',
+                  'h-1 w-28 border-r border-gray-200 transition-all duration-100 hover:bg-cyan-100 cursor-pointer',
+                  dateIsToday(date) ? 'bg-cyan-50' : '',
+                  (i) % 12 === 0 ? 'border-b border-gray-300' : '',
                   getSlotColor(date, Math.floor((i-1)/12), ((i-1)%12)*5),
-                  hasVisite(date, Math.floor((i-1)/12), ((i-1)%12)*5) ? 'cursor-pointer text-white' : '',
+                  hasVisite(date, Math.floor((i-1)/12), ((i-1)%12)*5) ? 'text-white font-medium' : '',
                   (getCurrentSlotIndex().i === i && getCurrentSlotIndex().idx === idx)
-                    ? 'border-t-2 border-red-600 font-bold no-border-right'
-                    : ''
+                    ? 'border-t-2 border-[#0097b2] font-bold' : ''
                 ]"
                 @click="handleSlotClick(date, Math.floor((i-1)/12), ((i-1)%12)*5)"
               >
                 <template v-if="isStartOfVisite(date, Math.floor((i-1)/12), ((i-1)%12)*5)">
-                  <div class="font-bold truncate">
+                  <div class="truncate">
                     {{ getVisiteForSlot(date, Math.floor((i-1)/12), ((i-1)%12)*5)?.motif_visite }}
                   </div>
-                  <div>
+                  <div class="text-xs">
                     {{ getDureeVisite(getVisiteForSlot(date, Math.floor((i-1)/12), ((i-1)%12)*5)) }}
                   </div>
                 </template>
@@ -78,11 +75,14 @@
         </table>
       </div>
     </div>
-  </div>
 
-  <Notif @refreshPlanning="fetchVisites" />
-  <VisitePopup :show="popupOpen" :slotDate="popupDate" :visite="popupVisite" @close="popupOpen = false" />
+    <!-- Popups -->
+    <Notif @refreshPlanning="fetchVisites" />
+    <VisitePopup :show="popupOpen" :slotDate="popupDate" :visite="popupVisite" @close="popupOpen = false" />
+  </div>
 </template>
+
+
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
@@ -179,7 +179,7 @@ function getVisiteForSlot(date, hour, minute) {
     const start = new Date(visite.date_visite_start)
     const end = new Date(visite.date_visite_end)
     return slotStart >= start && slotStart < end
-  }) || null
+  })
 }
 
 function getDureeVisite(visite) {
@@ -250,6 +250,19 @@ function getCurrentSlotIndex() {
 }
 
 /* Ajoute ceci dans ton <style> */
+.no-border-right {
+  border-right: none !important;
+}
+</style>
+
+<style>
+.overflow-auto::-webkit-scrollbar {
+  width: 8px;
+}
+.overflow-auto::-webkit-scrollbar-thumb {
+  background-color: #0097b2;
+  border-radius: 4px;
+}
 .no-border-right {
   border-right: none !important;
 }

@@ -8,7 +8,7 @@
         :class="{ 'clicked': btnClicked }"
         @animationend="btnClicked = false"
       >
-        🔔 Notifications
+        🔔
       </button>
     </transition>
     <transition name="slide">
@@ -121,13 +121,23 @@ export default {
   top: 20px;
   right: 20px;
   z-index: 1001;
-  background: #3498db;
+  background: linear-gradient(to right, #0097b2, #008699);
   color: #fff;
   border: none;
-  padding: 10px 18px;
-  border-radius: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 9999px; /* bouton parfaitement rond */
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: transform 0.15s, background 0.3s;
+  box-shadow: 0 10px 30px -10px rgba(0, 151, 178, 0.4);
+}
+.notif-btn:hover {
+  background: linear-gradient(to right, #008699, #007a94);
+  transform: scale(1.05);
 }
 .notif-btn.clicked {
   animation: notif-pop 0.15s;

@@ -20,6 +20,8 @@ use App\Http\Controllers\GuestController;
 // Routes publiques
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/visite', [VisiteController::class, 'getUserVisits']);
+
 // Routes pour les invités (publiques)
 Route::prefix('guest')->group(function () {
     Route::post('/register', [GuestController::class, 'register']);
@@ -45,6 +47,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/{groupId}', [MessageController::class, 'getMessages']);
     Route::post('/messages/{groupId}', [MessageController::class, 'sendMessage']);
     Route::post('/conversations/{groupId}/mark-read', [MessageController::class, 'markAsRead']);
+
+    //Visites
+    //Route::get('/visite', [VisiteController::class, 'getUserVisits']);
+
+
+
     
     // Nouvelles routes
     Route::post('/messages/{messageId}/reactions', [MessageController::class, 'addReaction']);

@@ -33,7 +33,7 @@
          */
         public function invite()
         {
-            return $this->belongsTo(Invite::class, 'email_invite', 'email');
+            return $this->hasMany(Invite::class, 'email_visiteur');
         }
 
         /**
@@ -84,6 +84,7 @@
             $this->update(['statut_visite' => 'annulee']);
         }
     }
-?>
+    
+
 
 
