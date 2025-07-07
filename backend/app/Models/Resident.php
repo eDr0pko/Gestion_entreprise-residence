@@ -14,12 +14,12 @@ class Resident extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'email_personne',
+        'id_personne',
         'adresse_logement',
     ];
 
     public function personne()
     {
-        return $this->belongsTo(Personne::class, 'email_personne', 'email');
+        return $this->belongsTo(Personne::class, 'id_personne', 'id_personne');
     }
 }

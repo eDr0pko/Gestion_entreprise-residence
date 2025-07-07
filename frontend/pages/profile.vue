@@ -1,18 +1,16 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-[#0097b2]/5 via-white to-[#0097b2]/10">
     <!-- Header -->
-    <AppHeader 
-      title="Retour" 
-      back-to="/planning"
-      :show-mobile-menu="true"
-      :hide-profile-button="true"
-      @toggle-mobile-menu="toggleMobileMenu"
-    />
+    <AppHeader :title="''" />
 
     <!-- Contenu principal -->
     <div class="max-w-5xl mx-auto px-4 py-8 lg:py-12">
       <!-- Hero Section avec informations utilisateur -->
-      <div class="relative overflow-hidden bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8 mb-8">
+      <div class="relative overflow-hidden bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-// Modales
+const showEditModal = ref(false)
+const showPasswordModal = ref(false)
+const showCurrentPasswordModal = ref(false)
+const showAvatarModal = ref(false)/50 p-8 mb-8">
         <!-- Gradient décoratif -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#0097b2]/20 to-transparent rounded-full -translate-y-32 translate-x-32"></div>
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-[#0097b2]/10 to-transparent rounded-full translate-y-24 -translate-x-24"></div>
@@ -21,21 +19,21 @@
           <!-- Avatar avec effet moderne -->
           <div class="flex justify-center lg:justify-start mb-6 lg:mb-0">
             <div class="relative group">
-              <div class="w-28 h-28 lg:w-32 lg:h-32 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-[#0097b2]/30"
-                   @click="openAvatarModal">
+              <div v-if="avatarUrl" class="w-28 h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden transform transition-all duration-300 border-4 border-white shadow-lg">
+                <img 
+                  :src="avatarUrl" 
+                  :alt="`Photo de profil de ${user?.prenom} ${user?.nom}`"
+                  class="w-full h-full object-cover"
+                  @error="handleAvatarError"
+                />
+              </div>
+              <div v-else class="w-28 h-28 lg:w-32 lg:h-32 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-full flex items-center justify-center">
                 <svg class="w-14 h-14 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
               </div>
               <!-- Indicateur en ligne -->
               <div class="absolute bottom-2 right-2 w-6 h-6 bg-green-400 border-4 border-white rounded-full shadow-lg"></div>
-              <!-- Icône d'édition -->
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-full transition-all duration-300 flex items-center justify-center">
-                <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-              </div>
             </div>
           </div>
 
@@ -124,6 +122,39 @@
                     </svg>
                   </div>
                   <span class="text-gray-700 font-medium group-hover/btn:text-[#0097b2] transition-colors duration-300">Changer le mot de passe</span>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 group-hover/btn:text-[#0097b2] group-hover/btn:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+              
+              <button @click="openAvatarModal" class="w-full group/btn p-4 rounded-2xl hover:bg-gradient-to-r hover:from-[#0097b2]/5 hover:to-[#0097b2]/10 transition-all duration-300 flex items-center justify-between border border-transparent hover:border-[#0097b2]/20">
+                <div class="flex items-center">
+                  <!-- Aperçu miniature de l'avatar -->
+                  <div class="w-8 h-8 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                    <div v-if="avatarUrl" class="w-full h-full">
+                      <img 
+                        :src="avatarUrl" 
+                        :alt="'Aperçu avatar'"
+                        class="w-full h-full object-cover"
+                        @error="handleAvatarError"
+                      />
+                    </div>
+                    <div v-else class="w-full h-full bg-gradient-to-br from-[#0097b2]/20 to-[#0097b2]/30 group-hover/btn:from-[#0097b2] group-hover/btn:to-[#008699] transition-all duration-300 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-[#0097b2] group-hover/btn:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-start flex-1">
+                    <div class="flex items-center">
+                      <span class="text-gray-700 font-medium group-hover/btn:text-[#0097b2] transition-colors duration-300">Photo de profil</span>
+                      <span v-if="avatarUrl" class="ml-2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Configurée</span>
+                      <span v-else class="ml-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Aucune photo</span>
+                    </div>
+                    <span class="text-xs text-gray-500 mt-1">{{ avatarUrl ? 'Modifier ou supprimer' : 'Ajouter une photo de profil' }}</span>
+                  </div>
                 </div>
                 <svg class="w-5 h-5 text-gray-400 group-hover/btn:text-[#0097b2] group-hover/btn:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -263,16 +294,13 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-            <input
+            <PhoneInput
               v-model="editForm.numero_telephone"
-              type="tel"
+              label="Téléphone"
+              :error="profileError"
               required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0097b2] focus:border-transparent"
-              :class="{ 'border-red-500 focus:ring-red-500': profileError }"
-              @input="profileError = ''"
+              @update:model-value="profileError = ''"
             />
-            <p v-if="profileError" class="mt-1 text-sm text-red-600">{{ profileError }}</p>
           </div>
           
           <div class="flex gap-3 pt-4">
@@ -389,28 +417,13 @@
       </div>
     </div>
 
-    <!-- Modal Avatar (placeholder) -->
-    <div v-if="showAvatarModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
-        <h3 class="text-lg font-semibold mb-4">Changer la photo de profil</h3>
-        
-        <div class="text-center py-8">
-          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-          <p class="text-gray-500 mb-4">Fonction d'upload de photo de profil à implémenter</p>
-        </div>
-        
-        <div class="flex gap-3">
-          <button
-            @click="closeAvatarModal"
-            class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Fermer
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Modal Avatar -->
+    <AvatarModal 
+      v-if="showAvatarModal"
+      :current-avatar-url="avatarUrl"
+      @close="closeAvatarModal"
+      @success="handleAvatarSuccess"
+    />
 
     <!-- Footer -->
     <AppFooter />
@@ -435,6 +448,7 @@ interface User {
   prenom: string
   email: string
   numero_telephone: string
+  photo_profil?: string | null
   type?: string
   user_type?: string
   role?: string
@@ -460,6 +474,19 @@ interface ApiResponse {
 const user = computed(() => authStore.user as User | null)
 const stats = ref<Stats | null>(null)
 const loading = ref(false)
+
+// Computed pour déterminer l'URL de l'avatar
+const avatarUrl = computed(() => {
+  if (!user.value?.photo_profil) return null
+  
+  // Si c'est déjà une URL complète, la retourner telle quelle
+  if (user.value.photo_profil.startsWith('http')) {
+    return user.value.photo_profil
+  }
+  
+  // Sinon, construire l'URL avec l'API
+  return `${config.public.apiBase}/avatars/${user.value.photo_profil.split('/').pop()}`
+})
 
 // Computed pour déterminer le rôle correct de l'utilisateur
 const userRole = computed(() => {
@@ -667,11 +694,26 @@ const closeAvatarModal = () => {
   showAvatarModal.value = false
 }
 
+const handleAvatarSuccess = (newAvatarUrl: string | null) => {
+  showSuccessMessage(newAvatarUrl ? 'Photo de profil mise à jour avec succès' : 'Photo de profil supprimée avec succès')
+}
+
+const handleAvatarError = () => {
+  console.error('Erreur lors du chargement de l\'avatar')
+}
+
 // Mettre à jour le profil
 const updateProfile = async () => {
   try {
     updatingProfile.value = true
     profileError.value = ''
+    
+    // Validation côté client pour le format international du téléphone
+    const cleanPhone = editForm.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
+    if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
+      profileError.value = 'Le numéro de téléphone doit être au format international (+33123456789)'
+      return
+    }
     
     const response = await $fetch(`${config.public.apiBase}/profile/update`, {
       method: 'PUT',
@@ -692,7 +734,14 @@ const updateProfile = async () => {
     console.error('Erreur lors de la mise à jour du profil:', error)
     
     if (error.response?.status === 422) {
-      profileError.value = 'Les données saisies ne sont pas valides'
+      // Vérifier si l'erreur est spécifiquement liée au format du téléphone
+      if (error.data?.errors?.numero_telephone) {
+        profileError.value = Array.isArray(error.data.errors.numero_telephone) 
+          ? error.data.errors.numero_telephone[0] 
+          : error.data.errors.numero_telephone
+      } else {
+        profileError.value = 'Les données saisies ne sont pas valides'
+      }
     } else {
       profileError.value = 'Erreur lors de la mise à jour du profil'
     }

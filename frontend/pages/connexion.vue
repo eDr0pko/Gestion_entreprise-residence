@@ -230,7 +230,7 @@ onMounted(async () => {
   
   // Si l'utilisateur est déjà connecté, rediriger vers les messages
   if (authStore.isAuthenticated) {
-    await navigateTo('/messages')
+    await navigateTo('/planning')
   }
 })
 </script>

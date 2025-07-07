@@ -1,0 +1,1 @@
+<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Gestion des incidents</h2><p class="text-gray-600 mb-4">Déclarer, suivre et clôturer les incidents dans la résidence.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des incidents...)</div></div></template>

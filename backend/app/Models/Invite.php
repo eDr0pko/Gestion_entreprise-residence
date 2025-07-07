@@ -10,18 +10,24 @@ class Invite extends Model
     use HasFactory;
 
     protected $table = 'invite';
-    protected $primaryKey = 'email';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'id_personne';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = false;
 
     protected $fillable = [
-        'email',
-        'actif'
+        'id_personne',
+        'actif',
+        'date_inscription',
+        'date_expiration',
+        'invite_par',
+        'commentaire',
     ];
 
     protected $casts = [
-        'actif' => 'boolean'
+        'actif' => 'boolean',
+        'date_inscription' => 'datetime',
+        'date_expiration' => 'datetime',
     ];
 
     protected $attributes = [
@@ -33,7 +39,15 @@ class Invite extends Model
      */
     public function personne()
     {
-        return $this->belongsTo(Personne::class, 'email', 'email');
+        return $this->belongsTo(Personne::class, 'id_personne', 'id_personne');
+    }
+
+    /**
+     * Relation avec la personne qui a invité
+     */
+    public function invitePar()
+    {
+        return $this->belongsTo(Personne::class, 'invite_par', 'id_personne');
     }
 
     /**
@@ -41,7 +55,7 @@ class Invite extends Model
      */
     public function visites()
     {
-        return $this->hasMany(Visite::class, 'email_invite', 'email');
+        return $this->hasMany(Visite::class, 'id_invite', 'id_personne');
     }
 
     /**
@@ -77,10 +91,10 @@ class Invite extends Model
     }
 
     /**
-     * Scope pour chercher par email
+     * Scope pour chercher par id_personne
      */
-    public function scopeByEmail($query, $email)
+    public function scopeByPersonneId($query, $id_personne)
     {
-        return $query->where('email', $email);
+        return $query->where('id_personne', $id_personne);
     }
 }

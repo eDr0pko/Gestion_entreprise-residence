@@ -14,16 +14,13 @@ class Admin extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'email_personne',
-        'mot_de_passe_admin',
-    ];
-
-    protected $hidden = [
-        'mot_de_passe_admin',
+        'id_personne',
+        'niveau_acces',
+        'date_nomination',
     ];
 
     public function personne()
     {
-        return $this->belongsTo(Personne::class, 'email_personne', 'email');
+        return $this->belongsTo(Personne::class, 'id_personne', 'id_personne');
     }
 }

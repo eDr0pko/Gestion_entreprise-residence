@@ -24,7 +24,7 @@
         // Relations
         public function personnes()
         {
-            return $this->belongsToMany(Personne::class, 'personne_groupe', 'id_groupe_message', 'email_personne')
+            return $this->belongsToMany(Personne::class, 'personne_groupe', 'id_groupe_message', 'id_personne')
                         ->withPivot('date_adhesion', 'derniere_connexion');
         }
 

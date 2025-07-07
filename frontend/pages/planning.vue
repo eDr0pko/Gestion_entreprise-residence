@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden font-sans">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-cyan-50 relative overflow-hidden font-sans">
+    <AppHeader />
     <!-- Bulles de fond décoratives -->
     <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-400 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
     <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-400 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-60"></div>
@@ -80,18 +81,19 @@
 
     <!-- Popups -->
     <Notif  />
-  </div>
-
-  <div>hello
-
+    <div class="h-4 md:h-8"></div>
+    <AppFooter />
   </div>
 </template>
+
 
 
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import axios from 'axios'
+import AppHeader from '~/components/AppHeader.vue'
+import AppFooter from '~/components/AppFooter.vue'
 import VisitePopup from '@/components/VisitePopup.vue'
 import Notif from '@/components/notif.vue'
 

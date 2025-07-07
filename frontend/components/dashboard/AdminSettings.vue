@@ -1,0 +1,1 @@
+<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Paramètres avancés</h2><p class="text-gray-600 mb-4">Configurer les paramètres globaux de la résidence et de l'application.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici les paramètres avancés...)</div></div></template>
