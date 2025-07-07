@@ -1,13 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-[#0097b2]/5 via-white to-[#0097b2]/10">
     <!-- Header -->
-    <AppHeader 
-      title="Retour" 
-      back-to="/planning"
-      :show-mobile-menu="true"
-      :hide-profile-button="true"
-      @toggle-mobile-menu="toggleMobileMenu"
-    />
+    <AppHeader :title="''" />
 
     <!-- Contenu principal -->
     <div class="max-w-5xl mx-auto px-4 py-8 lg:py-12">

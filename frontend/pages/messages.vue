@@ -2,26 +2,18 @@
   <div class="h-screen bg-white flex flex-col">
     <!-- Header responsive -->
     <AppHeader 
-      title="Retour" 
-      back-to="/planning"
-      :show-back-button="isMobile && !!selectedConversation"
-      :show-mobile-menu="!selectedConversation"
-      @go-back="goBackToConversations"
-      @toggle-mobile-menu="toggleMobileMenu"
+      title=""
+      :error="error"
+      :loading-conversations="loadingConversations"
     >
-      <template #actions>
-        <!-- Indicateur de statut de connexion -->
-        <div class="flex items-center space-x-2 mr-2">
-          <div 
-            class="w-2 h-2 rounded-full"
-            :class="error ? 'bg-red-500' : loadingConversations ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"
-            :title="error ? 'Erreur de connexion' : loadingConversations ? 'Chargement...' : 'Connecté'"
-          ></div>
-          <span v-if="error" class="text-xs text-red-500 hidden lg:inline">Hors ligne</span>
-          <span v-else-if="loadingConversations" class="text-xs text-yellow-600 hidden lg:inline">Chargement...</span>
-          <span v-else class="text-xs text-green-600 hidden lg:inline">En ligne</span>
+      <template #default>
+        <div class="w-full flex justify-center items-center">
+          <span class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#0097b2] via-[#00b4d8] to-[#43e6ff] bg-clip-text text-transparent tracking-tight drop-shadow animate-fadein">
+            Messages
+          </span>
         </div>
-        
+      </template>
+      <template #actions>        
         <!-- Bouton créer conversation (visible seulement sur la liste) -->
         <button
           v-if="!selectedConversation || !isMobile"

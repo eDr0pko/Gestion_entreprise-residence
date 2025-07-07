@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gradient-to-br from-[#e6f6fa] via-[#f3f8fa] to-white">
-    <AppHeader :title="''" :backTo="'/planning'" />
+    <AppHeader :title="''" />
     <div class="flex flex-1">
       <DashboardSidebar
         :sections="sidebarSections"
