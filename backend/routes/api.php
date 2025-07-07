@@ -19,6 +19,48 @@ use App\Http\Controllers\GuestController;
 
 // Routes publiques
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'server' => 'Laravel',
+        'timestamp' => now()
+    ]);
+});
+Route::get('/db-check', function () {
+    try {
+        $userCount = \App\Models\Personne::count();
+        $groupCount = \App\Models\GroupeMessage::count();
+        
+        if ($userCount > 0) {
+            $user = \App\Models\Personne::first();
+            // Test de la requête corrigée
+            $conversations = \App\Models\GroupeMessage::whereHas('personnes', function ($query) use ($user) {
+                $query->where('personne_groupe.id_personne', $user->id_personne);
+            })->count();
+            
+            return response()->json([
+                'status' => 'database_ok',
+                'users_count' => $userCount,
+                'groups_count' => $groupCount,
+                'sample_user_id' => $user->id_personne,
+                'sample_user_email' => $user->email,
+                'user_conversations' => $conversations,
+                'sql_fix' => 'working'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'database_empty',
+                'message' => 'Aucun utilisateur trouvé. Exécutez le script creationdb_corrected.sql'
+            ]);
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'database_error',
+            'error' => $e->getMessage(),
+            'message' => 'Erreur de base de données - vérifiez la configuration'
+        ], 500);
+    }
+});
 
 // Routes pour les invités (publiques)
 Route::prefix('guests')->group(function () {
@@ -59,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/deactivate', [GuestController::class, 'deactivate']);
     });
     Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
+    Route::get('/avatars/{filename}', [AuthController::class, 'getAvatar']);
     
     // Profil utilisateur
     Route::get('/profile/stats', [AuthController::class, 'getProfileStats']);
@@ -66,10 +109,37 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/verify-password', [AuthController::class, 'verifyPassword']);
     Route::put('/profile/password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
+    Route::delete('/profile/avatar', [AuthController::class, 'deleteAvatar']);
     
     // Gestion des invités temporaires (pour les administrateurs)
     Route::get('/guests', [GuestController::class, 'index']);
     Route::post('/guests/{id}/deactivate', [GuestController::class, 'deactivate']);
+});
+
+// Routes de test temporaire
+Route::get('/test-conversation', function () {
+    try {
+        $user = \App\Models\Personne::where('email', 'marie.durand@residence.com')->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found']);
+        }
+        
+        $conversations = \App\Models\GroupeMessage::whereHas('personnes', function ($query) use ($user) {
+            $query->where('personne_groupe.id_personne', $user->id_personne);
+        })->get();
+        
+        return response()->json([
+            'user_id' => $user->id_personne,
+            'conversations_count' => $conversations->count(),
+            'success' => true
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ], 500);
+    }
 });
 
 

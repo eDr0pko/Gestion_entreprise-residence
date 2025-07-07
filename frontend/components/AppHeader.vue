@@ -48,6 +48,18 @@
       <!-- Actions personnalisées -->
       <slot name="actions"></slot>
 
+      <!-- Bouton dashboard admin/gardien -->
+      <NuxtLink
+        v-if="userRole === 'admin' || userRole === 'gardien'"
+        to="/dashboard"
+        class="p-2 text-[#0097b2] hover:text-[#007a94] hover:bg-white/80 backdrop-blur-sm rounded-lg transition-all duration-200 tooltip-container shadow-sm"
+        title="Tableau de bord"
+      >
+        <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
+        </svg>
+      </NuxtLink>
+
       <!-- Bouton profil avec engrenage -->
       <NuxtLink 
         v-if="!hideProfileButton"
@@ -76,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
 interface Badge {
   count: number
   title: string
@@ -108,6 +121,10 @@ const goBack = () => {
 const toggleMobileMenu = () => {
   emit('toggleMobileMenu')
 }
+
+// Récupérer le rôle utilisateur depuis le store
+const authStore = useAuthStore()
+const userRole = authStore.userRole
 </script>
 
 <style scoped>

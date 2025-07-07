@@ -47,11 +47,11 @@ class MessageController extends Controller
                 ], 401);
             }
 
-            Log::info('Chargement des conversations pour l\'utilisateur: ' . $user->email);
+            Log::info('Chargement des conversations pour l\'utilisateur ID: ' . $user->id_personne);
             
             // Récupérer les groupes avec le dernier message et le compteur de messages non lus
             $conversations = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })
             ->with(['dernierMessage.auteur'])
             ->get()
@@ -60,7 +60,7 @@ class MessageController extends Controller
                 
                 // Récupérer la dernière connexion de l'utilisateur pour ce groupe
                 $personneGroupe = DB::table('personne_groupe')
-                    ->where('email_personne', $user->email)
+                    ->where('id_personne', $user->id_personne)
                     ->where('id_groupe_message', $groupe->id_groupe_message)
                     ->first();
                 
@@ -71,12 +71,12 @@ class MessageController extends Controller
                 if ($derniereConnexion) {
                     $messagesNonLus = Message::where('id_groupe_message', $groupe->id_groupe_message)
                         ->where('date_envoi', '>', $derniereConnexion)
-                        ->where('email_auteur', '!=', $user->email) // Exclure ses propres messages
+                        ->where('id_auteur', '!=', $user->id_personne) // Exclure ses propres messages
                         ->count();
                 } else {
                     // Si jamais connecté, tous les messages sont non lus (sauf les siens)
                     $messagesNonLus = Message::where('id_groupe_message', $groupe->id_groupe_message)
-                        ->where('email_auteur', '!=', $user->email)
+                        ->where('id_auteur', '!=', $user->id_personne)
                         ->count();
                 }
                 
@@ -128,7 +128,7 @@ class MessageController extends Controller
 
             // Vérifier que l'utilisateur fait partie du groupe
             $groupe = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })->find($groupId);
 
             if (!$groupe) {
@@ -140,7 +140,7 @@ class MessageController extends Controller
 
             // Récupérer la dernière connexion de l'utilisateur pour ce groupe (une seule fois)
             $personneGroupe = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->where('id_groupe_message', $groupId)
                 ->first();
             
@@ -148,20 +148,21 @@ class MessageController extends Controller
 
             // Récupérer les messages avec réactions et fichiers
             $messages = DB::table('message')
-                ->join('personne', 'message.email_auteur', '=', 'personne.email')
+                ->join('personne', 'message.id_auteur', '=', 'personne.id_personne')
                 ->leftJoin('message_fichier', 'message.id_message', '=', 'message_fichier.id_message')
                 ->where('message.id_groupe_message', $groupId)
                 ->select(
                     'message.id_message',
                     'message.contenu_message',
                     'message.date_envoi',
-                    'message.email_auteur',
+                    'message.id_auteur',
                     'message.a_fichiers',
                     'personne.nom',
                     'personne.prenom',
+                    'personne.email',
                     DB::raw('CONCAT(personne.prenom, " ", personne.nom) as auteur_nom')
                 )
-                ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.email_auteur', 'message.a_fichiers', 'personne.nom', 'personne.prenom')
+                ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.id_auteur', 'message.a_fichiers', 'personne.nom', 'personne.prenom', 'personne.email')
                 ->orderBy('message.date_envoi', 'asc')
                 ->get();
 
@@ -169,13 +170,14 @@ class MessageController extends Controller
             foreach ($messages as $message) {
                 // Récupérer les réactions pour ce message
                 $reactions = DB::table('message_reaction')
-                    ->join('personne', 'message_reaction.email_personne', '=', 'personne.email')
+                    ->join('personne', 'message_reaction.id_personne', '=', 'personne.id_personne')
                     ->where('message_reaction.id_message', $message->id_message)
                     ->select(
                         'message_reaction.emoji',
-                        'message_reaction.email_personne',
+                        'message_reaction.id_personne',
                         'personne.prenom',
                         'personne.nom',
+                        'personne.email',
                         'message_reaction.date_reaction'
                     )
                     ->get()
@@ -185,7 +187,8 @@ class MessageController extends Controller
                             'count' => $reactionGroup->count(),
                             'users' => $reactionGroup->map(function ($reaction) {
                                 return [
-                                    'email' => $reaction->email_personne,
+                                    'id_personne' => $reaction->id_personne,
+                                    'email' => $reaction->email,
                                     'nom' => $reaction->prenom . ' ' . $reaction->nom
                                 ];
                             })->toArray()
@@ -204,7 +207,7 @@ class MessageController extends Controller
 
                 // Déterminer le statut de lecture basé sur la dernière connexion
                 $statut = 'recu'; // Par défaut
-                if ($message->email_auteur === $user->email) {
+                if ($message->id_auteur === $user->id_personne) {
                     $statut = 'envoye'; // Message envoyé par l'utilisateur
                 } elseif ($derniereConnexion && $message->date_envoi <= $derniereConnexion) {
                     $statut = 'lu'; // Message lu (envoyé avant ou à la dernière connexion)
@@ -216,9 +219,10 @@ class MessageController extends Controller
                     'id_message' => $message->id_message,
                     'contenu_message' => $message->contenu_message,
                     'date_envoi' => $message->date_envoi,
-                    'email_auteur' => $message->email_auteur,
+                    'id_auteur' => $message->id_auteur,
+                    'email_auteur' => $message->email, // Pour compatibilité frontend
                     'auteur_nom' => $message->auteur_nom,
-                    'is_current_user' => $message->email_auteur === $user->email,
+                    'is_current_user' => $message->id_auteur === $user->id_personne,
                     'reactions' => $reactions,
                     'fichiers' => $fichiers,
                     'statut_lecture' => $statut,
@@ -227,7 +231,7 @@ class MessageController extends Controller
             }
 
             // Marquer tous les messages comme lus pour cet utilisateur
-            $this->markMessagesAsRead($groupId, $user->email);
+            $this->markMessagesAsRead($groupId, $user->id_personne);
 
             return response()->json([
                 'success' => true,
@@ -260,7 +264,7 @@ class MessageController extends Controller
 
             // Vérifier que l'utilisateur fait partie du groupe
             $groupe = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })->find($groupId);
 
             if (!$groupe) {
@@ -272,7 +276,7 @@ class MessageController extends Controller
 
             // Mettre à jour la dernière connexion
             DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->where('id_groupe_message', $groupId)
                 ->update(['derniere_connexion' => now()]);
 
@@ -320,7 +324,7 @@ class MessageController extends Controller
 
             // Vérifier l'accès au groupe
             $groupe = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })->find($groupId);
 
             if (!$groupe) {
@@ -336,7 +340,7 @@ class MessageController extends Controller
                 // Créer le message
                 $message = Message::create([
                     'id_groupe_message' => $groupId,
-                    'email_auteur' => $user->email,
+                    'id_auteur' => $user->id_personne,
                     'contenu_message' => $request->contenu ?? '',
                     'date_envoi' => now(),
                     'a_fichiers' => $request->hasFile('fichiers')
@@ -383,7 +387,7 @@ class MessageController extends Controller
                         'id_message' => $message->id_message,
                         'contenu_message' => $message->contenu_message,
                         'date_envoi' => $message->date_envoi->toISOString(),
-                        'email_auteur' => $message->email_auteur,
+                        'email_auteur' => $user->email,
                         'auteur_nom' => $user->nom_complet,
                         'is_current_user' => true,
                         'reactions' => [],
@@ -430,7 +434,7 @@ class MessageController extends Controller
             $message = DB::table('message')
                 ->join('personne_groupe', 'message.id_groupe_message', '=', 'personne_groupe.id_groupe_message')
                 ->where('message.id_message', $messageId)
-                ->where('personne_groupe.email_personne', $user->email)
+                ->where('personne_groupe.id_personne', $user->id_personne)
                 ->select('message.*')
                 ->first();
 
@@ -444,7 +448,7 @@ class MessageController extends Controller
             // Ajouter ou supprimer la réaction
             $existingReaction = DB::table('message_reaction')
                 ->where('id_message', $messageId)
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->where('emoji', $request->emoji)
                 ->first();
 
@@ -458,7 +462,7 @@ class MessageController extends Controller
                 // Ajouter la réaction
                 DB::table('message_reaction')->insert([
                     'id_message' => $messageId,
-                    'email_personne' => $user->email,
+                    'id_personne' => $user->id_personne,
                     'emoji' => $request->emoji,
                     'date_reaction' => now()
                 ]);
@@ -467,13 +471,14 @@ class MessageController extends Controller
 
             // Récupérer les réactions mises à jour
             $reactions = DB::table('message_reaction')
-                ->join('personne', 'message_reaction.email_personne', '=', 'personne.email')
+                ->join('personne', 'message_reaction.id_personne', '=', 'personne.id_personne')
                 ->where('message_reaction.id_message', $messageId)
                 ->select(
                     'message_reaction.emoji',
-                    'message_reaction.email_personne',
+                    'message_reaction.id_personne',
                     'personne.prenom',
-                    'personne.nom'
+                    'personne.nom',
+                    'personne.email'
                 )
                 ->get()
                 ->groupBy('emoji')
@@ -482,7 +487,7 @@ class MessageController extends Controller
                         'count' => $reactionGroup->count(),
                         'users' => $reactionGroup->map(function ($reaction) {
                             return [
-                                'email' => $reaction->email_personne,
+                                'email' => $reaction->email,
                                 'nom' => $reaction->prenom . ' ' . $reaction->nom
                             ];
                         })->toArray()
@@ -524,7 +529,7 @@ class MessageController extends Controller
                 ->join('message', 'message_fichier.id_message', '=', 'message.id_message')
                 ->join('personne_groupe', 'message.id_groupe_message', '=', 'personne_groupe.id_groupe_message')
                 ->where('message_fichier.id_fichier', $fichierId)
-                ->where('personne_groupe.email_personne', $user->email)
+                ->where('personne_groupe.id_personne', $user->id_personne)
                 ->select('message_fichier.*')
                 ->first();
 
@@ -544,6 +549,14 @@ class MessageController extends Controller
                 ], 404);
             }
 
+            // Si le paramètre 'inline' est présent et que c'est une image, l'afficher en ligne
+            if ($request->has('inline') && $this->isImageFile($fichier->type_fichier)) {
+                return response()->file($cheminComplet, [
+                    'Content-Type' => $fichier->type_fichier,
+                    'Cache-Control' => 'public, max-age=31536000', // Cache d'un an
+                ]);
+            }
+
             return response()->download($cheminComplet, $fichier->nom_original);
 
         } catch (\Exception $e) {
@@ -557,13 +570,29 @@ class MessageController extends Controller
         }
     }
 
+    // Vérifier si un fichier est une image
+    private function isImageFile($mimeType)
+    {
+        $imageTypes = [
+            'image/jpeg',
+            'image/jpg', 
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'image/bmp'
+        ];
+        
+        return in_array(strtolower($mimeType), $imageTypes);
+    }
+
     // Marquer les messages comme lus en mettant à jour la dernière connexion
-    private function markMessagesAsRead($groupId, $userEmail)
+    private function markMessagesAsRead($groupId, $userIdPersonne)
     {
         // Mettre à jour la dernière connexion de l'utilisateur pour ce groupe
         // Cela marquera automatiquement tous les messages précédents comme lus
         DB::table('personne_groupe')
-            ->where('email_personne', $userEmail)
+            ->where('id_personne', $userIdPersonne)
             ->where('id_groupe_message', $groupId)
             ->update(['derniere_connexion' => now()]);
     }
@@ -587,7 +616,7 @@ class MessageController extends Controller
                 'participants.*' => 'required|email|exists:personne,email'
             ]);
 
-            Log::info('Création d\'une nouvelle conversation par: ' . $user->email);
+            Log::info('Création d\'une nouvelle conversation par ID: ' . $user->id_personne);
             
             // Vérifier que l'utilisateur ne s'ajoute pas lui-même dans les participants
             $participants = collect($request->participants);
@@ -599,6 +628,15 @@ class MessageController extends Controller
             // Supprimer les doublons
             $participants = $participants->unique();
 
+            // Convertir les emails en IDs
+            $participantIds = [];
+            foreach ($participants as $email) {
+                $personne = Personne::where('email', $email)->first();
+                if ($personne) {
+                    $participantIds[] = $personne->id_personne;
+                }
+            }
+
             DB::beginTransaction();
             
             try {
@@ -609,12 +647,12 @@ class MessageController extends Controller
                 ]);
 
                 // Ajouter tous les participants au groupe
-                foreach ($participants as $participantEmail) {
+                foreach ($participantIds as $participantId) {
                     DB::table('personne_groupe')->insert([
-                        'email_personne' => $participantEmail,
+                        'id_personne' => $participantId,
                         'id_groupe_message' => $groupe->id_groupe_message,
                         'date_adhesion' => now(),
-                        'derniere_connexion' => $participantEmail === $user->email ? now() : null
+                        'derniere_connexion' => $participantId === $user->id_personne ? now() : null
                     ]);
                 }
 
@@ -623,7 +661,7 @@ class MessageController extends Controller
                 
                 Message::create([
                     'id_groupe_message' => $groupe->id_groupe_message,
-                    'email_auteur' => $user->email,
+                    'id_auteur' => $user->id_personne,
                     'contenu_message' => $messageContenu,
                     'date_envoi' => now()
                 ]);
@@ -640,7 +678,7 @@ class MessageController extends Controller
                     'derniere_activite' => $groupe->date_creation->toISOString(),
                     'dernier_contenu' => $messageContenu,
                     'dernier_auteur' => $user->nom_complet,
-                    'nombre_membres' => $participants->count(),
+                    'nombre_membres' => count($participantIds),
                     'messages_non_lus' => 0,
                     'derniere_connexion' => now()->toISOString(),
                 ];
@@ -728,7 +766,7 @@ class MessageController extends Controller
 
             // Vérifier que l'utilisateur fait partie du groupe
             $groupe = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })->find($groupId);
 
             if (!$groupe) {
@@ -740,7 +778,7 @@ class MessageController extends Controller
 
             // Récupérer les membres du groupe
             $members = DB::table('personne_groupe')
-                ->join('personne', 'personne_groupe.email_personne', '=', 'personne.email')
+                ->join('personne', 'personne_groupe.id_personne', '=', 'personne.id_personne')
                 ->where('personne_groupe.id_groupe_message', $groupId)
                 ->select(
                     'personne.email',
@@ -799,7 +837,7 @@ class MessageController extends Controller
 
             // Vérifier que l'utilisateur fait partie du groupe
             $groupe = GroupeMessage::whereHas('personnes', function ($query) use ($user) {
-                $query->where('email_personne', $user->email);
+                $query->where('personne_groupe.id_personne', $user->id_personne);
             })->find($groupId);
 
             if (!$groupe) {
@@ -816,34 +854,36 @@ class MessageController extends Controller
             
             try {
                 foreach ($newMembers as $memberEmail) {
+                    // Récupérer les informations du membre par email
+                    $memberInfo = Personne::where('email', $memberEmail)->first();
+                    if (!$memberInfo) {
+                        continue; // Passer au suivant si l'utilisateur n'existe pas
+                    }
+                    
                     // Vérifier si l'utilisateur n'est pas déjà membre
                     $existingMember = DB::table('personne_groupe')
-                        ->where('email_personne', $memberEmail)
+                        ->where('id_personne', $memberInfo->id_personne)
                         ->where('id_groupe_message', $groupId)
                         ->first();
 
                     if (!$existingMember) {
                         // Ajouter le nouveau membre
                         DB::table('personne_groupe')->insert([
-                            'email_personne' => $memberEmail,
+                            'id_personne' => $memberInfo->id_personne,
                             'id_groupe_message' => $groupId,
                             'date_adhesion' => now(),
                             'derniere_connexion' => null
                         ]);
-
-                        // Récupérer les informations du membre ajouté
-                        $memberInfo = Personne::where('email', $memberEmail)->first();
-                        if ($memberInfo) {
-                            $addedMembers[] = [
-                                'email' => $memberInfo->email,
-                                'nom' => $memberInfo->nom,
-                                'prenom' => $memberInfo->prenom,
-                                'nom_complet' => $memberInfo->nom_complet,
-                                'role' => $this->getUserRole($memberInfo->email),
-                                'is_current_user' => false,
-                                'date_adhesion' => now()->toISOString()
-                            ];
-                        }
+                        
+                        $addedMembers[] = [
+                            'email' => $memberInfo->email,
+                            'nom' => $memberInfo->nom,
+                            'prenom' => $memberInfo->prenom,
+                            'nom_complet' => $memberInfo->nom_complet,
+                            'role' => $this->getUserRole($memberInfo->email),
+                            'is_current_user' => false,
+                            'date_adhesion' => now()->toISOString()
+                        ];
                     }
                 }
 
@@ -854,7 +894,7 @@ class MessageController extends Controller
                     
                     Message::create([
                         'id_groupe_message' => $groupId,
-                        'email_auteur' => $user->email,
+                        'id_auteur' => $user->id_personne,
                         'contenu_message' => $messageContenu,
                         'date_envoi' => now()
                     ]);
@@ -906,7 +946,7 @@ class MessageController extends Controller
                              WHERE m2.id_groupe_message = groupe_message.id_groupe_message
                          )');
                 })
-                ->where('personne_groupe.email_personne', $user->email)
+                ->where('personne_groupe.id_personne', $user->id_personne)
                 ->select(
                     'groupe_message.id_groupe_message',
                     DB::raw('COALESCE(MAX(message.date_envoi), groupe_message.date_creation) as derniere_activite')
@@ -948,7 +988,7 @@ class MessageController extends Controller
 
             // Vérifier l'accès au groupe
             $hasAccess = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->where('id_groupe_message', $groupId)
                 ->exists();
 
@@ -972,7 +1012,7 @@ class MessageController extends Controller
 
             // Compter les messages non lus pour cet utilisateur
             $derniereConnexion = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->where('id_groupe_message', $groupId)
                 ->value('derniere_connexion');
 
@@ -980,14 +1020,14 @@ class MessageController extends Controller
             if ($derniereConnexion) {
                 $messagesNonLus = DB::table('message')
                     ->where('id_groupe_message', $groupId)
-                    ->where('email_auteur', '!=', $user->email)
+                    ->where('id_auteur', '!=', $user->id_personne)
                     ->where('date_envoi', '>', $derniereConnexion)
                     ->count();
             } else {
                 // Si pas de dernière connexion, tous les messages des autres sont non lus
                 $messagesNonLus = DB::table('message')
                     ->where('id_groupe_message', $groupId)
-                    ->where('email_auteur', '!=', $user->email)
+                    ->where('id_auteur', '!=', $user->id_personne)
                     ->count();
             }
 
@@ -1006,16 +1046,18 @@ class MessageController extends Controller
     }
 
     // Méthode helper pour déterminer le rôle d'un utilisateur
-    private function getUserRole($email)
+    private function getUserRole($id_personne)
     {
-        if (DB::table('admin')->where('email_personne', $email)->exists()) {
+        if (DB::table('admin')->where('id_personne', $id_personne)->exists()) {
             return 'Administrateur';
-        } elseif (DB::table('gardien')->where('email_personne', $email)->exists()) {
+        } elseif (DB::table('gardien')->where('id_personne', $id_personne)->exists()) {
             return 'Gardien';
-        } elseif (DB::table('resident')->where('email_personne', $email)->exists()) {
+        } elseif (DB::table('resident')->where('id_personne', $id_personne)->exists()) {
             return 'Résident';
         }
         return 'Utilisateur';
     }
 }
+
+
 

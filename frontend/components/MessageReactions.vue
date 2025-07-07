@@ -19,11 +19,13 @@
       </button>
     </div>
 
-    <!-- Bouton pour ajouter une réaction (toujours visible) -->
+    <!-- Bouton pour ajouter une réaction -->
     <div class="relative mt-1">
       <button
-        @click="showReactionPicker = !showReactionPicker"
+        ref="emojiButton"
+        @click.stop="toggleEmojiPicker"
         class="p-1 text-gray-400 hover:text-[#0097b2] hover:bg-gray-100 rounded transition-colors text-xs"
+        :class="{ 'text-[#0097b2] bg-gray-100': showReactionPicker }"
         title="Ajouter une réaction"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,19 +33,22 @@
         </svg>
       </button>
 
-      <!-- Picker d'émojis -->
+      <!-- Picker d'émojis avec transition -->
       <Transition name="picker">
         <div
           v-if="showReactionPicker"
+          ref="emojiPicker"
           v-click-outside="closeReactionPicker"
-          class="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-max"
+          class="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl p-3 z-[1000] min-w-max"
+          @click.stop
         >
-          <div class="grid grid-cols-6 gap-2">
+          <div class="text-xs text-gray-500 mb-2 font-medium">Choisir une réaction</div>
+          <div class="grid grid-cols-6 gap-1">
             <button
               v-for="emoji in quickEmojis"
               :key="emoji"
-              @click="addReaction(emoji)"
-              class="p-2 rounded hover:bg-gray-100 transition-colors text-lg flex items-center justify-center"
+              @click.stop="addReaction(emoji)"
+              class="p-2 rounded hover:bg-gray-100 transition-colors text-lg flex items-center justify-center w-10 h-10"
               :title="`Réagir avec ${emoji}`"
             >
               {{ emoji }}
@@ -56,13 +61,7 @@
 </template>
 
 <script setup lang="ts">
-interface ReactionData {
-  count: number
-  users: Array<{
-    email: string
-    nom: string
-  }>
-}
+import type { ReactionData } from '~/types'
 
 interface Props {
   messageId: number
@@ -76,12 +75,23 @@ const emit = defineEmits<{
   reactionToggled: [emoji: string]
 }>()
 
+// Références DOM
+const emojiButton = ref<HTMLButtonElement>()
+const emojiPicker = ref<HTMLDivElement>()
+
 // État réactif
 const showReactionPicker = ref(false)
 const processing = ref(false)
 
 // Émojis de réaction rapide
 const quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉', '🔥', '💯', '✅', '❌']
+
+// Toggle du picker d'émojis
+const toggleEmojiPicker = () => {
+  console.log('Toggle emoji picker clicked, current state:', showReactionPicker.value)
+  showReactionPicker.value = !showReactionPicker.value
+  console.log('New state:', showReactionPicker.value)
+}
 
 // Vérifier si l'utilisateur actuel a réagi avec cet emoji
 const userHasReacted = (emoji: string): boolean => {
@@ -107,6 +117,7 @@ const toggleReaction = async (emoji: string) => {
   
   processing.value = true
   try {
+    console.log('Toggling reaction:', emoji, 'for message:', props.messageId)
     emit('reactionToggled', emoji)
   } finally {
     processing.value = false
@@ -115,14 +126,21 @@ const toggleReaction = async (emoji: string) => {
 
 // Ajouter une nouvelle réaction
 const addReaction = async (emoji: string) => {
+  console.log('Adding reaction:', emoji)
   closeReactionPicker()
   await toggleReaction(emoji)
 }
 
 // Fermer le picker
 const closeReactionPicker = () => {
+  console.log('Closing reaction picker')
   showReactionPicker.value = false
 }
+
+// Debug: Observer les changements d'état
+watch(showReactionPicker, (newValue) => {
+  console.log('showReactionPicker changed to:', newValue)
+})
 </script>
 
 <style scoped>
@@ -137,5 +155,18 @@ const closeReactionPicker = () => {
 
 .message-reactions {
   margin-top: 0.25rem;
+  position: relative;
+}
+
+/* S'assurer que le picker est au-dessus de tout */
+.message-reactions .relative {
+  z-index: 1;
+}
+
+/* Améliorer la visibilité du picker */
+.absolute {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  background: white;
 }
 </style>

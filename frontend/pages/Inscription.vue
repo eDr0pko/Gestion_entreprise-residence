@@ -65,21 +65,12 @@
           </div>
 
           <!-- Téléphone -->
-          <div>
-            <label for="numero_telephone" class="block text-sm font-semibold text-gray-800 mb-2">
-              Numéro de téléphone
-            </label>
-            <input
-              id="numero_telephone"
-              v-model="form.numero_telephone"
-              type="tel"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="+33 1 23 45 67 89"
-              :disabled="loading"
-            />
-            <p class="text-xs text-gray-500 mt-1 ml-1">Format international requis</p>
-          </div>
+          <PhoneInput
+            v-model="form.numero_telephone"
+            label="Numéro de téléphone"
+            :disabled="loading"
+            required
+          />
 
           <!-- Mot de passe -->
           <div>
@@ -227,8 +218,9 @@ const handleSubmit = async () => {
     return
   }
 
-  // Validation du format de téléphone
-  if (!/^\+\d{1,4}\d{6,15}$/.test(form.value.numero_telephone)) {
+  // Validation du format de téléphone (accepter les espaces)
+  const cleanPhone = form.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
+  if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
     showMessage('Le numéro de téléphone doit être au format international (+33123456789)', 'error')
     return
   }

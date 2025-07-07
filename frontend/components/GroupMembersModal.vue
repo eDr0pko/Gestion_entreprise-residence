@@ -123,21 +123,7 @@
 </template>
 
 <script setup lang="ts">
-interface Member {
-  email: string
-  nom_complet: string
-  nom: string
-  prenom: string
-  role: string
-  is_current_user: boolean
-  date_adhesion: string
-}
-
-interface Conversation {
-  id_groupe_message: number
-  nom_groupe: string
-  nombre_membres?: number
-}
+import type { Member, Conversation } from '~/types'
 
 interface Props {
   show: boolean

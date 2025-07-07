@@ -13,15 +13,17 @@
         public $timestamps = false;
 
         protected $fillable = [
-            'email_invite',
+            'id_invite',
             'email_visiteur',
             'motif_visite',
-            'date_visite',
+            'date_visite_start',
+            'date_visite_end',
             'statut_visite'
         ];
 
         protected $casts = [
-            'date_visite' => 'datetime'
+            'date_visite_start' => 'datetime',
+            'date_visite_end' => 'datetime'
         ];
 
         protected $attributes = [
@@ -33,7 +35,7 @@
          */
         public function invite()
         {
-            return $this->belongsTo(Invite::class, 'email_invite', 'email');
+            return $this->belongsTo(Invite::class, 'id_invite', 'id_personne');
         }
 
         /**
@@ -41,7 +43,7 @@
          */
         public function personne()
         {
-            return $this->belongsTo(Personne::class, 'email_invite', 'email');
+            return $this->belongsTo(Personne::class, 'id_invite', 'id_personne');
         }
 
         /**

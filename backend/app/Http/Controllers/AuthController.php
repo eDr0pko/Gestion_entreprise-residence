@@ -80,11 +80,13 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => [
+                    'id_personne' => $user->id_personne,
                     'email' => $user->email,
                     'nom' => $user->nom,
                     'prenom' => $user->prenom,
                     'nom_complet' => $user->nom_complet,
                     'numero_telephone' => $user->numero_telephone,
+                    'photo_profil' => $user->photo_profil,
                     'role' => $user->getRole(),
                 ]
             ]);
@@ -207,30 +209,30 @@ class AuthController extends Controller
 
             // Compter les messages envoyés par l'utilisateur
             $messagesEnvoyes = DB::table('message')
-                ->where('email_auteur', $user->email)
+                ->where('id_auteur', $user->id_personne)
                 ->count();
 
             // Compter les réactions données par l'utilisateur
             $reactionsData = DB::table('message_reaction')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->count();
 
             // Compter le nombre de groupes auxquels l'utilisateur participe
             $groupesParticipes = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->count();
 
             // Obtenir la date de dernière connexion
             $derniereConnexion = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->orderBy('derniere_connexion', 'desc')
                 ->value('derniere_connexion');
 
             // Compter les messages non lus basé sur la dernière connexion
             $messagesNonLus = DB::table('message')
                 ->join('personne_groupe', 'message.id_groupe_message', '=', 'personne_groupe.id_groupe_message')
-                ->where('personne_groupe.email_personne', $user->email)
-                ->where('message.email_auteur', '!=', $user->email) // Exclure ses propres messages
+                ->where('personne_groupe.id_personne', $user->id_personne)
+                ->where('message.id_auteur', '!=', $user->id_personne) // Exclure ses propres messages
                 ->where(function($query) {
                     // Messages envoyés après la dernière connexion OU jamais connecté
                     $query->whereColumn('message.date_envoi', '>', 'personne_groupe.derniere_connexion')
@@ -240,17 +242,17 @@ class AuthController extends Controller
 
             // Obtenir le rôle de l'utilisateur
             $role = 'Résident';
-            if (DB::table('admin')->where('email_personne', $user->email)->exists()) {
+            if (DB::table('admin')->where('id_personne', $user->id_personne)->exists()) {
                 $role = 'Administrateur';
-            } elseif (DB::table('gardien')->where('email_personne', $user->email)->exists()) {
+            } elseif (DB::table('gardien')->where('id_personne', $user->id_personne)->exists()) {
                 $role = 'Gardien';
-            } elseif (DB::table('invite')->where('email', $user->email)->exists()) {
+            } elseif (DB::table('invite')->where('id_personne', $user->id_personne)->exists()) {
                 $role = 'Invité';
             }
 
             // Date d'inscription (estimation basée sur la première participation à un groupe)
             $dateInscription = DB::table('personne_groupe')
-                ->where('email_personne', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->orderBy('date_adhesion', 'asc')
                 ->value('date_adhesion');
 
@@ -296,15 +298,27 @@ class AuthController extends Controller
             $request->validate([
                 'nom' => 'required|string|max:45',
                 'prenom' => 'required|string|max:45',
-                'numero_telephone' => 'required|string|max:20'
+                'numero_telephone' => 'required|string'
             ]);
 
+            // Valider et nettoyer le numéro de téléphone
+            $cleanPhone = $this->cleanAndValidatePhone($request->numero_telephone);
+            if (!$cleanPhone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format de téléphone invalide',
+                    'errors' => [
+                        'numero_telephone' => ['Le numéro de téléphone doit être au format international (+33123456789)']
+                    ]
+                ], 422);
+            }
+
             DB::table('personne')
-                ->where('email', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->update([
                     'nom' => $request->nom,
                     'prenom' => $request->prenom,
-                    'numero_telephone' => $request->numero_telephone
+                    'numero_telephone' => $cleanPhone // Utiliser le numéro nettoyé
                 ]);
 
             return response()->json([
@@ -314,7 +328,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'nom' => $request->nom,
                     'prenom' => $request->prenom,
-                    'numero_telephone' => $request->numero_telephone
+                    'numero_telephone' => $cleanPhone // Retourner le numéro nettoyé
                 ]
             ]);
 
@@ -414,7 +428,7 @@ class AuthController extends Controller
 
             // Mettre à jour le mot de passe
             DB::table('personne')
-                ->where('email', $user->email)
+                ->where('id_personne', $user->id_personne)
                 ->update([
                     'mot_de_passe' => Hash::make($request->new_password)
                 ]);
@@ -456,12 +470,46 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Pour l'instant, retourner un succès sans implémenter le storage
-            return response()->json([
-                'success' => true,
-                'message' => 'Fonction d\'upload d\'avatar à implémenter'
+            // Validation de l'image
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // 2MB max
             ]);
 
+            // Supprimer l'ancienne photo de profil s'il y en a une
+            if ($user->photo_profil) {
+                $oldPath = storage_path('app/public/' . $user->photo_profil);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+
+            // Stocker la nouvelle image
+            $file = $request->file('avatar');
+            $fileName = 'avatar_' . $user->id_personne . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('avatars', $fileName, 'public');
+
+            // Mettre à jour l'utilisateur
+            $user->photo_profil = $filePath;
+            $user->save();
+
+            // Générer l'URL complète de l'avatar
+            $avatarUrl = url('/storage/' . $filePath);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photo de profil mise à jour avec succès',
+                'data' => [
+                    'photo_profil' => $filePath,
+                    'avatar_url' => $avatarUrl
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fichier invalide',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'upload d\'avatar: ' . $e->getMessage());
             
@@ -471,5 +519,102 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function deleteAvatar(Request $request)
+    {
+        try {
+            $user = $this->getCurrentUser($request);
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            // Supprimer le fichier s'il existe
+            if ($user->photo_profil) {
+                $filePath = storage_path('app/public/' . $user->photo_profil);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                // Mettre à jour l'utilisateur
+                $user->photo_profil = null;
+                $user->save();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photo de profil supprimée avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression d\'avatar: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression d\'avatar',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAvatar(Request $request, $filename)
+    {
+        try {
+            $user = $this->getCurrentUser($request);
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            $avatarPath = storage_path('app/public/avatars/' . $filename);
+            
+            if (!file_exists($avatarPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Avatar non trouvé'
+                ], 404);
+            }
+
+            // Obtenir le type MIME du fichier
+            $mimeType = mime_content_type($avatarPath);
+            
+            return response()->file($avatarPath, [
+                'Content-Type' => $mimeType,
+                'Cache-Control' => 'public, max-age=31536000', // Cache d'un an
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération d\'avatar: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération d\'avatar',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Nettoie un numéro de téléphone en supprimant les espaces
+     * et vérifie le format international
+     */
+    private function cleanAndValidatePhone($phone)
+    {
+        // Supprimer tous les espaces
+        $cleanPhone = preg_replace('/\s+/', '', $phone);
+        
+        // Vérifier le format international
+        if (!preg_match('/^\+\d{1,4}\d{6,15}$/', $cleanPhone)) {
+            return null;
+        }
+        
+        return $cleanPhone;
     }
 }

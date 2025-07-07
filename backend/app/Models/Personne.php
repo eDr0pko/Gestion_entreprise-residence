@@ -11,9 +11,9 @@
         use HasApiTokens, HasFactory, Notifiable;
 
         protected $table = 'personne';
-        protected $primaryKey = 'email';
-        public $incrementing = false;
-        protected $keyType = 'string';
+        protected $primaryKey = 'id_personne';
+        public $incrementing = true;
+        protected $keyType = 'int';
         public $timestamps = false;
 
         /**
@@ -27,6 +27,7 @@
             'prenom',
             'mot_de_passe',
             'numero_telephone',
+            'photo_profil',
         ];
 
         /**
@@ -62,33 +63,33 @@
          */
         public function admin()
         {
-            return $this->hasOne(Admin::class, 'email_personne', 'email');
+            return $this->hasOne(Admin::class, 'id_personne', 'id_personne');
         }
 
         public function gardien()
         {
-            return $this->hasOne(Gardien::class, 'email_personne', 'email');
+            return $this->hasOne(Gardien::class, 'id_personne', 'id_personne');
         }
 
         public function resident()
         {
-            return $this->hasOne(Resident::class, 'email_personne', 'email');
+            return $this->hasOne(Resident::class, 'id_personne', 'id_personne');
         }
 
         public function groupes()
         {
-            return $this->belongsToMany(GroupeMessage::class, 'personne_groupe', 'email_personne', 'id_groupe_message')
+            return $this->belongsToMany(GroupeMessage::class, 'personne_groupe', 'id_personne', 'id_groupe_message')
                         ->withPivot('date_adhesion', 'derniere_connexion');
         }
 
     public function messages()
     {
-        return $this->hasMany(Message::class, 'email_auteur', 'email');
+        return $this->hasMany(Message::class, 'id_auteur', 'id_personne');
     }
 
     public function invite()
     {
-        return $this->hasOne(Invite::class, 'email', 'email');
+        return $this->hasOne(Invite::class, 'id_personne', 'id_personne');
     }
 
     /**

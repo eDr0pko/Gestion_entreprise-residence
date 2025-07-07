@@ -1,0 +1,1 @@
+<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Statistiques & Rapports</h2><p class="text-gray-600 mb-4">Consulter les statistiques d'utilisation, rapports d'activité et logs du système.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici les statistiques et rapports...)</div></div></template>

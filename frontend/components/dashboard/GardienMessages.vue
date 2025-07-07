@@ -1,0 +1,1 @@
+<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Messages & Groupes</h2><p class="text-gray-600 mb-4">Accéder aux groupes de discussion et messages des résidents.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des messages et groupes...)</div></div></template>

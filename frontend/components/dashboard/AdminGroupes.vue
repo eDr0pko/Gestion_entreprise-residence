@@ -1,0 +1,1 @@
+<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Groupes & Messages</h2><p class="text-gray-600 mb-4">Gérer les groupes de discussion, messages, fichiers et réactions.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des groupes et messages...)</div></div></template>

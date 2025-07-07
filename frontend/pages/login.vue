@@ -250,16 +250,16 @@
         console.log('Redirection pour le rôle:', (user as any).role)
         switch ((user as any).role) {
           case 'admin':
-            await router.push('/admin/dashboard')
+            await router.push('/planning')
             break
           case 'gardien':
-            await router.push('/gardien/dashboard')
+            await router.push('/planning')
             break
           case 'resident':
-            await router.push('/messages')
+            await router.push('/planning')
             break
           default:
-            await router.push('/messages')
+            await router.push('/planning')
         }
       } else {
         console.error('Utilisateur non défini après connexion')

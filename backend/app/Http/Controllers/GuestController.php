@@ -24,7 +24,7 @@ class GuestController extends Controller
                 'email' => 'required|email|unique:personne,email',
                 'nom' => 'required|string|min:2|max:45',
                 'prenom' => 'required|string|min:2|max:45',
-                'numero_telephone' => 'required|string|regex:/^\+\d{1,4}\d{6,15}$/',
+                'numero_telephone' => 'required|string',
                 'mot_de_passe' => 'required|string|min:6',
                 'mot_de_passe_confirmation' => 'required|string|same:mot_de_passe'
             ], [
@@ -38,7 +38,6 @@ class GuestController extends Controller
                 'prenom.min' => 'Le prénom doit contenir au moins 2 caractères',
                 'prenom.max' => 'Le prénom ne peut pas dépasser 45 caractères',
                 'numero_telephone.required' => 'Le numéro de téléphone est obligatoire',
-                'numero_telephone.regex' => 'Format de téléphone invalide. Utilisez: +XXX XXXXXXXX',
                 'mot_de_passe.required' => 'Le mot de passe est obligatoire',
                 'mot_de_passe.min' => 'Le mot de passe doit contenir au moins 6 caractères',
                 'mot_de_passe_confirmation.required' => 'La confirmation du mot de passe est obligatoire',
@@ -53,18 +52,30 @@ class GuestController extends Controller
                 ], 422);
             }
 
+            // Valider et nettoyer le numéro de téléphone
+            $cleanPhone = $this->cleanAndValidatePhone($request->numero_telephone);
+            if (!$cleanPhone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format de téléphone invalide',
+                    'errors' => [
+                        'numero_telephone' => ['Le numéro de téléphone doit être au format international (+33123456789)']
+                    ]
+                ], 422);
+            }
+
             // Créer la personne avec mot de passe hashé
             $personne = Personne::create([
                 'email' => strtolower(trim($request->email)),
                 'nom' => trim($request->nom),
                 'prenom' => trim($request->prenom),
-                'numero_telephone' => $request->numero_telephone,
+                'numero_telephone' => $cleanPhone, // Utiliser le numéro nettoyé
                 'mot_de_passe' => Hash::make($request->mot_de_passe)
             ]);
 
             // Créer l'entrée invite (actif par défaut)
             $invite = Invite::create([
-                'email' => $personne->email,
+                'id_personne' => $personne->id_personne,
                 'actif' => true
             ]);
 
@@ -78,10 +89,12 @@ class GuestController extends Controller
                 'message' => 'Inscription réussie ! Vous êtes maintenant connecté.',
                 'token' => $token,
                 'user' => [
+                    'id_personne' => $personne->id_personne,
                     'email' => $personne->email,
                     'nom' => $personne->nom,
                     'prenom' => $personne->prenom,
                     'numero_telephone' => $personne->numero_telephone,
+                    'photo_profil' => $personne->photo_profil,
                     'role' => 'invite'
                 ]
             ]);
@@ -161,10 +174,12 @@ class GuestController extends Controller
                 'message' => 'Connexion réussie !',
                 'token' => $token,
                 'user' => [
+                    'id_personne' => $personne->id_personne,
                     'email' => $personne->email,
                     'nom' => $personne->nom,
                     'prenom' => $personne->prenom,
                     'numero_telephone' => $personne->numero_telephone,
+                    'photo_profil' => $personne->photo_profil,
                     'role' => 'invite'
                 ]
             ]);
@@ -189,10 +204,12 @@ class GuestController extends Controller
                 ->get()
                 ->map(function ($personne) {
                     return [
+                        'id_personne' => $personne->id_personne,
                         'email' => $personne->email,
                         'nom' => $personne->nom,
                         'prenom' => $personne->prenom,
                         'numero_telephone' => $personne->numero_telephone,
+                        'photo_profil' => $personne->photo_profil,
                         'invite' => [
                             'actif' => $personne->invite->actif,
                             'created_at' => $personne->invite->created_at,
@@ -220,7 +237,17 @@ class GuestController extends Controller
     public function deactivate($email)
     {
         try {
-            $invite = Invite::where('email', $email)->first();
+            // Trouver la personne par email puis l'invité par id_personne
+            $personne = Personne::where('email', $email)->first();
+            
+            if (!$personne) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Personne non trouvée'
+                ], 404);
+            }
+
+            $invite = Invite::where('id_personne', $personne->id_personne)->first();
 
             if (!$invite) {
                 return response()->json([
@@ -242,5 +269,22 @@ class GuestController extends Controller
                 'message' => 'Erreur: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Nettoie un numéro de téléphone en supprimant les espaces
+     * et vérifie le format international
+     */
+    private function cleanAndValidatePhone($phone)
+    {
+        // Supprimer tous les espaces
+        $cleanPhone = preg_replace('/\s+/', '', $phone);
+        
+        // Vérifier le format international
+        if (!preg_match('/^\+\d{1,4}\d{6,15}$/', $cleanPhone)) {
+            return null;
+        }
+        
+        return $cleanPhone;
     }
 }
