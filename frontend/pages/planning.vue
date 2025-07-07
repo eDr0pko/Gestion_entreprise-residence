@@ -157,7 +157,7 @@ function updateCurrentTimePosition() {
   const totalMinutesInDay = 24 * 60
   const tableHeight = 80 * 16
 
-  currentTimePosition.value = (minutesSinceMidnight / totalMinutesInDay) * tableHeight 
+  currentTimePosition.value = (minutesSinceMidnight / totalMinutesInDay) * tableHeight
 
   const h = now.getHours().toString().padStart(2, '0')
   const m = now.getMinutes().toString().padStart(2, '0')
