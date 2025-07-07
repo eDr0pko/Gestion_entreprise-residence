@@ -1,1 +1,0 @@
-<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Logements & Bans</h2><p class="text-gray-600 mb-4">Consulter et gérer les logements, bannissements et résidents associés.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des logements et bans...)</div></div></template>

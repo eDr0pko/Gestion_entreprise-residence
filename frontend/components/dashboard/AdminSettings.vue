@@ -1,1 +1,9 @@
-<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Paramètres avancés</h2><p class="text-gray-600 mb-4">Configurer les paramètres globaux de la résidence et de l'application.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici les paramètres avancés...)</div></div></template>
+<template>
+  <div class="p-6">
+    <h2 class="text-2xl font-bold mb-4">Paramètres</h2>
+    <p>Paramètres du tableau de bord (admin).</p>
+  </div>
+</template>
+<script setup lang="ts">
+// Logique paramètres admin ici
+</script>

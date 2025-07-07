@@ -1,1 +1,0 @@
-<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Gestion des utilisateurs</h2><p class="text-gray-600 mb-4">Créer, modifier, supprimer et consulter les administrateurs, gardiens, résidents et invités.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des utilisateurs...)</div></div></template>
