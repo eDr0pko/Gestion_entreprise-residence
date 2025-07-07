@@ -89,7 +89,7 @@
 
 
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import VisitePopup from '@/components/VisitePopup.vue'
@@ -157,7 +157,7 @@ function updateCurrentTimePosition() {
   const totalMinutesInDay = 24 * 60
   const tableHeight = 80 * 16
 
-  currentTimePosition.value = (minutesSinceMidnight / totalMinutesInDay) * tableHeight
+  currentTimePosition.value = (minutesSinceMidnight / totalMinutesInDay) * tableHeight 
 
   const h = now.getHours().toString().padStart(2, '0')
   const m = now.getMinutes().toString().padStart(2, '0')
@@ -178,7 +178,7 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
-
+/*
 interface Visite {
   id_visite: number                // Identifiant unique de la visite
   email_visiteur: string          // Email du visiteur
@@ -188,7 +188,7 @@ interface Visite {
   date_visite_end: string         // Date et heure de fin (ISO string)
   statut_visite: 'terminee' | 'en_attente' | 'annulee' | 'programmee' // Statut de la visite
 }
-
+*/
 
 /*
 
