@@ -62,6 +62,8 @@ Route::get('/db-check', function () {
     }
 });
 
+Route::get('/visite', [VisiteController::class, 'getUserVisits']);
+
 // Routes pour les invités (publiques)
 Route::prefix('guests')->group(function () {
     Route::post('/register', [GuestController::class, 'register']);
@@ -87,6 +89,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/{groupId}', [MessageController::class, 'getMessages']);
     Route::post('/messages/{groupId}', [MessageController::class, 'sendMessage']);
     Route::post('/conversations/{groupId}/mark-read', [MessageController::class, 'markAsRead']);
+
+    //Visites
+    //Route::get('/visite', [VisiteController::class, 'getUserVisits']);
+
+
+
     
     // Endpoints optimisés pour le rafraîchissement automatique
     Route::get('/conversations/check-changes', [MessageController::class, 'checkConversationsChanges']);

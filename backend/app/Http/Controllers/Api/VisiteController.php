@@ -12,17 +12,57 @@ use Illuminate\Support\Facades\Log;
 
 class VisiteController extends Controller
 {
-    public function index()
+    /**
+     * Récupère les visites liées à l'utilisateur connecté
+     */
+    public function getUserVisits()
     {
-        return Visite::all();
-    }
+        try {
+            $user = Auth::user();
 
-    public function updateStatut(Request $request, $id)
-    {
-        $visite = \App\Models\Visite::findOrFail($id);
-        $visite->statut_visite = $request->input('statut_visite');
-        $visite->save();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié'
+                ], 401);
+            }
 
-        return response()->json($visite);
+            Log::info('Chargement des visites pour l\'utilisateur: ' . $user->email);
+
+            $visites = Visite::where('email_utilisateur', $user->email)
+                ->with('invites') // si tu as une relation "invites()" dans le modèle Visite
+                ->get()
+                ->map(function ($visite) {
+                    return [
+                        'id' => $visite->id,
+                        'date_visite' => $visite->date_visite ? $visite->date_visite->toISOString() : null,
+                        'statut_visite' => $visite->statut_visite,
+                        'invites' => $visite->invites->map(function ($invite) {
+                            return [
+                                'id' => $invite->id,
+                                'nom' => $invite->nom,
+                                'email' => $invite->email,
+                            ];
+                        }),
+                    ];
+                });
+
+            Log::info('Visites trouvées: ' . count($visites));
+
+            return response()->json([
+                'success' => true,
+                'visites' => $visites
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des visites: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des visites',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
