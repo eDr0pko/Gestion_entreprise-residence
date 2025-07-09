@@ -1,29 +1,35 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div class="bg-white rounded-lg shadow-lg p-6 min-w-[300px] relative">
-      <button @click="close" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">×</button>
-      <h3 class="text-lg font-bold mb-2">Détail de la visite</h3>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Détails de la visite</h2>
       <div v-if="visite">
-        <div><b>Date :</b> {{ slotDate ? slotDate.toLocaleDateString() : '' }}</div>
-        <div><b>Heure :</b> {{ slotDate ? slotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}</div>
-        <div><b>Email visiteur :</b> {{ visite.email_visiteur }}</div>
-        <div><b>Motif :</b> {{ visite.motif_visite }}</div>
-        <div><b>Statut :</b> {{ visite.statut_visite }}</div>
-        <div><b>Début :</b> {{ visite.date_visite_start }}</div>
-        <div><b>Fin :</b> {{ visite.date_visite_end }}</div>
+        <p><strong>Motif :</strong> {{ visite.motif_visite }}</p>
+        <p><strong>Début :</strong> {{ formatDate(visite.date_visite_start) }}</p>
+        <p><strong>Fin :</strong> {{ formatDate(visite.date_visite_end) }}</p>
+        <p><strong>Statut :</strong> {{ visite.statut_visite }}</p>
+      </div>
+      <div class="mt-4 text-right">
+        <button @click="$emit('close')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">
+          Fermer
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
-  show: Boolean,
-  slotDate: Date,
+defineProps({
   visite: Object
 })
-const emit = defineEmits(['close'])
-function close() {
-  emit('close')
+
+function formatDate(str) {
+  const d = new Date(str)
+  return d.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 </script>
