@@ -13,18 +13,21 @@
           </span>
         </div>
       </template>
-      <template #actions>        
-        <!-- Bouton créer conversation (visible seulement sur la liste) -->
-        <button
-          v-if="!selectedConversation || !isMobile"
-          @click="showCreateModal = true"
-          class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200"
-          title="Nouvelle conversation"
-        >
-          <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-        </button>
+      <template #actions>
+        <div class="flex items-center">
+          <!-- Bouton créer conversation (visible seulement sur la liste) -->
+          <button
+            v-if="!selectedConversation || !isMobile"
+            @click="showCreateModal = true"
+            class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 mr-2"
+            title="Nouvelle conversation"
+          >
+            <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+          </button>
+          <!-- Le slot actions est à gauche du statut de connexion -->
+        </div>
       </template>
     </AppHeader>
     

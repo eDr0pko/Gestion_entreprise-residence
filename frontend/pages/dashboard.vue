@@ -64,18 +64,15 @@ const role = authStore.userRole
 
 // Définition des sections selon le rôle
 const adminSections = [
-  { key: 'users', label: 'Utilisateurs', icon: UserIcon },
-  { key: 'groupes', label: 'Groupes & Messages', icon: GroupIcon },
-  { key: 'logements', label: 'Logements & Bans', icon: HomeIcon },
-  { key: 'visites', label: 'Visites & Invités', icon: VisitIcon },
-  { key: 'stats', label: 'Statistiques & Rapports', icon: ChartIcon },
-  { key: 'settings', label: 'Paramètres', icon: CogIcon },
+  { key: 'admin-stats', label: 'Statistiques', icon: ChartIcon },
+  { key: 'admin-residents', label: 'Gestion Résidents et Gardien', icon: UserIcon },
+  { key: 'admin-visiteurs', label: 'Gestion Visiteurs', icon: VisitIcon },
+  { key: 'admin-conversations', label: 'Gestion des conversations', icon: GroupIcon },
+  { key: 'admin-settings', label: 'Paramètres', icon: CogIcon },
 ]
 const gardienSections = [
-  { key: 'incidents', label: 'Incidents', icon: BanIcon },
-  { key: 'messages', label: 'Messages & Groupes', icon: GroupIcon },
-  { key: 'visites', label: 'Visites', icon: VisitIcon },
-  { key: 'fichiers', label: 'Fichiers & Documents', icon: FileIcon },
+  { key: 'gardien-stats', label: 'Statistiques', icon: ChartIcon },
+  { key: 'gardien-visiteurs', label: 'Gestion Visiteurs', icon: VisitIcon },
 ]
 
 const sidebarSections = computed(() => {
@@ -90,21 +87,18 @@ const selectedSection = ref(sidebarSections.value[0]?.key || '')
 const sectionComponent = computed(() => {
   if (role === 'admin') {
     switch (selectedSection.value) {
-      case 'users': return defineAsyncComponent(() => import('~/components/dashboard/AdminUsers.vue'))
-      case 'groupes': return defineAsyncComponent(() => import('~/components/dashboard/AdminGroupes.vue'))
-      case 'logements': return defineAsyncComponent(() => import('~/components/dashboard/AdminLogements.vue'))
-      case 'visites': return defineAsyncComponent(() => import('~/components/dashboard/AdminVisites.vue'))
-      case 'stats': return defineAsyncComponent(() => import('~/components/dashboard/AdminStats.vue'))
-      case 'settings': return defineAsyncComponent(() => import('~/components/dashboard/AdminSettings.vue'))
+      case 'admin-stats': return defineAsyncComponent(() => import('~/components/dashboard/AdminStats.vue'))
+      case 'admin-residents': return defineAsyncComponent(() => import('~/components/dashboard/AdminResidents.vue'))
+      case 'admin-visiteurs': return defineAsyncComponent(() => import('~/components/dashboard/GestionVisiteurs.vue'))
+      case 'admin-conversations': return defineAsyncComponent(() => import('~/components/dashboard/AdminConversations.vue'))
+      case 'admin-settings': return defineAsyncComponent(() => import('~/components/dashboard/AdminSettings.vue'))
       default: return { template: '<div class="text-gray-500">Sélectionnez une section</div>' }
     }
   }
   if (role === 'gardien') {
     switch (selectedSection.value) {
-      case 'incidents': return defineAsyncComponent(() => import('~/components/dashboard/GardienIncidents.vue'))
-      case 'messages': return defineAsyncComponent(() => import('~/components/dashboard/GardienMessages.vue'))
-      case 'visites': return defineAsyncComponent(() => import('~/components/dashboard/GardienVisites.vue'))
-      case 'fichiers': return defineAsyncComponent(() => import('~/components/dashboard/GardienFichiers.vue'))
+      case 'gardien-stats': return defineAsyncComponent(() => import('~/components/dashboard/GardienStats.vue'))
+      case 'gardien-visiteurs': return defineAsyncComponent(() => import('~/components/dashboard/GestionVisiteurs.vue'))
       default: return { template: '<div class="text-gray-500">Sélectionnez une section</div>' }
     }
   }

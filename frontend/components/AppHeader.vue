@@ -1,9 +1,9 @@
 <template>
-  <header class="bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-200 px-6 lg:px-12 py-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm min-h-[80px]">
+  <header class="bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-200 px-6 lg:px-10 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm min-h-[56px]">
     <!-- Effet de glassmorphisme subtil -->
     <div class="absolute inset-0 bg-gradient-to-r from-[#0097b2]/3 via-transparent to-[#00b4d8]/3 pointer-events-none"></div>
     
-    <div class="relative flex items-center gap-6 w-full min-h-[56px]">
+    <div class="relative flex items-center gap-6 w-full min-h-[40px]">
       <!-- Bouton retour planning (gauche, partout sauf sur /planning) -->
       <NuxtLink
         v-if="$route.path !== '/planning'"
@@ -37,15 +37,15 @@
     <!-- Actions à droite -->
     <div class="relative flex items-center gap-6 lg:gap-7 xl:gap-9">
       <!-- Statut de connexion (si props fournis) -->
-      <div class="flex items-center gap-2 mr-4 px-4 py-1 min-w-[135px] max-w-[160px] bg-white/60 rounded-2xl shadow-inner border border-gray-200 backdrop-blur-md transition-all duration-200 scale-90">
+      <div class="flex items-center gap-2 mr-4 px-5 py-2 min-h-[38px] min-w-[135px] max-w-[180px] bg-white/60 rounded-2xl shadow-inner border border-gray-200 backdrop-blur-md transition-all duration-200 scale-95">
         <div 
-          class="w-3 h-3 rounded-full"
+          class="w-4 h-4 rounded-full"
           :class="error ? 'bg-red-500' : loadingConversations ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"
           :title="error ? 'Erreur de connexion' : loadingConversations ? 'Chargement...' : 'Connecté'"
         ></div>
-        <span v-if="error" class="text-xs font-semibold text-red-500 hidden lg:inline">Hors ligne</span>
-        <span v-else-if="loadingConversations" class="text-xs font-semibold text-yellow-600 hidden lg:inline">Chargement...</span>
-        <span v-else class="text-xs font-semibold text-green-600 hidden lg:inline">En ligne</span>
+        <span v-if="error" class="text-sm font-bold text-red-500 hidden lg:inline">Hors ligne</span>
+        <span v-else-if="loadingConversations" class="text-sm font-bold text-yellow-600 hidden lg:inline">Chargement...</span>
+        <span v-else class="text-sm font-bold text-green-600 hidden lg:inline">En ligne</span>
       </div>
       <!-- Actions personnalisées -->
       <slot name="actions"></slot>

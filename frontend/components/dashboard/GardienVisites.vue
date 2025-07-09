@@ -1,1 +1,0 @@
-<template><div class="dashboard-section"><h2 class="text-xl font-bold mb-4">Visites</h2><p class="text-gray-600 mb-4">Gérer les visites et accès temporaires des invités.</p><div class="rounded-lg bg-white/80 p-6 shadow">(Ici la gestion des visites...)</div></div></template>
