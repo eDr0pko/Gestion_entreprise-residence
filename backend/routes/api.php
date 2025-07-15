@@ -2,22 +2,22 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\VisiteController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
-// Routes publiques
+//
+// 🔓 Routes publiques
+//
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/health', function () {
     return response()->json([
@@ -26,6 +26,8 @@ Route::get('/health', function () {
         'timestamp' => now()
     ]);
 });
+
+// Vérification de la base de données
 Route::get('/db-check', function () {
     try {
         $userCount = \App\Models\Personne::count();
@@ -33,7 +35,7 @@ Route::get('/db-check', function () {
         
         if ($userCount > 0) {
             $user = \App\Models\Personne::first();
-            // Test de la requête corrigée
+
             $conversations = \App\Models\GroupeMessage::whereHas('personnes', function ($query) use ($user) {
                 $query->where('personne_groupe.id_personne', $user->id_personne);
             })->count();
@@ -62,15 +64,9 @@ Route::get('/db-check', function () {
     }
 });
 
-Route::get('/visite', [VisiteController::class, 'getUserVisits']);
-
-// Routes pour les invités (publiques)
-Route::prefix('guests')->group(function () {
-    Route::post('/register', [GuestController::class, 'register']);
-    Route::post('/login', [GuestController::class, 'login']);
-});
-
-// Routes protégées par authentification (membres avec token)
+//
+// 🔐 Routes protégées par auth:sanctum
+//
 Route::middleware('auth:sanctum')->group(function () {
     // Incidents (admin)
     Route::get('/admin/incidents', [\App\Http\Controllers\IncidentController::class, 'index']);
@@ -91,11 +87,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/persons/{id}', [AuthController::class, 'updatePerson']);
     Route::post('/admin/persons', [AuthController::class, 'createPerson']);
     Route::delete('/admin/persons/{id}', [AuthController::class, 'deletePerson']);
-});
 
-// Routes accessibles aux membres et invités (token-based auth)
-Route::middleware('auth:sanctum')->group(function () {
-    // Messages
+    // 👤 Profil
+    Route::get('/profile/stats', [AuthController::class, 'getProfileStats']);
+    Route::put('/profile/update', [AuthController::class, 'updateProfile']);
+    Route::post('/profile/verify-password', [AuthController::class, 'verifyPassword']);
+    Route::put('/profile/password', [AuthController::class, 'updatePassword']);
+    Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
+    Route::delete('/profile/avatar', [AuthController::class, 'deleteAvatar']);
+
+    // 💬 Messages et Conversations
     Route::get('/conversations', [MessageController::class, 'getConversations']);
     Route::post('/conversations', [MessageController::class, 'createConversation']);
     Route::get('/conversations/users', [MessageController::class, 'getAvailableUsers']);
@@ -109,49 +110,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/messages', [MessageController::class, 'getAllMessages']);
     Route::delete('/admin/conversations/{groupId}', [MessageController::class, 'deleteConversation']);
 
-    //Visites
-    //Route::get('/visite', [VisiteController::class, 'getUserVisits']);
+    // Modération : tous les messages (admin)
+    Route::get('/admin/messages', [MessageController::class, 'getAllMessages']);
+    Route::delete('/admin/conversations/{groupId}', [MessageController::class, 'deleteConversation']);
 
-
-
-    
-    // Endpoints optimisés pour le rafraîchissement automatique
+    // 💬 Rafraîchissement auto
     Route::get('/conversations/check-changes', [MessageController::class, 'checkConversationsChanges']);
     Route::get('/messages/{groupId}/check-changes', [MessageController::class, 'checkMessagesChanges']);
-    
-    // Nouvelles routes
     Route::post('/messages/{messageId}/reactions', [MessageController::class, 'addReaction']);
-    
-    // Administration des invités
+
+    // 📁 Fichiers
+    Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
+    Route::get('/avatars/{filename}', [AuthController::class, 'getAvatar']);
+
+    // 👥 Administration des invités
     Route::prefix('admin/guests')->group(function () {
         Route::get('/', [GuestController::class, 'index']);
         Route::post('/{id}/deactivate', [GuestController::class, 'deactivate']);
-        Route::put('/{id}', [GuestController::class, 'update']); // Ajout de la route update
-    });
-    // Ban un visiteur (invite) : POST /ban { id_personne }
-    Route::post('/ban', function (Request $request) {
-        $user = $request->user();
-        if (!$user || (!$user->admin && !$user->gardien)) {
-            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
-        }
-        $id = $request->input('id_personne');
-        if (!$id) {
-            return response()->json(['success' => false, 'message' => 'id_personne manquant'], 422);
-        }
-        $invite = \App\Models\Invite::where('id_personne', $id)->first();
-        if (!$invite) {
-            return response()->json(['success' => false, 'message' => 'Visiteur non trouvé'], 404);
-        }
-        $invite->actif = false;
-        $invite->save();
-        // Ajout dans la table ban si pas déjà présent
-        if (!\App\Models\Ban::where('id_proprietaire', $id)->exists()) {
-            \App\Models\Ban::create([
-                'id_proprietaire' => $id,
-                'motif' => 'Banni par un administrateur/gardien',
-            ]);
-        }
-        return response()->json(['success' => true, 'message' => 'Visiteur banni avec succès']);
     });
     Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
     Route::get('/avatars/{filename}', [AuthController::class, 'getAvatar']);
@@ -167,20 +142,75 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gestion des invités temporaires (pour les administrateurs)
     Route::get('/guests', [GuestController::class, 'index']);
     Route::post('/guests/{id}/deactivate', [GuestController::class, 'deactivate']);
+
+    // 📅 VISITES : Récupération des visites liées à l'utilisateur connecté
+    Route::get('/visites', function () {
+        $user = Auth::user();
+
+        $visites = DB::table('visite')
+            ->where('email_visiteur', $user->email)
+            ->orderBy('date_visite_start', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'visites' => $visites
+        ]);
+    });
+
+    // 📅 VISITES : Modification du statut d'une visite
+    Route::post('/visites/{id}/statut', function (Request $request, $id) {
+        $user = Auth::user();
+        $statut = $request->input('statut');
+
+        $statutsAutorises = ['en_cours', 'annulee', 'terminee', 'programmee', 'banni'];
+
+        if (!in_array($statut, $statutsAutorises)) {
+            return response()->json(['success' => false, 'message' => 'Statut invalide'], 400);
+        }
+
+        $visite = DB::table('visite')
+            ->where('id_visite', $id)
+            ->where('email_visiteur', $user->email)
+            ->first();
+
+        if (!$visite) {
+            return response()->json(['success' => false, 'message' => 'Visite non trouvée'], 404);
+        }
+
+        DB::table('visite')
+            ->where('id_visite', $id)
+            ->update(['statut_visite' => $statut]);
+
+        return response()->json(['success' => true, 'message' => 'Statut mis à jour']);
+    });
+
+    // 📅 VISITES : Création d'une nouvelle visite
+    Route::post('/visites', [VisiteController::class, 'store']);
 });
 
-// Routes de test temporaire
+//
+// 🎯 Routes publiques pour invités
+//
+Route::prefix('guests')->group(function () {
+    Route::post('/register', [GuestController::class, 'register']);
+    Route::post('/login', [GuestController::class, 'login']);
+});
+
+//
+// 🧪 Test API temporaire
+//
 Route::get('/test-conversation', function () {
     try {
         $user = \App\Models\Personne::where('email', 'marie.durand@residence.com')->first();
         if (!$user) {
             return response()->json(['error' => 'User not found']);
         }
-        
+
         $conversations = \App\Models\GroupeMessage::whereHas('personnes', function ($query) use ($user) {
             $query->where('personne_groupe.id_personne', $user->id_personne);
         })->get();
-        
+
         return response()->json([
             'user_id' => $user->id_personne,
             'conversations_count' => $conversations->count(),
@@ -194,5 +224,3 @@ Route::get('/test-conversation', function () {
         ], 500);
     }
 });
-
-

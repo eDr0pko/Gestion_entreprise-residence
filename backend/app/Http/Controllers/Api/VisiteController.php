@@ -65,4 +65,52 @@ class VisiteController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Stocke une nouvelle visite
+     */
+    public function store(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            $validated = $request->validate([
+                'motif_visite' => 'required|string',
+                'email_visiteur' => 'required|email',
+                'date_visite_start' => 'required|date',
+                'date_visite_end' => 'required|date',
+                'statut_visite' => 'required|string',
+            ]);
+
+            $visite = new Visite();
+            $visite->email_utilisateur = $user->email;
+            $visite->motif_visite = $validated['motif_visite'];
+            $visite->email_visiteur = $validated['email_visiteur'];
+            $visite->date_visite_start = $validated['date_visite_start'];
+            $visite->date_visite_end = $validated['date_visite_end'];
+            $visite->statut_visite = $validated['statut_visite'];
+            $visite->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visite enregistrée avec succès',
+                'visite' => $visite
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'enregistrement de la visite: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'enregistrement de la visite',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -2,51 +2,89 @@
   <div>
     <transition name="notif-btn-fade">
       <button
-        v-if="!open"
+        v-show="!open"
         @click="toggleSidebar"
         class="notif-btn"
-        :class="{ 'clicked': btnClicked }"
+        :class="{ clicked: btnClicked }"
         @animationend="btnClicked = false"
       >
         🔔
       </button>
     </transition>
+
     <transition name="slide">
       <div v-if="open" class="sidebar">
         <div class="sidebar-header flex justify-between items-center px-4 py-2 border-b">
           <div class="flex space-x-4">
-            <button
-              @click="showTrash = false"
-              :class="!showTrash ? 'font-bold underline' : 'text-gray-500'"
-            >
+            <button @click="showTrash = false" :class="!showTrash ? 'font-bold underline' : 'text-gray-500'">
               Notifications
             </button>
-            <button
-              @click="showTrash = true"
-              :class="showTrash ? 'font-bold underline' : 'text-gray-500'"
-            >
+            <button @click="showTrash = true" :class="showTrash ? 'font-bold underline' : 'text-gray-500'">
               Corbeille
             </button>
           </div>
           <button @click="toggleSidebar" class="close-btn text-xl" title="Fermer">✖</button>
         </div>
 
+        <ul class="notif-list space-y-4 px-4">
+          <li
+            v-for="visite in filteredNotifications"
+            :key="visite.id_visite"
+            class="bg-white shadow rounded-lg p-4 border-l-4 transition-all"
+            :class="{
+              'border-green-500': visite.statut_visite === 'terminee',
+              'border-yellow-500': visite.statut_visite === 'en_cours',
+              'border-blue-500': visite.statut_visite === 'programmee',
+              'border-red-500': visite.statut_visite === 'annulee',
+              'border-gray-500': !['terminee', 'en_cours', 'programmee', 'annulee'].includes(visite.statut_visite)
+            }"
+          >
+            <h3 class="font-semibold text-lg">{{ visite.motif_visite }}</h3>
+            <p class="text-sm text-gray-500">
+              Du {{ formatDate(visite.date_visite_start) }} au {{ formatDate(visite.date_visite_end) }}
+            </p>
+            <span
+              class="inline-block mt-2 px-2 py-1 text-xs font-semibold rounded-full"
+              :class="{
+                'bg-green-100 text-green-700': visite.statut_visite === 'terminee',
+                'bg-yellow-100 text-yellow-700': visite.statut_visite === 'en_cours',
+                'bg-blue-100 text-blue-700': visite.statut_visite === 'programmee',
+                'bg-red-100 text-red-700': visite.statut_visite === 'annulee',
+                'bg-gray-200 text-gray-800': !['terminee', 'en_cours', 'programmee', 'annulee'].includes(visite.statut_visite)
+              }"
+            >
+              {{ visite.statut_visite || 'non défini' }}
+            </span>
 
-        <ul class="notif-list">
-          <li v-for="visite in filteredNotifications" :key="visite.id_visite" class="mb-4 border-b pb-2">
-            <div><b>ID visite:</b> {{ visite.id_visite }}</div>
-            <div><b>Email visiteur:</b> {{ visite.email_visiteur }}</div>
-            <div><b>ID invitation:</b> {{ visite.id_invitation }}</div>
-            <div><b>Motif:</b> {{ visite.motif_visite }}</div>
-            <div><b>Date visite:</b> {{ visite.date_visite }}</div>
-            <div>
-              <b>Statut:</b>
-              <select v-model="visite.statut_visite" @change="updateStatut(visite)">
-                <option value="programmee">Programmee</option>
-                <option value="terminee">Terminee</option>
-                <option value="annulee">Annulee</option>
-                <option value="en_attente">En attente</option>
-              </select>
+            <div
+              v-if="!['terminee', 'en_cours', 'annulee'].includes(visite.statut_visite)"
+              class="mt-4 flex gap-2 flex-wrap"
+            >
+              <button
+                @click="changerStatut(visite.id_visite, 'en_cours')"
+                class="bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 text-sm"
+              >
+                ✅ Accepter
+              </button>
+              <button
+                @click="changerStatut(visite.id_visite, 'annulee')"
+                class="bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200 text-sm"
+              >
+                ❌ Refuser
+              </button>
+              <button
+                @click="changerStatut(visite.id_visite, 'banni')"
+                class="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 text-sm"
+              >
+                🚫 Bannir
+              </button>
+              <button
+                @click="console.log('Reporter pas encore implémenté')"
+                class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-sm opacity-50 cursor-not-allowed"
+                disabled
+              >
+                📅 Reporter
+              </button>
             </div>
           </li>
           <li v-if="filteredNotifications.length === 0">
@@ -58,75 +96,90 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      open: false,
-      btnClicked: false,
-      notifications: [],
-      showTrash: false,
-    };
-  },
-  computed: {
-    filteredNotifications() {
-      return this.notifications.filter(v =>
-        this.showTrash ? v.statut_visite === 'annulee' : v.statut_visite !== 'annulee'
-      );
+<script setup>
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
+const config = useRuntimeConfig()
+
+const open = ref(false)
+const btnClicked = ref(false)
+const showTrash = ref(false)
+const notifications = ref([])
+const emit = defineEmits(['update:open'])
+
+const toggleSidebar = () => {
+  btnClicked.value = true
+  open.value = !open.value
+  emit('update:open', open.value) // Ajout : on informe le parent
+  if (open.value) fetchNotifications()
+}
+
+const fetchNotifications = async () => {
+  try {
+    const res = await fetch(`${config.public.apiBase}/visites`, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+        'Accept': 'application/json'
+      }
+    })
+    const data = await res.json()
+    if (res.ok && data.success) {
+      notifications.value = data.visites
+    } else {
+      notifications.value = []
     }
-  },
-  methods: {
-    toggleSidebar() {
-      if (!this.open) {
-        this.btnClicked = true;
-        setTimeout(() => {
-          this.open = true;
-          this.fetchNotifications();
-        }, 150);
-      } else {
-        this.open = false;
-      }
-    },
-    async fetchNotifications() {
-      try {
-        const response = await fetch('http://localhost:8000/api/visite');
-        if (response.ok) {
-          this.notifications = await response.json();
-        } else {
-          this.notifications = [];
-        }
-      } catch (e) {
-        this.notifications = [];
-      }
-    },
-    async updateStatut(visite) {
-      try {
-        await fetch(`http://localhost:8000/api/visite/${visite.id_visite}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statut_visite: visite.statut_visite })
-        });
-        this.$emit('refreshPlanning'); // Ajoute cette ligne
-      } catch (e) {
-        alert("Erreur lors de la modification du statut");
-      }
-    }
+  } catch (err) {
+    notifications.value = []
   }
-};
+}
+
+const changerStatut = async (id, statut) => {
+  try {
+    const res = await fetch(`${config.public.apiBase}/visites/${id}/statut`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ statut })
+    })
+    const data = await res.json()
+    if (!res.ok || !data.success) throw new Error(data.message)
+    await fetchNotifications()
+  } catch (e) {
+    console.error('Erreur lors du changement de statut:', e)
+  }
+}
+
+const filteredNotifications = computed(() =>
+  notifications.value.filter(v =>
+    showTrash.value ? v.statut_visite === 'annulee' : v.statut_visite !== 'annulee'
+  )
+)
+
+const formatDate = (str) => {
+  const date = new Date(str)
+  return date.toLocaleString('fr-FR', {
+    day: '2-digit', month: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
 </script>
 
 <style scoped>
 .notif-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  position: absolute;
+  top: 130px;
+  right: 12px;
   z-index: 1001;
   background: linear-gradient(to right, #0097b2, #008699);
   color: #fff;
   border: none;
   width: 50px;
   height: 50px;
-  border-radius: 9999px; /* bouton parfaitement rond */
+  border-radius: 9999px;
   font-size: 20px;
   display: flex;
   align-items: center;
@@ -143,9 +196,9 @@ export default {
   animation: notif-pop 0.15s;
 }
 @keyframes notif-pop {
-  0% { transform: scale(1);}
-  50% { transform: scale(1.15);}
-  100% { transform: scale(1);}
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 .notif-btn-fade-enter-active, .notif-btn-fade-leave-active {
   transition: opacity 0.2s;
@@ -157,20 +210,15 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  width: 320px;
+  width: 360px;
   height: 100%;
   background: #fff;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  padding: 0;
   display: flex;
   flex-direction: column;
 }
 .sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px;
   background: #f5f5f5;
   border-bottom: 1px solid #eee;
 }
@@ -182,7 +230,7 @@ export default {
 }
 .notif-list {
   list-style: none;
-  padding: 18px;
+  padding: 1rem;
   margin: 0;
   flex: 1;
   overflow-y: auto;
