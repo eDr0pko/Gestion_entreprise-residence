@@ -17,6 +17,7 @@
     </div>
 
     <button
+      v-if="!notifOpen"
       class="btnAddVisite fixed right-6 top-[110px] z-50 bg-[#0097b2] text-white text-2xl rounded-full w-10 h-10 flex items-center justify-center shadow hover:scale-105 transition"
       @click="openCreationPopup()"
     >
@@ -90,7 +91,7 @@
       </div>
     </div>
 
-    <Notif />
+    <Notif @update:open="notifOpen = $event" />
     <VisitePopup v-if="popupOpen" :visite="popupVisite" @close="popupOpen = false" />
     <CreateVisitePopup v-if="popupCreateOpen" :defaultStart="popupCreateStart" @close="popupCreateOpen = false" @refresh="fetchVisites" />
     <div class="h-4 md:h-8"></div>
@@ -154,7 +155,8 @@ async function fetchVisites() {
   })
   const data = await res.json()
   if (res.ok && data.success) {
-    visites.value = data.visites.filter(v => v.statut_visite === 'programmee')
+    // On filtre pour ne PAS afficher les visites annulées
+    visites.value = data.visites.filter(v => v.statut_visite !== 'annule')
   }
 }
 
@@ -202,7 +204,16 @@ function getVisiteHeight(visite) {
 }
 function getVisiteColor(visite) {
   if (!visite) return ''
-  return 'bg-blue-500'
+  switch (visite.statut_visite) {
+    case 'programmee':
+      return 'bg-blue-500'
+    case 'en_cours':
+      return 'bg-green-500'
+    case 'annule':
+      return 'hidden' // ne devrait pas arriver car filtré, mais sécurité
+    default:
+      return 'bg-yellow-500' // autre statut = jaune
+  }
 }
 
 const popupOpen = ref(false)
@@ -224,7 +235,7 @@ function handleCellClick(date, hour, minute) {
   openCreationPopup(clickedDate.toISOString().slice(0, 16))
 }
 
-
+const notifOpen = ref(false)
 </script>
 
 <style>

@@ -8,12 +8,20 @@
           <input v-model="motif" type="text" class="w-full border rounded px-3 py-2 mt-1" required />
         </div>
         <div class="mb-4">
+          <label class="block text-sm font-medium">Adresse mail du visiteur</label>
+          <input v-model="email" type="email" class="w-full border rounded px-3 py-2 mt-1" required />
+        </div>
+        <div class="mb-4">
           <label class="block text-sm font-medium">Début</label>
           <input v-model="start" type="datetime-local" class="w-full border rounded px-3 py-2 mt-1" required />
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium">Fin</label>
           <input v-model="end" type="datetime-local" class="w-full border rounded px-3 py-2 mt-1" required />
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium">ID Invité</label>
+          <input v-model="id_invite" type="text" class="w-full border rounded px-3 py-2 mt-1" required />
         </div>
         <div class="flex justify-end gap-2">
           <button type="button" @click="$emit('close')" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
@@ -41,26 +49,40 @@ const props = defineProps({
 const emit = defineEmits(['close', 'refresh'])
 
 const motif = ref('')
+const email = ref('')
 const start = ref(props.defaultStart || '')
 const end = ref('')
+const id_invite = ref('') // Ajoute ce champ si tu veux le saisir dans le formulaire
 
 async function createVisite() {
   try {
+    const body = {
+      id_invite: id_invite.value,
+      email_visiteur: email.value,
+      motif_visite: motif.value,
+      date_visite_start: start.value.length === 16 ? start.value + ':00' : start.value,
+      date_visite_end: end.value.length === 16 ? end.value + ':00' : end.value,
+      statut_visite: 'programmee',
+    }
+    console.log('Body envoyé:', body)
     const response = await fetch(`${config.public.apiBase}/visites`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        motif_visite: motif.value,
-        date_visite_start: start.value,
-        date_visite_end: end.value,
-        statut_visite: 'programmee',
-      }),
+      body: JSON.stringify(body),
     })
 
-    const data = await response.json()
+    const text = await response.text()
+    console.log('Réponse brute:', text)
+    let data = {}
+    try {
+      data = JSON.parse(text)
+    } catch (e) {
+      alert('Erreur serveur: ' + text)
+      return
+    }
     if (response.ok) {
       emit('refresh')
       emit('close')

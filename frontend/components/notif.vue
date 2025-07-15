@@ -106,10 +106,12 @@ const open = ref(false)
 const btnClicked = ref(false)
 const showTrash = ref(false)
 const notifications = ref([])
+const emit = defineEmits(['update:open'])
 
 const toggleSidebar = () => {
   btnClicked.value = true
   open.value = !open.value
+  emit('update:open', open.value) // Ajout : on informe le parent
   if (open.value) fetchNotifications()
 }
 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\VisiteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -149,6 +150,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         return response()->json(['success' => true, 'message' => 'Statut mis à jour']);
     });
+
+    // 📅 VISITES : Création d'une nouvelle visite
+    Route::post('/visites', [VisiteController::class, 'store']);
 });
 
 //
