@@ -73,11 +73,16 @@ Le backend sera accessible sur `http://localhost:8000`
 
 ## 3. Configuration du Frontend (Nuxt.js)
 
+
 ### Installation des dépendances
 ```bash
 cd ../frontend
 npm install
+# Pour les statistiques et graphiques admin :
+npm install chart.js vue-chartjs
 ```
+
+> **Note :** Les graphiques du tableau de bord admin utilisent [chart.js](https://www.chartjs.org/) et [vue-chartjs](https://vue-chartjs.org/). Si vous ne voyez pas les graphiques, vérifiez que ces deux paquets sont bien installés dans le dossier `frontend`.
 
 ### Configuration de l'API
 Vérifier le fichier `nuxt.config.ts` :
@@ -92,11 +97,13 @@ export default defineNuxtConfig({
 })
 ```
 
+
 ### Démarrage du frontend
 ```bash
 npm run dev
 ```
 Le frontend sera accessible sur `http://localhost:3000` (ou 3001 si le port 3000 est occupé)
+
 
 ## 4. Vérification de l'installation
 
@@ -112,6 +119,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/health"
 ### Accéder à l'application
 1. Ouvrir `http://localhost:3000` dans votre navigateur
 2. Se connecter avec un compte de test (voir les données dans `creationdb_corrected.sql`)
+3. Accéder à la page Statistiques (Admin) pour visualiser les graphiques et indicateurs avancés.
 
 ## 5. Comptes de test
 

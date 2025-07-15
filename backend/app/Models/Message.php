@@ -18,6 +18,7 @@
             'contenu_message',
             'date_envoi',
             'a_fichiers',
+            'reply_to', // Ajouté pour la citation
         ];
 
         protected $casts = [
@@ -44,6 +45,12 @@
         public function reactions()
         {
             return $this->hasMany(MessageReaction::class, 'id_message', 'id_message');
+        }
+
+        // Relation vers le message cité
+        public function replyTo()
+        {
+            return $this->belongsTo(Message::class, 'reply_to', 'id_message');
         }
     }
 ?>

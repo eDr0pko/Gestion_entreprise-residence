@@ -36,6 +36,17 @@
 
     <!-- Actions à droite -->
     <div class="relative flex items-center gap-6 lg:gap-7 xl:gap-9">
+      <!-- Bouton signalement d'incident (flottant, orange, visible partout) -->
+      <button
+        @click="showIncidentModal = true"
+        class="p-3 text-lg text-[#e67e22] hover:text-white hover:bg-[#e67e22]/90 backdrop-blur-sm rounded-xl transition-all duration-200 tooltip-container shadow-md mx-1 scale-90"
+        title="Signaler un incident"
+      >
+        <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 20H3a2 2 0 01-2-2V6a2 2 0 012-2h18a2 2 0 012 2v12a2 2 0 01-2 2z" />
+        </svg>
+      </button>
+      <ReportIncidentModal v-if="showIncidentModal" @close="showIncidentModal = false" />
       <!-- Statut de connexion (si props fournis) -->
       <div class="flex items-center gap-2 mr-4 px-5 py-2 min-h-[38px] min-w-[135px] max-w-[180px] bg-white/60 rounded-2xl shadow-inner border border-gray-200 backdrop-blur-md transition-all duration-200 scale-95">
         <div 
@@ -103,6 +114,8 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+import { ref } from 'vue'
+import ReportIncidentModal from '~/components/ReportIncidentModal.vue'
 interface Badge {
   count: number
   title: string
@@ -145,6 +158,8 @@ const toggleMobileMenu = () => {
 // Récupérer le rôle utilisateur depuis le store
 const authStore = useAuthStore()
 const userRole = authStore.userRole
+
+const showIncidentModal = ref(false)
 </script>
 
 <style scoped>

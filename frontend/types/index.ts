@@ -20,6 +20,11 @@ export interface Message {
   statut_lecture?: string
   fichiers?: FichierMessage[]
   reactions?: Record<string, ReactionData>
+  reply_to?: {
+    id_message: number
+    auteur_nom: string
+    contenu_message?: string
+  }
 }
 
 export interface ReactionData {

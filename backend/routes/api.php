@@ -72,10 +72,25 @@ Route::prefix('guests')->group(function () {
 
 // Routes protégées par authentification (membres avec token)
 Route::middleware('auth:sanctum')->group(function () {
+    // Incidents (admin)
+    Route::get('/admin/incidents', [\App\Http\Controllers\IncidentController::class, 'index']);
+    Route::post('/admin/incidents', [\App\Http\Controllers\IncidentController::class, 'store']);
+    Route::delete('/admin/incidents/{id}', [\App\Http\Controllers\IncidentController::class, 'destroy']);
+    // Logs d'activité (admin)
+    Route::get('/admin/logs', [\App\Http\Controllers\LogController::class, 'index']);
+    Route::post('/admin/logs/delete-before', [\App\Http\Controllers\LogAdminController::class, 'deleteBefore']);
+    // Statistiques admin
+    Route::get('/admin/stats', [\App\Http\Controllers\AdminStatsController::class, 'index']);
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'me']);
     Route::get('/check', [AuthController::class, 'check']);
+
+    // Gestion utilisateurs (admin)
+    Route::get('/admin/persons', [AuthController::class, 'getAllPersons']);
+    Route::put('/admin/persons/{id}', [AuthController::class, 'updatePerson']);
+    Route::post('/admin/persons', [AuthController::class, 'createPerson']);
+    Route::delete('/admin/persons/{id}', [AuthController::class, 'deletePerson']);
 });
 
 // Routes accessibles aux membres et invités (token-based auth)
@@ -89,6 +104,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/{groupId}', [MessageController::class, 'getMessages']);
     Route::post('/messages/{groupId}', [MessageController::class, 'sendMessage']);
     Route::post('/conversations/{groupId}/mark-read', [MessageController::class, 'markAsRead']);
+
+    // Modération : tous les messages (admin)
+    Route::get('/admin/messages', [MessageController::class, 'getAllMessages']);
+    Route::delete('/admin/conversations/{groupId}', [MessageController::class, 'deleteConversation']);
 
     //Visites
     //Route::get('/visite', [VisiteController::class, 'getUserVisits']);
@@ -107,6 +126,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin/guests')->group(function () {
         Route::get('/', [GuestController::class, 'index']);
         Route::post('/{id}/deactivate', [GuestController::class, 'deactivate']);
+        Route::put('/{id}', [GuestController::class, 'update']); // Ajout de la route update
+    });
+    // Ban un visiteur (invite) : POST /ban { id_personne }
+    Route::post('/ban', function (Request $request) {
+        $user = $request->user();
+        if (!$user || (!$user->admin && !$user->gardien)) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+        $id = $request->input('id_personne');
+        if (!$id) {
+            return response()->json(['success' => false, 'message' => 'id_personne manquant'], 422);
+        }
+        $invite = \App\Models\Invite::where('id_personne', $id)->first();
+        if (!$invite) {
+            return response()->json(['success' => false, 'message' => 'Visiteur non trouvé'], 404);
+        }
+        $invite->actif = false;
+        $invite->save();
+        // Ajout dans la table ban si pas déjà présent
+        if (!\App\Models\Ban::where('id_proprietaire', $id)->exists()) {
+            \App\Models\Ban::create([
+                'id_proprietaire' => $id,
+                'motif' => 'Banni par un administrateur/gardien',
+            ]);
+        }
+        return response()->json(['success' => true, 'message' => 'Visiteur banni avec succès']);
     });
     Route::get('/files/{fichierId}', [MessageController::class, 'downloadFile']);
     Route::get('/avatars/{filename}', [AuthController::class, 'getAvatar']);

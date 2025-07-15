@@ -35,6 +35,11 @@
           :class="{ 'justify-end': message.is_current_user }"
         >
           <div class="max-w-[85%] sm:max-w-xs lg:max-w-md">
+            <!-- Message cité (reply/quote) -->
+            <div v-if="message.reply_to" class="mb-1 ml-1 px-2 py-1 border-l-4 border-[#0097b2] bg-blue-50 rounded text-xs text-gray-700 max-w-xs truncate">
+              <span class="font-semibold">{{ message.reply_to.auteur_nom }}</span>
+              <span v-if="message.reply_to.contenu_message">: {{ message.reply_to.contenu_message }}</span>
+            </div>
             <!-- Nom de l'expéditeur -->
             <div 
               v-if="!message.is_current_user && (index === 0 || messages[index - 1].email_auteur !== message.email_auteur)" 
@@ -53,6 +58,7 @@
                 message.statut_lecture === 'sending' ? 'opacity-75' : ''
               ]"
             >
+              <!-- Bouton Répondre déplacé sous la bulle, à côté des réactions -->
               <!-- Indicateur d'envoi en cours -->
               <div 
                 v-if="message.statut_lecture === 'sending'" 
@@ -124,12 +130,25 @@
             </div>
 
             <!-- RÉACTIONS SOUS LA BULLE -->
-            <MessageReactions
-              :message-id="message.id_message"
-              :reactions="transformReactions(message.reactions || {})"
-              :current-user-email="currentUserEmail"
-              @reaction-toggled="$emit('reaction-toggled', message.id_message, $event)"
-            />
+            <div class="flex items-center gap-2 mt-1 ml-2">
+              <MessageReactions
+                :message-id="message.id_message"
+                :reactions="transformReactions(message.reactions || {})"
+                :current-user-email="currentUserEmail"
+                @reaction-toggled="$emit('reaction-toggled', message.id_message, $event)"
+              />
+              <button
+                class="flex items-center text-xs text-gray-500 hover:text-[#0097b2] px-2 py-1 rounded transition-colors"
+                title="Répondre en citant"
+                @click.stop="$emit('reply-to-message', message)"
+                style="align-items: center; margin-top: 0;"
+              >
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7a1 1 0 011-1h8m-9 10l-5-5m0 0l5-5" />
+                </svg>
+                Répondre
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -170,6 +189,7 @@ const emit = defineEmits<{
   'reaction-toggled': [messageId: number, emoji: string]
   'scroll-to-bottom': []
   'scroll': []
+  'reply-to-message': [message: Message]
 }>()
 
 const messagesContainer = ref<HTMLElement | null>(null)

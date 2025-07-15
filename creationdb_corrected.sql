@@ -5,7 +5,7 @@ CREATE DATABASE IF NOT EXISTS gestion_entreprise_residence
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 USE gestion_entreprise_residence;
-DROP TABLE IF EXISTS invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
+DROP TABLE IF EXISTS incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
 
 
 -- TABLE personne
@@ -51,7 +51,7 @@ CREATE TABLE resident (
   FOREIGN KEY(id_personne) REFERENCES personne(id_personne) ON DELETE CASCADE
 );
 
--- TABLE ban (appartement/logement avec motif de bannissement)
+-- TABLE ban
 CREATE TABLE ban (
   id_ban INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   id_proprietaire INTEGER UNSIGNED NOT NULL,
@@ -89,15 +89,18 @@ CREATE TABLE personne_groupe (
 CREATE TABLE message (
   id_message INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   id_groupe_message INTEGER UNSIGNED NOT NULL,
-  id_auteur INTEGER UNSIGNED NOT NULL, -- ID de l'auteur (personne ou invité)
+  id_auteur INTEGER UNSIGNED NOT NULL,
   contenu_message TEXT NOT NULL,
   date_envoi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   a_fichiers BOOLEAN DEFAULT FALSE,
+  reply_to INTEGER UNSIGNED NULL, -- Ajouté pour la citation
   PRIMARY KEY(id_message),
   INDEX message_FKIndex1(id_groupe_message),
   INDEX message_FKIndex2(id_auteur),
+  INDEX message_FKIndex3(reply_to),
   FOREIGN KEY(id_groupe_message) REFERENCES groupe_message(id_groupe_message) ON DELETE CASCADE,
-  FOREIGN KEY(id_auteur) REFERENCES personne(id_personne) ON DELETE CASCADE
+  FOREIGN KEY(id_auteur) REFERENCES personne(id_personne) ON DELETE CASCADE,
+  FOREIGN KEY(reply_to) REFERENCES message(id_message) ON DELETE SET NULL
 );
 
 -- TABLE visite (mise à jour pour référencer directement les invités)
@@ -175,6 +178,32 @@ CREATE TABLE invite (
   FOREIGN KEY(invite_par) REFERENCES personne(id_personne) ON DELETE SET NULL
 );
 
+CREATE TABLE logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL, -- ou email si tu ne veux pas de clé étrangère
+  action VARCHAR(64) NOT NULL, -- ex: 'login', 'update_resident', 'send_message'
+  message TEXT,                -- description humaine ou détails JSON
+  ip_address VARCHAR(45) NULL, -- optionnel
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE incident (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  object TEXT NOT NULL,
+  statut ENUM('a_venir', 'en_cours', 'resolu') NOT NULL DEFAULT 'en_cours',
+  id_signaleur INT UNSIGNED NULL,
+  PRIMARY KEY(id),
+  INDEX idx_incident_datetime(datetime),
+  INDEX idx_incident_statut(statut),
+  FOREIGN KEY(id_signaleur) REFERENCES personne(id_personne) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+-- ----- ----- ----- ----- ----- ----- ----- ----- -----
+-- Jeu de Test
+-- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
 -- INSERTION DES PERSONNES
 
@@ -392,12 +421,27 @@ INSERT INTO personne_groupe (id_personne, id_groupe_message, derniere_connexion)
 (21, 7, '2025-06-30 08:15:00');
 
 -- Messages du Groupe General Residence
+
 INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
-(1, 1, 'Bienvenue dans le systeme de gestion de la residence ! Nhesitez pas a utiliser cette plateforme pour communiquer.', '2025-06-25 09:00:00'),
-(1, 3, 'Bonjour a tous ! Je suis Pierre, votre gardien. Je suis disponible 24h/24 pour toute urgence au 0234567890.', '2025-06-25 09:15:00'),
-(1, 5, 'Merci pour cette initiative ! Cest tres pratique davoir un systeme de communication commun.', '2025-06-25 10:30:00'),
-(1, 6, 'Excellente idee ! Enfin on va pouvoir se coordonner plus facilement.', '2025-06-25 11:45:00'),
+(1, 1, 'Bienvenue dans le systeme de gestion de la residence ! Nhesitez pas a utiliser cette plateforme pour communiquer.', '2025-06-25 09:00:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(1, 3, 'Bonjour a tous ! Je suis Pierre, votre gardien. Je suis disponible 24h/24 pour toute urgence au 0234567890.', '2025-06-25 09:15:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(1, 5, 'Merci pour cette initiative ! Cest tres pratique davoir un systeme de communication commun.', '2025-06-25 10:30:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(1, 6, 'Excellente idee ! Enfin on va pouvoir se coordonner plus facilement.', '2025-06-25 11:45:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
 (1, 1, 'Rappel : les poubelles doivent etre sorties avant 7h les mardis et vendredis.', '2025-06-26 08:00:00');
+
+-- Exemple de message avec citation (reply_to)
+-- Julie répond à Pierre (message 2)
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi, reply_to) VALUES
+(1, 7, 'Merci Pierre pour ta disponibilité !', '2025-06-26 09:00:00', 2);
+
+-- Paul répond à Julie (message 6)
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi, reply_to) VALUES
+(1, 6, 'Bienvenue Julie !', '2025-06-26 09:30:00', 6);
+
 
 INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
 (1, 7, 'Y a-t-il une possibilite dorganiser une reunion residents bientot ?', '2025-06-26 14:20:00'),
@@ -414,12 +458,22 @@ INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) 
 (1, 17, 'Genial ! Je preparerai des gateaux maison', '2025-06-29 11:00:00');
 
 -- Messages Evenements et Festivites
+
 INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
-(7, 1, 'Qui a des idees pour la fete des voisins de samedi ?', '2025-06-25 15:00:00'),
-(7, 5, 'On pourrait organiser un barbecue collectif ! Jai un grand barbecue.', '2025-06-25 15:30:00'),
-(7, 7, 'Excellente idee ! Je peux apporter des salades.', '2025-06-25 16:00:00'),
-(7, 15, 'Et moi des boissons ! Ca va etre genial !', '2025-06-25 16:15:00'),
+(7, 1, 'Qui a des idees pour la fete des voisins de samedi ?', '2025-06-25 15:00:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(7, 5, 'On pourrait organiser un barbecue collectif ! Jai un grand barbecue.', '2025-06-25 15:30:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(7, 7, 'Excellente idee ! Je peux apporter des salades.', '2025-06-25 16:00:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
+(7, 15, 'Et moi des boissons ! Ca va etre genial !', '2025-06-25 16:15:00');
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
 (7, 17, 'Je moccupe des desserts ! Jadore patisser', '2025-06-25 17:00:00');
+
+-- Exemple de message avec citation (reply_to)
+-- Elise répond à l'idée de barbecue de Paul (message 12)
+INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi, reply_to) VALUES
+(7, 23, 'Super idée Paul, je peux apporter des jeux pour les enfants !', '2025-06-25 17:30:00', 12);
 
 INSERT INTO message (id_groupe_message, id_auteur, contenu_message, date_envoi) VALUES
 (7, 23, 'Super ! Et si on organisait aussi des jeux pour les enfants ?', '2025-06-26 10:00:00'),
@@ -546,6 +600,22 @@ INSERT INTO message_reaction (id_message, id_personne, emoji, date_reaction) VAL
 (20, 1, '☀️', '2025-06-26 18:05:00'),
 (20, 5, '🎉', '2025-06-26 18:10:00'),
 (20, 7, '🥳', '2025-06-26 18:15:00');
+
+
+-- INSERTION DES INCIDENTS INITIAUX
+INSERT INTO incident (datetime, object, statut, id_signaleur) VALUES
+('2025-06-15 08:30:00', 'Fuite d’eau importante au 2e étage, cage A', 'en_cours', 5),
+('2025-06-18 19:00:00', 'Porte d’entrée principale cassée, accès difficile', 'resolu', 3),
+('2025-06-20 14:45:00', 'Ascenseur en panne, bâtiment B', 'en_cours', 16),
+('2025-06-22 10:10:00', 'Dégradation des boîtes aux lettres, graffiti', 'a_venir', 7),
+('2025-06-25 17:20:00', 'Odeur suspecte dans le parking sous-sol', 'en_cours', 8),
+('2025-06-28 21:00:00', 'Tapage nocturne récurrent, appartement 102', 'resolu', 6),
+('2025-07-01 09:30:00', 'Fenêtre brisée dans la salle commune', 'en_cours', 23),
+('2025-07-03 15:00:00', 'Problème d’éclairage dans le hall B', 'resolu', 15),
+('2025-07-05 11:15:00', 'Débordement des poubelles extérieures', 'en_cours', 9),
+('2025-07-08 13:40:00', 'Vélo abandonné dans le local technique', 'a_venir', 12);
+
+
 
 -- ===============================================
 -- AJOUT D'INDEX POUR OPTIMISATION DES PERFORMANCES

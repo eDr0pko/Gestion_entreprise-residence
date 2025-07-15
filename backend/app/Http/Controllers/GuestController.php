@@ -11,6 +11,61 @@ use App\Models\Invite;
 
 class GuestController extends Controller
 {
+    use \App\Traits\LoggableAction;
+    /**
+     * Met à jour un invité (admin)
+     */
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        if (!$user || (!$user->admin && !$user->gardien)) {
+            $this->logAction($user ? $user->id_personne : null, 'unauthorized_update_guest', "Tentative non autorisée de modification d'invité", $request);
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+        $personne = \App\Models\Personne::find($id);
+        if (!$personne) {
+            $this->logAction($user ? $user->id_personne : null, 'update_guest_not_found', "Tentative de modification d'invité inexistant (id: $id)", $request);
+            return response()->json(['success' => false, 'message' => 'Visiteur non trouvé'], 404);
+        }
+        $invite = \App\Models\Invite::where('id_personne', $id)->first();
+        if (!$invite) {
+            $this->logAction($user ? $user->id_personne : null, 'update_invite_not_found', "Tentative de modification d'invitation inexistante (id: $id)", $request);
+            return response()->json(['success' => false, 'message' => 'Invite non trouvé'], 404);
+        }
+        // Validation
+        $validator = \Validator::make($request->all(), [
+            'nom' => 'required|string|min:2|max:45',
+            'prenom' => 'required|string|min:2|max:45',
+            'email' => 'required|email',
+            'numero_telephone' => 'required|string',
+            'commentaire' => 'nullable|string',
+            'date_expiration' => 'nullable|date',
+            'actif' => 'nullable|boolean',
+        ]);
+        if ($validator->fails()) {
+            $this->logAction($user ? $user->id_personne : null, 'update_guest_validation_error', "Erreur de validation lors de la modification d'invité: " . json_encode($validator->errors()), $request);
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        // Update personne
+        $personne->update($request->only(['nom', 'prenom', 'email', 'numero_telephone']));
+        $this->logAction($user ? $user->id_personne : null, 'update_guest', "Modification d'un invité: " . $personne->email, $request);
+        // Update invite
+        $invite->commentaire = $request->input('commentaire', $invite->commentaire);
+        if ($request->has('date_expiration')) {
+            $invite->date_expiration = $request->input('date_expiration');
+        }
+        if ($request->has('actif')) {
+            $invite->actif = $request->input('actif');
+        }
+        $invite->save();
+        $this->logAction($user ? $user->id_personne : null, 'update_invite', "Modification de l'invitation pour: " . $personne->email, $request);
+        return response()->json(['success' => true, 'personne' => $personne->fresh(), 'invite' => $invite->fresh()]);
+    }
+
     /**
      * Inscrire un nouvel invité avec mot de passe
      */
@@ -45,6 +100,7 @@ class GuestController extends Controller
             ]);
 
             if ($validator->fails()) {
+                $this->logAction(null, 'register_guest_validation_error', "Erreur de validation lors de l'inscription invité: " . json_encode($validator->errors()), $request);
                 return response()->json([
                     'success' => false,
                     'message' => 'Données invalides',
@@ -55,6 +111,7 @@ class GuestController extends Controller
             // Valider et nettoyer le numéro de téléphone
             $cleanPhone = $this->cleanAndValidatePhone($request->numero_telephone);
             if (!$cleanPhone) {
+                $this->logAction(null, 'register_guest_invalid_phone', "Numéro de téléphone invalide lors de l'inscription invité: $request->numero_telephone", $request);
                 return response()->json([
                     'success' => false,
                     'message' => 'Format de téléphone invalide',
@@ -83,6 +140,7 @@ class GuestController extends Controller
             $token = $personne->createToken('guest_auth_token')->plainTextToken;
 
             Log::info('Inscription invité réussie:', ['email' => $personne->email]);
+            $this->logAction($personne->id_personne, 'register_guest', "Inscription d'un invité: " . $personne->email, $request);
 
             return response()->json([
                 'success' => true,
@@ -138,6 +196,7 @@ class GuestController extends Controller
             $personne = Personne::with('invite')->where('email', $request->email)->first();
 
             if (!$personne || !$personne->invite) {
+                $this->logAction(null, 'guest_login_not_found', "Tentative de connexion invité avec email inexistant: $request->email", $request);
                 return response()->json([
                     'success' => false,
                     'message' => 'Aucun compte invité trouvé avec cette adresse email'
@@ -146,15 +205,17 @@ class GuestController extends Controller
 
             // Vérifier que l'invité est actif
             if (!$personne->invite->actif) {
+                $this->logAction($personne->id_personne, 'guest_login_inactive', "Tentative de connexion invité désactivé: $request->email", $request);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Votre compte invité a été désactivé. Contactez l\'administration.'
+                    'message' => "Votre compte invité a été désactivé. Contactez l'administration."
                 ], 403);
             }
 
             // Vérifier le mot de passe
             if (!Hash::check($request->mot_de_passe, $personne->mot_de_passe)) {
                 Log::warning('Mot de passe incorrect pour invité:', ['email' => $request->email]);
+                $this->logAction($personne->id_personne, 'guest_login_failed', "Mot de passe incorrect invité: $request->email", $request);
                 return response()->json([
                     'success' => false,
                     'message' => 'Mot de passe incorrect'
@@ -163,11 +224,13 @@ class GuestController extends Controller
 
             // Supprimer les anciens tokens
             $personne->tokens()->delete();
+            $this->logAction($personne->id_personne, 'guest_logout', "Déconnexion de l'invité: " . $personne->email, $request);
 
             // Générer un nouveau token
             $token = $personne->createToken('guest_auth_token')->plainTextToken;
 
             Log::info('Connexion invité réussie:', ['email' => $personne->email]);
+            $this->logAction($personne->id_personne, 'guest_login', "Connexion de l'invité: " . $personne->email, $request);
 
             return response()->json([
                 'success' => true,
@@ -203,6 +266,7 @@ class GuestController extends Controller
                 ->whereHas('invite')
                 ->get()
                 ->map(function ($personne) {
+                    $invite = $personne->invite;
                     return [
                         'id_personne' => $personne->id_personne,
                         'email' => $personne->email,
@@ -210,11 +274,15 @@ class GuestController extends Controller
                         'prenom' => $personne->prenom,
                         'numero_telephone' => $personne->numero_telephone,
                         'photo_profil' => $personne->photo_profil,
-                        'invite' => [
-                            'actif' => $personne->invite->actif,
-                            'created_at' => $personne->invite->created_at,
-                            'updated_at' => $personne->invite->updated_at
-                        ]
+                        // Champs de la table invite
+                        'actif' => $invite ? $invite->actif : null,
+                        'date_inscription' => $invite ? $invite->date_inscription : null,
+                        'date_expiration' => $invite ? $invite->date_expiration : null,
+                        'invite_par' => $invite ? $invite->invite_par : null,
+                        'commentaire' => $invite ? $invite->commentaire : null,
+                        // Champs de la table personne (déjà inclus)
+                        'created_at' => $personne->created_at ?? null,
+                        'updated_at' => $personne->updated_at ?? null,
                     ];
                 });
 
@@ -257,6 +325,7 @@ class GuestController extends Controller
             }
 
             $invite->update(['actif' => false]);
+            $this->logAction($user ? $user->id_personne : null, 'deactivate_invite', "Désactivation de l'invité: " . $personne->email, $request);
 
             return response()->json([
                 'success' => true,
