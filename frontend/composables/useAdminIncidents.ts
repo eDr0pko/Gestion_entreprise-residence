@@ -9,6 +9,7 @@ export interface IncidentEntry {
   id_signaleur?: number | null;
   nom_signaleur?: string | null;
   prenom_signaleur?: string | null;
+  pieces_jointes?: string[] | null;
 }
 
 const incidents = ref<IncidentEntry[]>([]);

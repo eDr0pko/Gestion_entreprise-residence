@@ -39,11 +39,24 @@
     <div v-else>
       <div v-if="filteredIncidents.length === 0" class="text-gray-400 italic">Aucun incident signalé.</div>
       <ul class="divide-y divide-gray-100">
-        <li v-for="incident in filteredIncidents" :key="incident.id" class="py-2 flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-          <span class="text-xs text-gray-400 w-32">{{ formatDate(incident.datetime) }}</span>
-          <span class="flex-1 text-sm">{{ incident.object }}</span>
-          <span class="text-xs text-gray-500">{{ incident.statut }}</span>
-          <span class="text-xs text-gray-700 italic min-w-[120px]">{{ getSignaleurName(incident.id_signaleur) }}</span>
+        <li v-for="incident in filteredIncidents" :key="incident.id" class="py-2 flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+          <div class="flex flex-col flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400 w-32">{{ formatDate(incident.datetime) }}</span>
+              <span class="flex-1 text-sm">{{ incident.object }}</span>
+              <span class="text-xs text-gray-500">{{ incident.statut }}</span>
+              <span class="text-xs text-gray-700 italic min-w-[120px]">{{ getSignaleurName(incident.id_signaleur) }}</span>
+            </div>
+            <div v-if="incident.pieces_jointes && incident.pieces_jointes.length" class="flex flex-wrap gap-2 mt-1 ml-2">
+              <span class="text-xs text-gray-500">Pièces jointes :</span>
+              <template v-for="(url, idx) in incident.pieces_jointes" :key="url">
+                <a :href="url" target="_blank" rel="noopener" class="text-blue-600 underline text-xs flex items-center gap-1">
+                  <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a4 4 0 10-5.656-5.656l-6.586 6.586"/></svg>
+                  {{ getFileName(url) }}
+                </a>
+              </template>
+            </div>
+          </div>
         </li>
       </ul>
     </div>
@@ -53,6 +66,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { incidents, loading, error, fetchIncidents } from '@/composables/useAdminIncidents'
+
+// Affichage du nom de fichier à partir de l'URL
+function getFileName(url: string) {
+  try {
+    return decodeURIComponent(url.split('/').pop() || url)
+  } catch {
+    return url
+  }
+}
 
 const filterStatut = ref('')
 const filterDate = ref('')

@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Incidents (admin)
     Route::get('/admin/incidents', [\App\Http\Controllers\IncidentController::class, 'index']);
     Route::post('/admin/incidents', [\App\Http\Controllers\IncidentController::class, 'store']);
+    Route::post('/admin/incidents/upload', [\App\Http\Controllers\IncidentController::class, 'upload']);
     Route::delete('/admin/incidents/{id}', [\App\Http\Controllers\IncidentController::class, 'destroy']);
     // Logs d'activité (admin)
     Route::get('/admin/logs', [\App\Http\Controllers\LogController::class, 'index']);

@@ -18,10 +18,12 @@
             'object',
             'statut',
             'id_signaleur',
+            'pieces_jointes',
         ];
 
         protected $casts = [
             'datetime' => 'datetime',
+            'pieces_jointes' => 'array',
         ];
 
         public function signaleur()

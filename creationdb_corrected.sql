@@ -178,6 +178,7 @@ CREATE TABLE invite (
   FOREIGN KEY(invite_par) REFERENCES personne(id_personne) ON DELETE SET NULL
 );
 
+-- TABLE logs (pour enregistrer les actions des utilisateurs)
 CREATE TABLE logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NULL, -- ou email si tu ne veux pas de clé étrangère
@@ -187,13 +188,14 @@ CREATE TABLE logs (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
+-- TABLE incident (pour signaler des incidents)
 CREATE TABLE incident (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   object TEXT NOT NULL,
   statut ENUM('a_venir', 'en_cours', 'resolu') NOT NULL DEFAULT 'en_cours',
   id_signaleur INT UNSIGNED NULL,
+  pieces_jointes JSON NULL,
   PRIMARY KEY(id),
   INDEX idx_incident_datetime(datetime),
   INDEX idx_incident_statut(statut),
@@ -602,18 +604,19 @@ INSERT INTO message_reaction (id_message, id_personne, emoji, date_reaction) VAL
 (20, 7, '🥳', '2025-06-26 18:15:00');
 
 
--- INSERTION DES INCIDENTS INITIAUX
-INSERT INTO incident (datetime, object, statut, id_signaleur) VALUES
-('2025-06-15 08:30:00', 'Fuite d’eau importante au 2e étage, cage A', 'en_cours', 5),
-('2025-06-18 19:00:00', 'Porte d’entrée principale cassée, accès difficile', 'resolu', 3),
-('2025-06-20 14:45:00', 'Ascenseur en panne, bâtiment B', 'en_cours', 16),
-('2025-06-22 10:10:00', 'Dégradation des boîtes aux lettres, graffiti', 'a_venir', 7),
-('2025-06-25 17:20:00', 'Odeur suspecte dans le parking sous-sol', 'en_cours', 8),
-('2025-06-28 21:00:00', 'Tapage nocturne récurrent, appartement 102', 'resolu', 6),
-('2025-07-01 09:30:00', 'Fenêtre brisée dans la salle commune', 'en_cours', 23),
-('2025-07-03 15:00:00', 'Problème d’éclairage dans le hall B', 'resolu', 15),
-('2025-07-05 11:15:00', 'Débordement des poubelles extérieures', 'en_cours', 9),
-('2025-07-08 13:40:00', 'Vélo abandonné dans le local technique', 'a_venir', 12);
+
+-- INSERTION DES INCIDENTS INITIAUX (avec et sans pièces jointes)
+INSERT INTO incident (datetime, object, statut, id_signaleur, pieces_jointes) VALUES
+('2025-06-15 08:30:00', 'Fuite d’eau importante au 2e étage, cage A', 'en_cours', 5, '["/storage/incidents/photo_fuite.jpg"]'),
+('2025-06-18 19:00:00', 'Porte d’entrée principale cassée, accès difficile', 'resolu', 3, NULL),
+('2025-06-20 14:45:00', 'Ascenseur en panne, bâtiment B', 'en_cours', 16, '["/storage/incidents/ascenseur_panne.pdf"]'),
+('2025-06-22 10:10:00', 'Dégradation des boîtes aux lettres, graffiti', 'a_venir', 7, NULL),
+('2025-06-25 17:20:00', 'Odeur suspecte dans le parking sous-sol', 'en_cours', 8, NULL),
+('2025-06-28 21:00:00', 'Tapage nocturne récurrent, appartement 102', 'resolu', 6, '["/storage/incidents/audio_tapage.mp3"]'),
+('2025-07-01 09:30:00', 'Fenêtre brisée dans la salle commune', 'en_cours', 23, NULL),
+('2025-07-03 15:00:00', 'Problème d’éclairage dans le hall B', 'resolu', 15, NULL),
+('2025-07-05 11:15:00', 'Débordement des poubelles extérieures', 'en_cours', 9, '["/storage/incidents/photo_poubelles.jpg","/storage/incidents/video_poubelles.mp4"]'),
+('2025-07-08 13:40:00', 'Vélo abandonné dans le local technique', 'a_venir', 12, NULL);
 
 
 

@@ -100,7 +100,12 @@ const groupes = computed(() => {
       map.set(m.id_groupe_message, { id_groupe_message: m.id_groupe_message, nom_groupe: m.nom_groupe });
     }
   });
-  return Array.from(map.values());
+  let arr = Array.from(map.values());
+  // Filtrer les groupes par nom si recherche
+  if (search.value) {
+    arr = arr.filter(g => g.nom_groupe && g.nom_groupe.toLowerCase().includes(search.value.toLowerCase()));
+  }
+  return arr;
 });
 
 // Calcule le nombre de membres pour un groupe donné (d'après les messages)
@@ -117,16 +122,19 @@ function getGroupMessagesCount(groupId: number) {
 }
 
 const filteredMessages = computed(() => {
-  let arr = messages.value
-    .filter(m => {
-      const auteurId = selectedAuteur.value ? Number(selectedAuteur.value) : null;
-      const groupeId = selectedGroupe.value ? Number(selectedGroupe.value) : null;
-      return (
-        (!search.value || m.contenu_message.toLowerCase().includes(search.value.toLowerCase())) &&
-        (!auteurId || m.id_auteur === auteurId) &&
-        (!groupeId || m.id_groupe_message === groupeId)
-      );
-    });
+  let arr = messages.value.filter(m => {
+    const auteurId = selectedAuteur.value ? Number(selectedAuteur.value) : null;
+    const groupeId = selectedGroupe.value ? Number(selectedGroupe.value) : null;
+    // Recherche sur le contenu du message OU le nom du groupe
+    const searchLower = search.value ? search.value.toLowerCase() : '';
+    const matchContent = !search.value || (m.contenu_message && m.contenu_message.toLowerCase().includes(searchLower));
+    const matchGroup = !search.value || (m.nom_groupe && m.nom_groupe.toLowerCase().includes(searchLower));
+    return (
+      (matchContent || matchGroup) &&
+      (!auteurId || m.id_auteur === auteurId) &&
+      (!groupeId || m.id_groupe_message === groupeId)
+    );
+  });
   arr = arr.sort((a, b) => sortOrder.value === 'asc'
     ? new Date(a.date_envoi).getTime() - new Date(b.date_envoi).getTime()
     : new Date(b.date_envoi).getTime() - new Date(a.date_envoi).getTime()
