@@ -107,7 +107,7 @@ async function submitIncident() {
         object: description.value,
         statut: status.value,
         id_signaleur: signaleurId,
-        pieces_jointes: piecesJointesUrls.length ? JSON.stringify(piecesJointesUrls) : null
+        pieces_jointes: piecesJointesUrls.length ? piecesJointesUrls : null
       },
       headers: { Authorization: `Bearer ${authStore.token}` },
     })

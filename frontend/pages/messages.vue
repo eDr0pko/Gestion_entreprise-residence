@@ -353,15 +353,21 @@ const loadMessages = async (groupId: number) => {
 // Sélectionner une conversation
 const selectConversation = async (conversation: Conversation) => {
   selectedConversation.value = conversation
-  
+
   // Charger les messages
   await loadMessages(conversation.id_groupe_message)
-  
+
   // Mettre à jour localement le compteur de messages non lus
   const index = conversations.value.findIndex(c => c.id_groupe_message === conversation.id_groupe_message)
   if (index !== -1) {
     conversations.value[index].messages_non_lus = 0
   }
+
+  // Log clair pour la lecture des messages
+  const groupName = conversation.nom_groupe || `Groupe ${conversation.id_groupe_message}`
+  const userName = (currentUser.value as any)?.nom || 'Vous'
+  const logMsg = `Messages marqués comme lus dans le groupe "${groupName}" par ${userName}`
+  console.log(logMsg)
 }
 
 // Envoyer un message
@@ -614,35 +620,41 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
   try {
     const messageIndex = messages.value.findIndex(msg => msg.id_message === messageId)
     if (messageIndex === -1) return
-    
+
     const message = messages.value[messageIndex]
     const currentUserEmail = (currentUser.value as any)?.email
     const currentUserNom = (currentUser.value as any)?.nom || 'Vous'
-    
+
     if (!currentUserEmail) return
-    
+
     // Mise à jour optimiste locale
     const originalReactions = JSON.parse(JSON.stringify(message.reactions || {}))
-    
+
     if (!message.reactions) {
       message.reactions = {}
     }
-    
+
     if (!message.reactions[emoji]) {
       message.reactions[emoji] = { count: 0, users: [] }
     }
-    
+
     const userAlreadyReacted = message.reactions[emoji].users.some(user => user.email === currentUserEmail)
-    
+
+    // Pour le log local (affichage clair)
+    const groupName = selectedConversation.value?.nom_groupe || `Groupe ${selectedConversation.value?.id_groupe_message}`
+    const messageLabel = message.auteur_nom ? `message de ${message.auteur_nom}` : `message #${messageId}`
+    let logMsg = ''
+
     if (userAlreadyReacted) {
       // Retirer la réaction
       message.reactions[emoji].users = message.reactions[emoji].users.filter(user => user.email !== currentUserEmail)
       message.reactions[emoji].count = message.reactions[emoji].users.length
-      
+
       // Supprimer l'emoji s'il n'y a plus d'utilisateurs
       if (message.reactions[emoji].count === 0) {
         delete message.reactions[emoji]
       }
+      logMsg = `Réaction supprimée (${emoji}) sur le ${messageLabel} dans le groupe "${groupName}" par ${currentUserNom}`
     } else {
       // Ajouter la réaction
       message.reactions[emoji].users.push({
@@ -650,11 +662,17 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
         nom: currentUserNom
       })
       message.reactions[emoji].count = message.reactions[emoji].users.length
+      logMsg = `Réaction ajoutée (${emoji}) sur le ${messageLabel} dans le groupe "${groupName}" par ${currentUserNom}`
     }
-    
+
     // Déclencher la réactivité
     messages.value[messageIndex] = { ...message }
-    
+
+    // On envoie au backend un champ log_message enrichi pour le log
+    const logMessage = userAlreadyReacted
+      ? `Réaction supprimée (${emoji}) sur le message de ${message.auteur_nom || 'utilisateur inconnu'} dans le groupe "${groupName}" par ${currentUserNom}`
+      : `Réaction ajoutée (${emoji}) sur le message de ${message.auteur_nom || 'utilisateur inconnu'} dans le groupe "${groupName}" par ${currentUserNom}`
+
     const response = await fetch(`${config.public.apiBase}/messages/${messageId}/reactions`, {
       method: 'POST',
       headers: {
@@ -662,30 +680,33 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authStore.token}`
       },
-      body: JSON.stringify({ emoji })
+      body: JSON.stringify({ emoji, log_message: logMessage })
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     const data = await response.json()
-    
+
     if (!data.success) {
       // En cas d'erreur du serveur, restaurer l'état original
       messages.value[messageIndex].reactions = originalReactions
       throw new Error(data.message || 'Erreur lors de la gestion de la réaction')
     }
-    
+
     // Optionnel: Mettre à jour avec la réponse du serveur pour s'assurer de la cohérence
     if (data.reactions) {
       messages.value[messageIndex].reactions = data.reactions
     }
-    
+
+    // Affichage du log clair dans la console (ou à envoyer au backend si besoin)
+    console.log(logMsg)
+
   } catch (err: any) {
     console.error('Erreur lors de la gestion de la réaction:', err)
     error.value = handleNetworkError(err, 'Impossible de modifier la réaction')
-    
+
     // En cas d'erreur réseau, recharger les messages pour récupérer l'état correct
     if (selectedConversation.value) {
       await loadMessages(selectedConversation.value.id_groupe_message)

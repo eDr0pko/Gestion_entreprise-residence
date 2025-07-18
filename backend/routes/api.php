@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\GuestController;
-use App\Http\Controllers\VisiteController;
+use App\Http\Controllers\Api\VisiteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -190,9 +190,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/visites', [VisiteController::class, 'store']);
 });
 
-//
+
+// 🎯 Routes publiques pour incidents (invités)
+Route::post('/incidents', [\App\Http\Controllers\IncidentController::class, 'storePublic']);
+Route::post('/incidents/upload', [\App\Http\Controllers\IncidentController::class, 'uploadPublic']);
+
 // 🎯 Routes publiques pour invités
-//
 Route::prefix('guests')->group(function () {
     Route::post('/register', [GuestController::class, 'register']);
     Route::post('/login', [GuestController::class, 'login']);

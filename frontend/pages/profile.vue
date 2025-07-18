@@ -478,14 +478,20 @@ const loading = ref(false)
 // Computed pour déterminer l'URL de l'avatar
 const avatarUrl = computed(() => {
   if (!user.value?.photo_profil) return null
-  
+  const val = user.value.photo_profil
   // Si c'est déjà une URL complète, la retourner telle quelle
-  if (user.value.photo_profil.startsWith('http')) {
-    return user.value.photo_profil
+  if (typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
+    return val
   }
-  
-  // Sinon, construire l'URL avec l'API
-  return `${config.public.apiBase}/avatars/${user.value.photo_profil.split('/').pop()}`
+  // Si c'est un chemin relatif ou juste un nom de fichier
+  if (typeof val === 'string' && val.trim() !== '') {
+    // Nettoyer le nom de fichier pour éviter les erreurs
+    const filename = val.split(/[\\/]/).pop()
+    if (!filename) return null
+    // Utiliser le chemin public direct, pas l'API
+    return `/storage/avatars/${encodeURIComponent(filename)}`
+  }
+  return null
 })
 
 // Computed pour déterminer le rôle correct de l'utilisateur
@@ -698,7 +704,14 @@ const handleAvatarSuccess = (newAvatarUrl: string | null) => {
   showSuccessMessage(newAvatarUrl ? 'Photo de profil mise à jour avec succès' : 'Photo de profil supprimée avec succès')
 }
 
-const handleAvatarError = () => {
+const handleAvatarError = (e?: Event) => {
+  // Masquer l'avatar si erreur de chargement
+  if (user.value) {
+    user.value.photo_profil = null
+  }
+  if (e && e.target && 'src' in e.target) {
+    e.target.src = ''
+  }
   console.error('Erreur lors du chargement de l\'avatar')
 }
 

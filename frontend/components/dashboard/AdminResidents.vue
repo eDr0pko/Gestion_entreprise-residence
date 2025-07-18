@@ -58,7 +58,7 @@
         </div>
         <div class="mb-3">
           <label class="block text-sm font-medium mb-1">Téléphone</label>
-          <input v-model="addUserForm.numero_telephone" class="input w-full" required />
+          <PhoneInput v-model="addUserForm.numero_telephone" class="w-full" required />
         </div>
         <div class="mb-3" v-if="addUserForm.roles.includes('resident')">
           <label class="block text-sm font-medium mb-1">Adresse logement</label>
@@ -174,8 +174,9 @@
           </div>
           <div class="mb-3">
             <label class="block text-sm font-medium mb-1">Téléphone</label>
-            <input v-model="editForm.numero_telephone" class="input w-full" required />
+            <PhoneInput v-model="editForm.numero_telephone" class="w-full" required />
           </div>
+import PhoneInput from '~/components/PhoneInput.vue'
           <div class="mb-3">
             <label class="block text-sm font-medium mb-1">Rôles <span class="text-red-500">*</span></label>
             <div class="flex gap-4">

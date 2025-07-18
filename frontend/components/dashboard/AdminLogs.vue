@@ -36,7 +36,7 @@
           <span class="text-xs text-gray-400 w-32">{{ formatDate(log.created_at) }}</span>
           <span class="flex-1 text-sm">
             <span class="inline-block px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-xs mr-2">{{ log.action }}</span>
-            {{ log.message }}
+            {{ enrichLogMessage(log) }}
           </span>
           <span class="text-xs text-gray-500">{{ log.user_email ?? 'Système' }}</span>
           <span v-if="log.ip_address" class="text-xs text-gray-300 ml-2">{{ log.ip_address }}</span>
@@ -47,100 +47,148 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { useAuthStore } from '~/stores/auth'
+import { ref, onMounted, computed } from 'vue'
+import { useAuthStore } from '~/stores/auth'
 
-  interface LogEntry {
-    id: number
-    action: string
-    message: string
-    created_at: string
-    user_email?: string
-    ip_address?: string
+// Import dynamique pour éviter les erreurs si les stores n'existent pas
+// Import dynamique pour éviter les erreurs si les stores n'existent pas
+let conversationsStore: any = null
+let messagesStore: any = null
+try {
+  // @ts-ignore
+  conversationsStore = require('~/stores/conversations').useConversationsStore?.() ?? null
+} catch (e) {
+  conversationsStore = null
+}
+try {
+  // @ts-ignore
+  messagesStore = require('~/stores/messages').useMessagesStore?.() ?? null
+} catch (e) {
+  messagesStore = null
+}
+
+interface LogEntry {
+  id: number
+  action: string
+  message: string
+  created_at: string
+  user_email?: string
+  ip_address?: string
+}
+
+const loading = ref(true)
+const logs = ref<LogEntry[]>([])
+const search = ref('')
+const actionFilter = ref('')
+const userFilter = ref('')
+const deleteBeforeDate = ref('')
+const deletingLogs = ref(false)
+const authStore = useAuthStore()
+const apiBase = useRuntimeConfig().public.apiBase
+
+// Stores pour enrichir les logs
+
+async function deleteLogsBefore() {
+  if (!deleteBeforeDate.value) return;
+  if (!confirm(`Supprimer tous les logs avant le ${deleteBeforeDate.value} ?`)) return;
+  deletingLogs.value = true;
+  try {
+    await $fetch(`${apiBase}/admin/logs/delete-before`, {
+      method: 'POST',
+      body: { date: deleteBeforeDate.value },
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    });
+    await fetchLogs();
+    deleteBeforeDate.value = '';
+  } catch (e) {
+    alert('Erreur lors de la suppression des logs.');
   }
+  deletingLogs.value = false;
+}
 
-  const loading = ref(true)
-  const logs = ref<LogEntry[]>([])
-  const search = ref('')
-  const actionFilter = ref('')
-  const userFilter = ref('')
-  const deleteBeforeDate = ref('')
-  const deletingLogs = ref(false)
-  const authStore = useAuthStore()
-  const apiBase = useRuntimeConfig().public.apiBase
-  async function deleteLogsBefore() {
-    if (!deleteBeforeDate.value) return;
-    if (!confirm(`Supprimer tous les logs avant le ${deleteBeforeDate.value} ?`)) return;
-    deletingLogs.value = true;
-    try {
-      await $fetch(`${apiBase}/admin/logs/delete-before`, {
-        method: 'POST',
-        body: { date: deleteBeforeDate.value },
+function formatDate(date: string) {
+  return new Date(date).toLocaleString('fr-FR')
+}
+
+// Actions uniques pour le filtre
+const uniqueActions = computed(() => {
+  const actions = logs.value.map(l => l.action)
+  return [...new Set(actions)].sort()
+})
+
+// Utilisateurs uniques pour le filtre
+const uniqueUsers = computed(() => {
+  const users = logs.value.map(l => l.user_email ?? 'Système')
+  return [...new Set(users)].sort((a, b) => a.localeCompare(b, 'fr'))
+})
+
+// Filtrage des logs
+const filteredLogs = computed(() => {
+  let result = logs.value
+  if (actionFilter.value) {
+    result = result.filter(l => l.action === actionFilter.value)
+  }
+  if (userFilter.value) {
+    result = result.filter(l => (l.user_email ?? 'Système') === userFilter.value)
+  }
+  if (search.value.trim()) {
+    const s = search.value.trim().toLowerCase()
+    result = result.filter(l =>
+      l.action.toLowerCase().includes(s) ||
+      l.message.toLowerCase().includes(s) ||
+      (l.user_email && l.user_email.toLowerCase().includes(s)) ||
+      (l.ip_address && l.ip_address.toLowerCase().includes(s))
+    )
+  }
+  return result
+})
+
+async function fetchLogs() {
+  loading.value = true
+  try {
+    const res = await $fetch<{ success: boolean, data: { data: LogEntry[] } }>(
+      `${apiBase}/admin/logs`,
+      {
         headers: { Authorization: `Bearer ${authStore.token}` }
-      });
-      await fetchLogs();
-      deleteBeforeDate.value = '';
-    } catch (e) {
-      alert('Erreur lors de la suppression des logs.');
-    }
-    deletingLogs.value = false;
+      }
+    )
+    logs.value = res.data.data
+  } catch (e) {
+    logs.value = []
   }
+  loading.value = false
+}
 
-  function formatDate(date: string) {
-    return new Date(date).toLocaleString('fr-FR')
-  }
+onMounted(fetchLogs)
 
-
-  // Actions uniques pour le filtre
-  const uniqueActions = computed(() => {
-    const actions = logs.value.map(l => l.action)
-    return [...new Set(actions)].sort()
+// Fonction d'enrichissement des logs côté front
+function enrichLogMessage(log: LogEntry): string {
+  let msg = log.message
+  // Remplacer les IDs par les noms si possible
+  // Groupe
+  msg = msg.replace(/groupe (\d+)/gi, (match, groupId) => {
+    if (conversationsStore && conversationsStore.conversations) {
+      const conv = conversationsStore.conversations.find((c: any) => String(c.id_groupe_message) === String(groupId))
+      if (conv && conv.nom_groupe) return `groupe \"${conv.nom_groupe}\"`
+    }
+    return match
   })
-
-  // Utilisateurs uniques pour le filtre
-  const uniqueUsers = computed(() => {
-    const users = logs.value.map(l => l.user_email ?? 'Système')
-    return [...new Set(users)].sort((a, b) => a.localeCompare(b, 'fr'))
+  // Message
+  msg = msg.replace(/message (\d+)/gi, (match, messageId) => {
+    if (messagesStore && messagesStore.messages) {
+      const m = messagesStore.messages.find((m: any) => String(m.id_message) === String(messageId))
+      if (m && m.auteur_nom) return `message de ${m.auteur_nom}`
+    }
+    return match
   })
-
-  // Filtrage des logs
-  const filteredLogs = computed(() => {
-    let result = logs.value
-    if (actionFilter.value) {
-      result = result.filter(l => l.action === actionFilter.value)
-    }
-    if (userFilter.value) {
-      result = result.filter(l => (l.user_email ?? 'Système') === userFilter.value)
-    }
-    if (search.value.trim()) {
-      const s = search.value.trim().toLowerCase()
-      result = result.filter(l =>
-        l.action.toLowerCase().includes(s) ||
-        l.message.toLowerCase().includes(s) ||
-        (l.user_email && l.user_email.toLowerCase().includes(s)) ||
-        (l.ip_address && l.ip_address.toLowerCase().includes(s))
-      )
-    }
-    return result
+  // Personne (si besoin, à adapter selon le format des logs)
+  msg = msg.replace(/personne (\d+)/gi, (match, personneId) => {
+    // Ajoutez ici la logique pour retrouver le nom de la personne si vous avez accès à la liste des personnes côté front
+    return match
   })
-
-  async function fetchLogs() {
-    loading.value = true
-    try {
-      const res = await $fetch<{ success: boolean, data: { data: LogEntry[] } }>(
-        `${apiBase}/admin/logs`,
-        {
-          headers: { Authorization: `Bearer ${authStore.token}` }
-        }
-      )
-      logs.value = res.data.data
-    } catch (e) {
-      logs.value = []
-    }
-    loading.value = false
-  }
-
-  onMounted(fetchLogs)
+  // Ajoutez d'autres patterns si besoin (ex: invité...)
+  return msg
+}
 </script>
 
 

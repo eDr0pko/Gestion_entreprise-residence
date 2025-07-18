@@ -94,30 +94,54 @@
             </NuxtLink>
           </p>
         </div>
-      </div>
-
-      <!-- Bouton retour à l'accueil -->
-      <div class="mt-6 text-center">
-        <NuxtLink to="/" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-          Retour à l'accueil
-        </NuxtLink>
+        <!-- Besoin d'assistance et retour à l'accueil dans la card -->
+        <div class="mt-8 text-center">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-200"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-4 bg-white bg-opacity-80 text-gray-500 font-medium">Besoin d'assistance ?</span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <a href="#" @click.prevent="showContactModal = true" class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 group">
+              <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              </svg>
+              Contactez l'administrateur
+            </a>
+            <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
+          </div>
+          <div class="mt-6">
+            <NuxtLink to="/" class="group inline-flex items-center text-sm text-gray-500 hover:text-emerald-600 font-semibold transition-colors duration-200 px-4 py-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-emerald-50 shadow-sm">
+              <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Retour à l'accueil
+            </NuxtLink>
+          </div>
+        </div>
       </div>
 
       <!-- Message d'info -->
-      <div class="mt-4 text-center">
-        <p class="text-xs text-gray-500">
-          Accès sécurisé pour les invités de la résidence
-        </p>
-      </div>
+        <div class="mt-4 text-center">
+          <p class="text-xs text-gray-500">
+            Accès sécurisé pour les invités de la résidence
+          </p>
+        </div>
     </div>
   </div>
+  <AppFooter />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+
+import AppFooter from '~/components/AppFooter.vue'
+import ContactAdminModal from '~/components/ContactAdminModal.vue'
+
+const showContactModal = ref(false)
 
 // Métadonnées de la page
 useHead({

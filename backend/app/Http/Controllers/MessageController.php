@@ -320,7 +320,11 @@
 
                 // Marquer tous les messages comme lus pour cet utilisateur
                 $this->markMessagesAsRead($groupId, $user->id_personne);
-                $this->logAction($user->id_personne, 'read_messages', "Messages marqués comme lus dans le groupe $groupId", $request);
+                // Log lisible : nom du groupe
+                $groupe = GroupeMessage::find($groupId);
+                $groupName = $groupe ? $groupe->nom_groupe : $groupId;
+                $userName = $user->nom ?? $user->email;
+                $this->logAction($user->id_personne, 'read_messages', "Messages marqués comme lus dans le groupe \"$groupName\" par $userName", $request);
 
                 return response()->json([
                     'success' => true,
@@ -470,7 +474,11 @@
                     }
 
                     DB::commit();
-                    $this->logAction($user->id_personne, 'send_message', "Message envoyé dans le groupe $groupId", $request);
+                    // Log lisible : nom du groupe
+                    $groupe = GroupeMessage::find($groupId);
+                    $groupName = $groupe ? $groupe->nom_groupe : $groupId;
+                    $userName = $user->nom ?? $user->email;
+                    $this->logAction($user->id_personne, 'send_message', "Message envoyé dans le groupe \"$groupName\" par $userName", $request);
 
                     return response()->json([
                         'success' => true,
@@ -549,7 +557,13 @@
                         ->where('id_reaction', $existingReaction->id_reaction)
                         ->delete();
                     $action = 'removed';
-                    $this->logAction($user->id_personne, 'remove_reaction', "Réaction supprimée sur le message $messageId", $request);
+                    // Log lisible : nom du groupe et auteur du message
+                    $message = Message::find($messageId);
+                    $groupe = $message ? $message->groupe : null;
+                    $groupName = $groupe ? $groupe->nom_groupe : '';
+                    $auteur = $message && $message->auteur ? $message->auteur->nom : '';
+                    $userName = $user->nom ?? $user->email;
+                    $this->logAction($user->id_personne, 'remove_reaction', "Réaction supprimée sur le message de $auteur dans le groupe \"$groupName\" par $userName", $request);
                 } else {
                     // Ajouter la réaction
                     DB::table('message_reaction')->insert([
@@ -559,7 +573,13 @@
                         'date_reaction' => now()
                     ]);
                     $action = 'added';
-                    $this->logAction($user->id_personne, 'add_reaction', "Réaction ajoutée sur le message $messageId", $request);
+                    // Log lisible : nom du groupe et auteur du message
+                    $message = Message::find($messageId);
+                    $groupe = $message ? $message->groupe : null;
+                    $groupName = $groupe ? $groupe->nom_groupe : '';
+                    $auteur = $message && $message->auteur ? $message->auteur->nom : '';
+                    $userName = $user->nom ?? $user->email;
+                    $this->logAction($user->id_personne, 'add_reaction', "Réaction ajoutée sur le message de $auteur dans le groupe \"$groupName\" par $userName", $request);
                 }
 
                 // Récupérer les réactions mises à jour
