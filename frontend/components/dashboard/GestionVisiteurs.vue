@@ -1,12 +1,29 @@
 <template>
   <div class="p-6">
-    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
-      <h2 class="text-2xl font-bold">Gestion des visiteurs</h2>
-      <div class="flex items-center gap-2 flex-wrap">
-        <input v-model="searchQuery" @input="filterPersons" type="text" placeholder="Rechercher un visiteur..." class="input w-64" />
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <h2 class="text-2xl font-bold">Gestion des visiteurs</h2>
         <button @click="toggleView" class="px-3 py-1 rounded bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 text-sm">
           {{ isListView ? 'Affichage par cartes' : 'Affichage par liste' }}
         </button>
+      </div>
+      <div class="grid grid-cols-12 gap-4 items-end">
+        <div class="col-span-4">
+          <label class="block text-xs text-gray-500 mb-1">Recherche globale</label>
+          <input v-model="searchQuery" @input="filterPersons" type="text" placeholder="Recherche..." class="input w-full" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs text-gray-500 mb-1">Filtrer par actif</label>
+          <select v-model="filterActif" @change="filterPersons" class="input w-full">
+            <option value="">Tous</option>
+            <option value="true">Actif</option>
+            <option value="false">Banni</option>
+          </select>
+        </div>
+        <div class="col-span-3">
+          <label class="block text-xs text-gray-500 mb-1">Filtrer par date d'inscription</label>
+          <input v-model="filterDate" @input="filterPersons" type="date" class="input w-full" />
+        </div>
       </div>
     </div>
     <div v-if="loading" class="text-center py-8 text-gray-500">Chargement...</div>
@@ -161,51 +178,58 @@
 </template>
 
 <script setup lang="ts">
-// Formate le numéro selon l'indicatif international
-function formatPhoneNumber(num: string) {
-  // Si le numéro commence par +
-  if (num.startsWith('+')) {
-    // Sépare l'indicatif (ex: +33, +228, etc.)
-    const match = num.match(/^(\+\d{1,3})(\d+)$/)
-    if (match) {
-      const indicatif = match[1]
-      const reste = match[2]
-      // Format FR (+33)
-      if (indicatif === '+33' && reste.length === 9) {
-        return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
+  // Filtres avancés
+  import { computed } from 'vue'
+  const filterActif = ref('')
+  const filterMail = ref('')
+  const filterDate = ref('')
+  // Removed mailsList as it is no longer needed
+  // Formate le numéro selon l'indicatif international
+  function formatPhoneNumber(num: string) {
+    // Si le numéro commence par +
+    if (num.startsWith('+')) {
+      // Sépare l'indicatif (ex: +33, +228, etc.)
+      const match = num.match(/^(\+\d{1,3})(\d+)$/)
+      if (match) {
+        const indicatif = match[1]
+        const reste = match[2]
+        // Format FR (+33)
+        if (indicatif === '+33' && reste.length === 9) {
+          return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
+        }
+        // Format Togo (+228)
+        if (indicatif === '+228' && reste.length === 8) {
+          return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
+        }
+        // Format générique (groupe de 2)
+        return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
       }
-      // Format Togo (+228)
-      if (indicatif === '+228' && reste.length === 8) {
-        return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
-      }
-      // Format générique (groupe de 2)
-      return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
     }
+    // Format FR local (0X XX XX XX XX)
+    if (num.startsWith('0') && num.length === 10) {
+      return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
+    }
+    return num
   }
-  // Format FR local (0X XX XX XX XX)
-  if (num.startsWith('0') && num.length === 10) {
-    return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
-  }
-  return num
-}
-// ...existing imports...
 
   const isListView = ref(false)
   function toggleView() {
     isListView.value = !isListView.value
   }
-// Fonction utilitaire pour afficher le nom complet de l'invitant à partir de son id (exposée au template)
-function getInviterName(inviteParId: string | number | null | undefined) {
-  if (!inviteParId) return null
-  // On tente d'abord de trouver par id exact (number ou string)
-  let inviter = allPersons.value.find(p => String(p.id) === String(inviteParId))
-  if (!inviter) {
-    // Certains backends renvoient l'id sous forme de string ou number, on tente les deux
-    inviter = allPersons.value.find(p => p.id == inviteParId)
+
+  // Fonction utilitaire pour afficher le nom complet de l'invitant à partir de son id (exposée au template)
+  function getInviterName(inviteParId: string | number | null | undefined) {
+    if (!inviteParId) return null
+    // On tente d'abord de trouver par id exact (number ou string)
+    let inviter = allPersons.value.find(p => String(p.id) === String(inviteParId))
+    if (!inviter) {
+      // Certains backends renvoient l'id sous forme de string ou number, on tente les deux
+      inviter = allPersons.value.find(p => p.id == inviteParId)
+    }
+    if (inviter) return `${inviter.prenom} ${inviter.nom}`
+    return null
   }
-  if (inviter) return `${inviter.prenom} ${inviter.nom}`
-  return null
-}
+
   import { ref, onMounted } from 'vue'
   import type { InvitePerson } from '~/types/invitePerson'
   import { useAuthStore } from '~/stores/auth'
@@ -270,14 +294,32 @@ function getInviterName(inviteParId: string | number | null | undefined) {
 
   function filterPersons() {
     const q = searchQuery.value.trim().toLowerCase()
-    persons.value = !q
-      ? allPersons.value
-      : allPersons.value.filter(p =>
-          p.nom.toLowerCase().includes(q) ||
-          p.prenom.toLowerCase().includes(q) ||
-          p.email.toLowerCase().includes(q) ||
-          p.numero_telephone.toLowerCase().includes(q)
-        )
+    persons.value = allPersons.value.filter(p => {
+      let match = true
+      // Recherche globale
+      if (q && !(
+        p.nom.toLowerCase().includes(q) ||
+        p.prenom.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.numero_telephone.toLowerCase().includes(q) ||
+        (p.commentaire && p.commentaire.toLowerCase().includes(q))
+      )) match = false
+
+      // Filtre actif
+      if (filterActif.value === 'true' && !p.actif) match = false
+      if (filterActif.value === 'false' && p.actif) match = false
+
+      // Filtre date inscription
+      if (filterDate.value) {
+        const dateStr = p.date_inscription?.slice(0, 10)
+        if (dateStr !== filterDate.value) match = false
+      }
+
+      // Filtre mail
+      if (filterMail.value && p.email !== filterMail.value) match = false
+
+      return match
+    })
   }
 
   async function banPerson(person: InvitePerson) {
@@ -351,3 +393,5 @@ function getInviterName(inviteParId: string | number | null | undefined) {
     background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
   }
 </style>
+
+
