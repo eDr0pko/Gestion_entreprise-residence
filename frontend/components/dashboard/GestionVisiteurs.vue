@@ -1,3 +1,12 @@
+// Fonction utilitaire pour obtenir l'URL correcte de l'avatar
+function getAvatarUrl(photo) {
+  const apiBase = useRuntimeConfig().public.apiBase.replace(/\/api$/, '')
+  if (!photo) return ''
+  if (photo.startsWith('http')) return photo
+  if (photo.startsWith('avatars/')) return `${apiBase}/storage/${photo}`
+  if (photo.startsWith('public/avatars/')) return `${apiBase}/storage/${photo.replace('public/', '')}`
+  return `${apiBase}/avatars/${photo.split('/').pop()}`
+}
 <template>
   <div class="p-6">
     <div class="flex flex-col gap-4 mb-6">

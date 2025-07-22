@@ -301,7 +301,13 @@ function toggleView() {
 
 // Récupère l'URL de l'avatar
 function getAvatarUrl(photo: string) {
-  return `${apiBase}/avatars/${photo}`
+  // Correction : retire le segment '/api' si présent dans apiBase
+  const base = apiBase.replace(/\/api$/, '')
+  if (!photo) return ''
+  if (photo.startsWith('http')) return photo
+  if (photo.startsWith('avatars/')) return `${base}/storage/${photo}`
+  if (photo.startsWith('public/avatars/')) return `${base}/storage/${photo.replace('public/', '')}`
+  return `${base}/avatars/${photo.split('/').pop()}`
 }
 
 // Formate la date en français

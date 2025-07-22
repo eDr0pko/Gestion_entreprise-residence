@@ -213,7 +213,7 @@ const uploadAvatar = async () => {
     if (data.success) {
       // Mettre à jour l'utilisateur dans le store
       if (authStore.user) {
-        (authStore.user as any).photo_profil = data.data.photo_profil
+        authStore.updateUser({ photo_profil: data.data.photo_profil })
       }
       
       emit('success', data.data.avatar_url)
@@ -247,7 +247,7 @@ const deleteAvatar = async () => {
     if (data.success) {
       // Mettre à jour l'utilisateur dans le store
       if (authStore.user) {
-        (authStore.user as any).photo_profil = null
+        authStore.updateUser({ photo_profil: null })
       }
       
       emit('success', null)

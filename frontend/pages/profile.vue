@@ -474,7 +474,7 @@ interface User {
   type?: string
   user_type?: string
   role?: string
-  [key: string]: any // Pour les autres propriétés éventuelles
+  [key: string]: any
 }
 
 interface Stats {
@@ -497,16 +497,25 @@ const user = computed(() => authStore.user as User | null)
 const stats = ref<Stats | null>(null)
 const loading = ref(false)
 
+// Gestion d'erreur pour l'avatar
+const avatarError = ref(false)
 // Computed pour déterminer l'URL de l'avatar
 const avatarUrl = computed(() => {
-  if (!user.value?.photo_profil) return null
-  
+  if (!user.value?.photo_profil || avatarError.value) return null
   // Si c'est déjà une URL complète, la retourner telle quelle
   if (user.value.photo_profil.startsWith('http')) {
     return user.value.photo_profil
   }
-  
-  // Sinon, construire l'URL avec l'API
+  // Toujours utiliser l'URL du backend pour les avatars
+  // Correction : retire le segment '/api' si présent dans apiBase
+  const apiBase = config.public.apiBase.replace(/\/api$/, '')
+  if (user.value.photo_profil.startsWith('avatars/')) {
+    return `${apiBase}/storage/${user.value.photo_profil}`
+  }
+  if (user.value.photo_profil.startsWith('public/avatars/')) {
+    return `${apiBase}/storage/${user.value.photo_profil.replace('public/', '')}`
+  }
+  // Fallback: construit l'URL API
   return `${config.public.apiBase}/avatars/${user.value.photo_profil.split('/').pop()}`
 })
 
@@ -720,8 +729,15 @@ const handleAvatarSuccess = (newAvatarUrl: string | null) => {
   showSuccessMessage(newAvatarUrl ? 'Photo de profil mise à jour avec succès' : 'Photo de profil supprimée avec succès')
 }
 
-const handleAvatarError = () => {
-  console.error('Erreur lors du chargement de l\'avatar')
+const handleAvatarError = (event?: Event) => {
+  avatarError.value = true
+  if (event && event.target) {
+    // Log l'URL qui a échoué
+    // @ts-ignore
+    console.error('Erreur lors du chargement de l\'avatar:', event.target.src)
+  } else {
+    console.error('Erreur lors du chargement de l\'avatar')
+  }
 }
 
 // Mettre à jour le profil
