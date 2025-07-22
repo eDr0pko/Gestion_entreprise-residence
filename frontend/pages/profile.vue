@@ -53,7 +53,7 @@ const showAvatarModal = ref(false)/50 p-8 mb-8">
                 <svg class="w-4 h-4 mr-2 text-[#0097b2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                 </svg>
-                {{ user?.numero_telephone }}
+                {{ formatPhoneNumber(user?.numero_telephone || '') }}
               </p>
             </div>
             <div class="flex flex-wrap justify-center lg:justify-start gap-2">
@@ -431,6 +431,28 @@ const showAvatarModal = ref(false)/50 p-8 mb-8">
 </template>
 
 <script setup lang="ts">
+// Formate le numéro selon l'indicatif international
+function formatPhoneNumber(num: string) {
+  if (!num) return ''
+  if (num.startsWith('+')) {
+    const match = num.match(/^(\+\d{1,3})(\d+)$/)
+    if (match) {
+      const indicatif = match[1]
+      const reste = match[2]
+      if (indicatif === '+33' && reste.length === 9) {
+        return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
+      }
+      if (indicatif === '+228' && reste.length === 8) {
+        return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
+      }
+      return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
+    }
+  }
+  if (num.startsWith('0') && num.length === 10) {
+    return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
+  }
+  return num
+}
 definePageMeta({
   middleware: 'auth'
 })
@@ -478,20 +500,14 @@ const loading = ref(false)
 // Computed pour déterminer l'URL de l'avatar
 const avatarUrl = computed(() => {
   if (!user.value?.photo_profil) return null
-  const val = user.value.photo_profil
+  
   // Si c'est déjà une URL complète, la retourner telle quelle
-  if (typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
-    return val
+  if (user.value.photo_profil.startsWith('http')) {
+    return user.value.photo_profil
   }
-  // Si c'est un chemin relatif ou juste un nom de fichier
-  if (typeof val === 'string' && val.trim() !== '') {
-    // Nettoyer le nom de fichier pour éviter les erreurs
-    const filename = val.split(/[\\/]/).pop()
-    if (!filename) return null
-    // Utiliser le chemin public direct, pas l'API
-    return `/storage/avatars/${encodeURIComponent(filename)}`
-  }
-  return null
+  
+  // Sinon, construire l'URL avec l'API
+  return `${config.public.apiBase}/avatars/${user.value.photo_profil.split('/').pop()}`
 })
 
 // Computed pour déterminer le rôle correct de l'utilisateur
@@ -704,14 +720,7 @@ const handleAvatarSuccess = (newAvatarUrl: string | null) => {
   showSuccessMessage(newAvatarUrl ? 'Photo de profil mise à jour avec succès' : 'Photo de profil supprimée avec succès')
 }
 
-const handleAvatarError = (e?: Event) => {
-  // Masquer l'avatar si erreur de chargement
-  if (user.value) {
-    user.value.photo_profil = null
-  }
-  if (e && e.target && 'src' in e.target) {
-    e.target.src = ''
-  }
+const handleAvatarError = () => {
   console.error('Erreur lors du chargement de l\'avatar')
 }
 

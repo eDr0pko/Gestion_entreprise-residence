@@ -1,15 +1,17 @@
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '~/stores/auth';
 
 export interface IncidentEntry {
   id: number;
-  datetime: string;
-  object: string;
-  statut: string;
   id_signaleur?: number | null;
-  nom_signaleur?: string | null;
-  prenom_signaleur?: string | null;
-  pieces_jointes?: string[] | null;
+  details: {
+    datetime: string;
+    object: string;
+    statut: string;
+    email_signaleur?: string;
+    pieces_jointes?: string[];
+    [key: string]: any;
+  };
 }
 
 const incidents = ref<IncidentEntry[]>([]);
@@ -25,13 +27,23 @@ async function fetchIncidents() {
     const res = await $fetch<{ data: IncidentEntry[] }>(`${apiBase}/admin/incidents`, {
       headers: { Authorization: `Bearer ${authStore.token}` },
     });
-    incidents.value = res.data;
+    // Parse details for each incident
+    incidents.value = res.data.map((inc: any) => {
+      if (typeof inc.details === 'string') {
+        try {
+          inc.details = JSON.parse(inc.details);
+        } catch {
+          inc.details = {};
+        }
+      }
+      return inc;
+    });
   } catch (e: any) {
     error.value = 'Erreur lors du chargement des incidents';
   }
   loading.value = false;
 }
 
-
+onMounted(fetchIncidents);
 
 export { incidents, loading, error, fetchIncidents };

@@ -55,7 +55,6 @@ async function submit() {
       headers: { Authorization: `Bearer ${authStore.token}` },
     })
     emit('submitted')
-    emit('close')
     description.value = ''
     status.value = 'En cours'
   } catch (e: any) {

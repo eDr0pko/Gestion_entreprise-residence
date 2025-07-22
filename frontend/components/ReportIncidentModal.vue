@@ -8,7 +8,7 @@
         </svg>
         Signaler un incident
       </h3>
-      <form @submit.prevent="submitIncident" class="flex flex-col gap-4 mt-4">
+      <form @submit.prevent="submitIncident" class="flex flex-col gap-4 mt-4" enctype="multipart/form-data">
         <div>
           <label class="block text-sm font-semibold mb-1">Description de l'incident <span class="text-red-500">*</span></label>
           <textarea v-model="description" required rows="3" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
@@ -21,15 +21,16 @@
             <option value="resolu">Résolu</option>
           </select>
         </div>
+        <div v-if="!user?.email">
+          <label class="block text-sm font-semibold mb-1">Votre email <span class="text-red-500">*</span></label>
+          <input v-model="emailSignaleur" type="email" required class="w-full border rounded-lg px-3 py-2" placeholder="Votre email" />
+        </div>
         <div>
           <label class="block text-sm font-semibold mb-1">Pièces jointes</label>
-          <input type="file" multiple @change="handleFiles" :disabled="loading" class="w-full border rounded-lg px-3 py-2" />
-          <ul v-if="selectedFiles.length" class="mt-2 space-y-1">
-            <li v-for="(file, idx) in selectedFiles" :key="file.name + file.size" class="flex items-center gap-2 text-sm">
-              <span>{{ file.name }}</span>
-              <button type="button" @click="removeFile(idx)" class="text-red-500 hover:underline">Supprimer</button>
-            </li>
-          </ul>
+          <input type="file" multiple @change="handleFiles" class="w-full border rounded-lg px-3 py-2" />
+          <div v-if="files.length" class="mt-1 text-xs text-gray-600">
+            <div v-for="(file, idx) in files" :key="idx">{{ file.name }}</div>
+          </div>
         </div>
         <div class="flex justify-end gap-2 mt-2">
           <button type="button" @click="$emit('close')" class="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700">Annuler</button>
@@ -46,28 +47,32 @@
 import { ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
+type User = {
+  email?: string
+  // ...other user fields as needed
+}
+
 const emit = defineEmits(['close'])
 const description = ref('')
 const status = ref('en_cours')
+const emailSignaleur = ref('')
+
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
 
-const selectedFiles = ref<File[]>([])
-
-const authStore = useAuthStore()
-const apiBase = useRuntimeConfig().public.apiBase
+const files = ref<File[]>([])
 
 function handleFiles(e: Event) {
-  const files = (e.target as HTMLInputElement).files
-  if (files) {
-    selectedFiles.value = Array.from(files)
+  const target = e.target as HTMLInputElement
+  if (target.files) {
+    files.value = Array.from(target.files)
   }
 }
 
-function removeFile(idx: number) {
-  selectedFiles.value.splice(idx, 1)
-}
+const authStore = useAuthStore()
+const user = authStore.user as unknown as User
+const apiBase = useRuntimeConfig().public.apiBase
 
 async function submitIncident() {
   error.value = ''
@@ -76,51 +81,52 @@ async function submitIncident() {
     error.value = 'La description est obligatoire.'
     return
   }
+  if (!user?.email && !emailSignaleur.value.trim()) {
+    error.value = 'Veuillez renseigner votre email.'
+    return
+  }
   loading.value = true
   try {
-    const signaleurId = authStore.user && typeof authStore.user === 'object' && 'id_personne' in authStore.user
-      ? (authStore.user as any).id_personne
-      : undefined;
-
-    let piecesJointesUrls: string[] = []
-    if (selectedFiles.value.length) {
-      // Envoi des fichiers un par un (à adapter selon l'API backend)
-      const uploads = await Promise.all(selectedFiles.value.map(async (file) => {
-        const formData = new FormData()
-        formData.append('file', file)
-        // À adapter: endpoint d'upload de fichier incident
-        const res = await $fetch(`${apiBase}/admin/incidents/upload`, {
-          method: 'POST',
-          body: formData,
-          headers: { Authorization: `Bearer ${authStore.token}` },
-        })
-        // On suppose que l'API retourne l'URL du fichier
-        return (res as any).url || ''
-      }))
-      piecesJointesUrls = uploads.filter(Boolean)
+    const formData = new FormData()
+    // Compose details JSON for backend
+    const details = {
+      datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      object: description.value,
+      statut: status.value,
+      email_signaleur: user.email || emailSignaleur.value,
+      pieces_jointes: [] as string[],
     }
-
+    // Upload files and collect their names (let backend handle storage)
+    files.value.forEach(f => formData.append('pieces_jointes[]', f))
+    // Add details as JSON string
+    formData.append('details', JSON.stringify(details))
+    const headers: Record<string, string> = {}
+    if (authStore.token) headers['Authorization'] = `Bearer ${authStore.token}`
     await $fetch(`${apiBase}/admin/incidents`, {
       method: 'POST',
-      body: {
-        datetime: new Date().toISOString(),
-        object: description.value,
-        statut: status.value,
-        id_signaleur: signaleurId,
-        pieces_jointes: piecesJointesUrls.length ? piecesJointesUrls : null
-      },
-      headers: { Authorization: `Bearer ${authStore.token}` },
+      body: formData,
+      headers,
     })
     success.value = true
     description.value = ''
     status.value = 'en_cours'
-    selectedFiles.value = []
+    emailSignaleur.value = ''
+    files.value = []
+    // Reset file input (UX)
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]')
+    if (fileInput) fileInput.value = ''
     window.dispatchEvent(new CustomEvent('incident-reported'))
     setTimeout(() => {
       emit('close')
     }, 1200)
   } catch (e: any) {
-    error.value = e?.data?.message || 'Erreur lors de l\'envoi du signalement.'
+    if (e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data) {
+      error.value = (e.data as any).message
+    } else if (e instanceof Error) {
+      error.value = e.message
+    } else {
+      error.value = 'Erreur lors de l\'envoi du signalement.'
+    }
   } finally {
     loading.value = false
   }

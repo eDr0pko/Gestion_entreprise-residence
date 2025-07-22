@@ -48,45 +48,51 @@ export const useAuthStore = defineStore('auth', {
         this.isLoading = true
         const config = useRuntimeConfig()
         
-        console.log('Tentative de connexion:', { email, apiBase: config.public.apiBase })
         
-        const response = await $fetch(`${config.public.apiBase}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: {
-            email,
-            password
+        let response = null
+        try {
+          response = await $fetch(`${config.public.apiBase}/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: {
+              email,
+              password
+            },
+          })
+        } catch (err) {
+          // $fetch lève une erreur pour les codes HTTP >= 400, on tente de parser le message
+          if (err && err.data && err.data.message) {
+            throw new Error(err.data.message)
+          } else if (err && err.message) {
+            throw new Error(err.message)
+          } else {
+            throw new Error('Erreur de connexion')
           }
-        })
+        }
 
-        console.log('Réponse de connexion:', response)
 
-        if (response.success && response.access_token) {
+        if (response && response.success && response.access_token) {
           this.token = response.access_token
           this.user = response.user
           this.isAuthenticated = true
-          
           // Sauvegarder dans localStorage
           if (process.client) {
             localStorage.setItem('auth_token', response.access_token)
             localStorage.setItem('user', JSON.stringify(response.user))
           }
-          
           console.log('Connexion réussie:', { 
             token: !!this.token, 
             user: this.user,
             authenticated: this.isAuthenticated 
           })
-          
           return { success: true, user: this.user }
         } else {
-          throw new Error(response.message || 'Erreur de connexion')
+          throw new Error((response && response.message) || 'Erreur de connexion')
         }
       } catch (error) {
-        console.error('Erreur de connexion dans le store:', error)
         this.clearAuth()
         throw error
       } finally {
@@ -108,7 +114,6 @@ export const useAuthStore = defineStore('auth', {
           })
         }
       } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error)
       } finally {
         this.clearAuth()
         // Rediriger vers la page d'accueil après déconnexion
@@ -145,7 +150,6 @@ export const useAuthStore = defineStore('auth', {
           return false
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification auth:', error)
         this.clearAuth()
         return false
       }

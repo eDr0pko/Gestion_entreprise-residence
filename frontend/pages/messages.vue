@@ -34,7 +34,7 @@
     <!-- Notification d'erreur -->
     <Transition name="slide-down">
       <div 
-        v-if="error.value" 
+        v-if="error" 
         class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4"
       >
         <div class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
@@ -42,10 +42,10 @@
             <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span class="text-sm">{{ error.value }}</span>
+            <span class="text-sm">{{ error }}</span>
           </div>
           <button 
-            @click="error.value = ''"
+            @click="error = ''"
             class="ml-2 text-white hover:text-gray-200 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +114,6 @@
             @reaction-toggled="handleReactionToggled"
             @download-file="downloadFile"
             @scroll="handleMessagesScroll"
-            @reply-to-message="onReplyToMessage"
           />
 
           <!-- Message Composer -->
@@ -123,9 +122,7 @@
             v-model:message="newMessage"
             v-model:selected-files="selectedFiles"
             :sending="sendingMessage"
-            :reply-to-message="replyToMessage"
             @send-message="sendMessage"
-            @cancel-reply="onCancelReply"
           />
         </div>
       </div>
@@ -159,29 +156,10 @@ definePageMeta({
 
 // Import des composables
 import type { Conversation, Message, FichierMessage, ApiResponse } from '~/types'
-import type { Ref } from 'vue'
-
 
 // Configuration et composables
 const config = useRuntimeConfig()
 const authStore = useAuthStore()
-
-// Reply to message state (typé explicitement)
-const replyToMessage: Ref<Message | null> = ref<Message | null>(null)
-
-// Handler for reply event from MessagesArea
-function onReplyToMessage(message: Message) {
-  replyToMessage.value = message
-  // Optionally focus the composer
-  if (messageComposerRef.value && messageComposerRef.value.focusInput) {
-    messageComposerRef.value.focusInput()
-  }
-}
-
-// Handler to cancel reply (from MessageComposer)
-function onCancelReply() {
-  replyToMessage.value = null
-}
 
 // Device detection
 const isMobile = computed(() => {
@@ -353,21 +331,15 @@ const loadMessages = async (groupId: number) => {
 // Sélectionner une conversation
 const selectConversation = async (conversation: Conversation) => {
   selectedConversation.value = conversation
-
+  
   // Charger les messages
   await loadMessages(conversation.id_groupe_message)
-
+  
   // Mettre à jour localement le compteur de messages non lus
   const index = conversations.value.findIndex(c => c.id_groupe_message === conversation.id_groupe_message)
   if (index !== -1) {
     conversations.value[index].messages_non_lus = 0
   }
-
-  // Log clair pour la lecture des messages
-  const groupName = conversation.nom_groupe || `Groupe ${conversation.id_groupe_message}`
-  const userName = (currentUser.value as any)?.nom || 'Vous'
-  const logMsg = `Messages marqués comme lus dans le groupe "${groupName}" par ${userName}`
-  console.log(logMsg)
 }
 
 // Envoyer un message
@@ -403,14 +375,7 @@ const sendMessage = async () => {
         type_fichier: file.type,
         taille_fichier: file.size
       })),
-      reactions: {},
-      reply_to: replyToMessage.value
-        ? {
-            id_message: replyToMessage.value.id_message,
-            auteur_nom: replyToMessage.value.auteur_nom,
-            contenu_message: replyToMessage.value.contenu_message
-          }
-        : undefined
+      reactions: {}
     }
     
     // Sauvegarder les valeurs actuelles
@@ -431,10 +396,6 @@ const sendMessage = async () => {
     const formData = new FormData()
     formData.append('contenu', currentMessage)
     
-    // Ajouter le message cité si présent
-    if (replyToMessage.value) {
-      formData.append('reply_to', String(replyToMessage.value.id_message))
-    }
     // Ajouter les fichiers
     currentFiles.forEach((file) => {
       formData.append('fichiers[]', file)
@@ -485,41 +446,15 @@ const sendMessage = async () => {
     }
     
     if (data.success) {
-      // Réinitialiser la citation après envoi
-      replyToMessage.value = null
       let newMessage: Message | null = null
-
+      
       // Le backend peut retourner soit 'message' (envoi) soit 'messages' (rechargement)
       if (data.message && typeof data.message === 'object' && data.message !== null) {
         newMessage = data.message as Message
       } else if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
         newMessage = data.messages[data.messages.length - 1] as Message
       }
-
-      // Correction : enrichir le champ reply_to si besoin (et fallback sur replyToMessage.value)
-      if (
-        newMessage &&
-        typeof newMessage.reply_to === 'number'
-      ) {
-        const replyToId = newMessage.reply_to as number
-        let cited: Message | undefined = messages.value.find((m: Message) => m.id_message === replyToId)
-        // Fallback : si non trouvé dans la liste, utiliser replyToMessage.value (typé)
-        let replyToMsg: Message | null = null;
-        if (replyToMessage.value && typeof replyToMessage.value === 'object' && 'id_message' in replyToMessage.value) {
-          replyToMsg = replyToMessage.value as Message;
-        }
-        if (!cited && replyToMsg && replyToMsg.id_message === replyToId) {
-          cited = replyToMsg;
-        }
-        if (cited) {
-          newMessage.reply_to = {
-            id_message: cited.id_message,
-            auteur_nom: cited.auteur_nom,
-            contenu_message: cited.contenu_message
-          }
-        }
-      }
-
+      
       if (newMessage && newMessage.id_message) {
         // Remplacer le message temporaire par la vraie réponse du serveur
         const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
@@ -527,7 +462,7 @@ const sendMessage = async () => {
           // Conserver la position de scroll
           const wasAtBottom = isAtBottom.value
           messages.value[tempMessageIndex] = newMessage
-
+          
           // Si on était en bas, rester en bas après la mise à jour
           if (wasAtBottom) {
             await nextTick()
@@ -538,7 +473,7 @@ const sendMessage = async () => {
           await nextTick()
           setTimeout(() => scrollToBottom(false), 10)
         }
-
+        
         // Mettre à jour la conversation dans la liste pour refléter le nouveau dernier message
         const conversationIndex = conversations.value.findIndex(c => c.id_groupe_message === selectedConversation.value?.id_groupe_message)
         if (conversationIndex !== -1) {
@@ -546,15 +481,15 @@ const sendMessage = async () => {
           updatedConversation.dernier_contenu = newMessage.contenu_message || 'Fichier envoyé'
           updatedConversation.dernier_auteur = newMessage.auteur_nom
           updatedConversation.derniere_activite = newMessage.date_envoi
-
+          
           // Déplacer la conversation en haut de la liste
           conversations.value.splice(conversationIndex, 1)
           conversations.value.unshift(updatedConversation)
-
+          
           // Mettre à jour la référence de la conversation sélectionnée
           selectedConversation.value = updatedConversation
         }
-
+        
         // Fermer le panel de sélection de fichiers s'il y en avait
         if (currentFiles.length > 0 && messageComposerRef.value?.clearFiles) {
           messageComposerRef.value.clearFiles()
@@ -620,41 +555,35 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
   try {
     const messageIndex = messages.value.findIndex(msg => msg.id_message === messageId)
     if (messageIndex === -1) return
-
+    
     const message = messages.value[messageIndex]
     const currentUserEmail = (currentUser.value as any)?.email
     const currentUserNom = (currentUser.value as any)?.nom || 'Vous'
-
+    
     if (!currentUserEmail) return
-
+    
     // Mise à jour optimiste locale
     const originalReactions = JSON.parse(JSON.stringify(message.reactions || {}))
-
+    
     if (!message.reactions) {
       message.reactions = {}
     }
-
+    
     if (!message.reactions[emoji]) {
       message.reactions[emoji] = { count: 0, users: [] }
     }
-
+    
     const userAlreadyReacted = message.reactions[emoji].users.some(user => user.email === currentUserEmail)
-
-    // Pour le log local (affichage clair)
-    const groupName = selectedConversation.value?.nom_groupe || `Groupe ${selectedConversation.value?.id_groupe_message}`
-    const messageLabel = message.auteur_nom ? `message de ${message.auteur_nom}` : `message #${messageId}`
-    let logMsg = ''
-
+    
     if (userAlreadyReacted) {
       // Retirer la réaction
       message.reactions[emoji].users = message.reactions[emoji].users.filter(user => user.email !== currentUserEmail)
       message.reactions[emoji].count = message.reactions[emoji].users.length
-
+      
       // Supprimer l'emoji s'il n'y a plus d'utilisateurs
       if (message.reactions[emoji].count === 0) {
         delete message.reactions[emoji]
       }
-      logMsg = `Réaction supprimée (${emoji}) sur le ${messageLabel} dans le groupe "${groupName}" par ${currentUserNom}`
     } else {
       // Ajouter la réaction
       message.reactions[emoji].users.push({
@@ -662,17 +591,11 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
         nom: currentUserNom
       })
       message.reactions[emoji].count = message.reactions[emoji].users.length
-      logMsg = `Réaction ajoutée (${emoji}) sur le ${messageLabel} dans le groupe "${groupName}" par ${currentUserNom}`
     }
-
+    
     // Déclencher la réactivité
     messages.value[messageIndex] = { ...message }
-
-    // On envoie au backend un champ log_message enrichi pour le log
-    const logMessage = userAlreadyReacted
-      ? `Réaction supprimée (${emoji}) sur le message de ${message.auteur_nom || 'utilisateur inconnu'} dans le groupe "${groupName}" par ${currentUserNom}`
-      : `Réaction ajoutée (${emoji}) sur le message de ${message.auteur_nom || 'utilisateur inconnu'} dans le groupe "${groupName}" par ${currentUserNom}`
-
+    
     const response = await fetch(`${config.public.apiBase}/messages/${messageId}/reactions`, {
       method: 'POST',
       headers: {
@@ -680,33 +603,30 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authStore.token}`
       },
-      body: JSON.stringify({ emoji, log_message: logMessage })
+      body: JSON.stringify({ emoji })
     })
-
+    
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-
+    
     const data = await response.json()
-
+    
     if (!data.success) {
       // En cas d'erreur du serveur, restaurer l'état original
       messages.value[messageIndex].reactions = originalReactions
       throw new Error(data.message || 'Erreur lors de la gestion de la réaction')
     }
-
+    
     // Optionnel: Mettre à jour avec la réponse du serveur pour s'assurer de la cohérence
     if (data.reactions) {
       messages.value[messageIndex].reactions = data.reactions
     }
-
-    // Affichage du log clair dans la console (ou à envoyer au backend si besoin)
-    console.log(logMsg)
-
+    
   } catch (err: any) {
     console.error('Erreur lors de la gestion de la réaction:', err)
     error.value = handleNetworkError(err, 'Impossible de modifier la réaction')
-
+    
     // En cas d'erreur réseau, recharger les messages pour récupérer l'état correct
     if (selectedConversation.value) {
       await loadMessages(selectedConversation.value.id_groupe_message)

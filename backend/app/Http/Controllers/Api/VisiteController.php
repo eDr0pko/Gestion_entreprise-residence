@@ -87,15 +87,16 @@ class VisiteController extends Controller
                 'date_visite_start' => 'required|date',
                 'date_visite_end' => 'required|date',
                 'statut_visite' => 'required|string',
+                'id_invite' => 'required|integer|exists:personne,id_personne',
             ]);
 
             $visite = new Visite();
-            $visite->email_utilisateur = $user->email;
             $visite->motif_visite = $validated['motif_visite'];
             $visite->email_visiteur = $validated['email_visiteur'];
             $visite->date_visite_start = $validated['date_visite_start'];
             $visite->date_visite_end = $validated['date_visite_end'];
             $visite->statut_visite = $validated['statut_visite'];
+            $visite->id_invite = $validated['id_invite'];
             $visite->save();
 
             return response()->json([

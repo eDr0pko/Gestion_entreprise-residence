@@ -226,10 +226,9 @@
                         'personne.nom',
                         'personne.prenom',
                         'personne.email',
-                        DB::raw('CONCAT(personne.prenom, " ", personne.nom) as auteur_nom'),
-                        'message.reply_to' // Ajouté pour la citation
+                        DB::raw('CONCAT(personne.prenom, " ", personne.nom) as auteur_nom')
                     )
-                    ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.id_auteur', 'message.a_fichiers', 'personne.nom', 'personne.prenom', 'personne.email', 'message.reply_to')
+                    ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.id_auteur', 'message.a_fichiers', 'personne.nom', 'personne.prenom', 'personne.email')
                     ->orderBy('message.date_envoi', 'asc')
                     ->get();
 
@@ -282,7 +281,7 @@
                         $statut = 'recu'; // Message non lu (envoyé après la dernière connexion ou jamais connecté)
                     }
 
-                    $msgArr = [
+                    $messagesArray[] = [
                         'id_message' => $message->id_message,
                         'contenu_message' => $message->contenu_message,
                         'date_envoi' => $message->date_envoi,
@@ -293,38 +292,13 @@
                         'reactions' => $reactions,
                         'fichiers' => $fichiers,
                         'statut_lecture' => $statut,
-                        'a_fichiers' => (bool)$message->a_fichiers,
-                        'reply_to' => null
+                        'a_fichiers' => (bool)$message->a_fichiers
                     ];
-                    // Si le message cite un autre message, récupérer les infos du message cité
-                    if ($message->reply_to) {
-                        $quoted = DB::table('message')
-                            ->join('personne', 'message.id_auteur', '=', 'personne.id_personne')
-                            ->where('message.id_message', $message->reply_to)
-                            ->select(
-                                'message.id_message',
-                                DB::raw('CONCAT(personne.prenom, " ", personne.nom) as auteur_nom'),
-                                'message.contenu_message'
-                            )
-                            ->first();
-                        if ($quoted) {
-                            $msgArr['reply_to'] = [
-                                'id_message' => $quoted->id_message,
-                                'auteur_nom' => $quoted->auteur_nom,
-                                'contenu_message' => $quoted->contenu_message
-                            ];
-                        }
-                    }
-                    $messagesArray[] = $msgArr;
                 }
 
                 // Marquer tous les messages comme lus pour cet utilisateur
                 $this->markMessagesAsRead($groupId, $user->id_personne);
-                // Log lisible : nom du groupe
-                $groupe = GroupeMessage::find($groupId);
-                $groupName = $groupe ? $groupe->nom_groupe : $groupId;
-                $userName = $user->nom ?? $user->email;
-                $this->logAction($user->id_personne, 'read_messages', "Messages marqués comme lus dans le groupe \"$groupName\" par $userName", $request);
+                $this->logAction($user->id_personne, 'read_messages', "Messages marqués comme lus dans le groupe $groupId", $request);
 
                 return response()->json([
                     'success' => true,
@@ -436,8 +410,7 @@
                         'id_auteur' => $user->id_personne,
                         'contenu_message' => $request->contenu ?? '',
                         'date_envoi' => now(),
-                        'a_fichiers' => $request->hasFile('fichiers'),
-                        'reply_to' => $request->reply_to ?? null // Ajouté pour la citation
+                        'a_fichiers' => $request->hasFile('fichiers')
                     ]);
 
                     $fichiers = [];
@@ -474,11 +447,7 @@
                     }
 
                     DB::commit();
-                    // Log lisible : nom du groupe
-                    $groupe = GroupeMessage::find($groupId);
-                    $groupName = $groupe ? $groupe->nom_groupe : $groupId;
-                    $userName = $user->nom ?? $user->email;
-                    $this->logAction($user->id_personne, 'send_message', "Message envoyé dans le groupe \"$groupName\" par $userName", $request);
+                    $this->logAction($user->id_personne, 'send_message', "Message envoyé dans le groupe $groupId", $request);
 
                     return response()->json([
                         'success' => true,
@@ -557,13 +526,7 @@
                         ->where('id_reaction', $existingReaction->id_reaction)
                         ->delete();
                     $action = 'removed';
-                    // Log lisible : nom du groupe et auteur du message
-                    $message = Message::find($messageId);
-                    $groupe = $message ? $message->groupe : null;
-                    $groupName = $groupe ? $groupe->nom_groupe : '';
-                    $auteur = $message && $message->auteur ? $message->auteur->nom : '';
-                    $userName = $user->nom ?? $user->email;
-                    $this->logAction($user->id_personne, 'remove_reaction', "Réaction supprimée sur le message de $auteur dans le groupe \"$groupName\" par $userName", $request);
+                    $this->logAction($user->id_personne, 'remove_reaction', "Réaction supprimée sur le message $messageId", $request);
                 } else {
                     // Ajouter la réaction
                     DB::table('message_reaction')->insert([
@@ -573,13 +536,7 @@
                         'date_reaction' => now()
                     ]);
                     $action = 'added';
-                    // Log lisible : nom du groupe et auteur du message
-                    $message = Message::find($messageId);
-                    $groupe = $message ? $message->groupe : null;
-                    $groupName = $groupe ? $groupe->nom_groupe : '';
-                    $auteur = $message && $message->auteur ? $message->auteur->nom : '';
-                    $userName = $user->nom ?? $user->email;
-                    $this->logAction($user->id_personne, 'add_reaction', "Réaction ajoutée sur le message de $auteur dans le groupe \"$groupName\" par $userName", $request);
+                    $this->logAction($user->id_personne, 'add_reaction', "Réaction ajoutée sur le message $messageId", $request);
                 }
 
                 // Récupérer les réactions mises à jour

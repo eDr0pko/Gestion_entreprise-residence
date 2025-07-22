@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 flex items-center justify-center p-4">
     <div class="max-w-lg w-full">
+      <!-- Card principale -->
       <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
         <!-- Header -->
         <div class="text-center mb-6">
@@ -15,46 +16,52 @@
 
         <!-- Formulaire d'inscription -->
         <form @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Nom -->
-          <div>
-            <label for="nom" class="block text-sm font-semibold text-gray-800 mb-2">Nom</label>
-            <input
-              id="nom"
-              v-model="form.nom"
-              type="text"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="Votre nom"
-              :disabled="loading"
-            />
-          </div>
-
-          <!-- Prénom -->
-          <div>
-            <label for="prenom" class="block text-sm font-semibold text-gray-800 mb-2">Prénom</label>
-            <input
-              id="prenom"
-              v-model="form.prenom"
-              type="text"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="Votre prénom"
-              :disabled="loading"
-            />
-          </div>
-
           <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-semibold text-gray-800 mb-2">Adresse email</label>
+            <label for="email" class="block text-sm font-semibold text-gray-800 mb-2">
+              Adresse email
+            </label>
             <input
               id="email"
               v-model="form.email"
               type="email"
               required
               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="exemple@email.com"
+              placeholder="votre@email.com"
               :disabled="loading"
             />
+          </div>
+
+          <!-- Nom et Prénom sur la même ligne -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="nom" class="block text-sm font-semibold text-gray-800 mb-2">
+                Nom
+              </label>
+              <input
+                id="nom"
+                v-model="form.nom"
+                type="text"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                placeholder="Nom"
+                :disabled="loading"
+              />
+            </div>
+            <div>
+              <label for="prenom" class="block text-sm font-semibold text-gray-800 mb-2">
+                Prénom
+              </label>
+              <input
+                id="prenom"
+                v-model="form.prenom"
+                type="text"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                placeholder="Prénom"
+                :disabled="loading"
+              />
+            </div>
           </div>
 
           <!-- Téléphone -->
@@ -139,53 +146,20 @@
             </NuxtLink>
           </p>
         </div>
-
-        <!-- Besoin d'assistance et retour à l'accueil dans la card -->
-        <div class="mt-8 text-center">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-200"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-4 bg-white bg-opacity-80 text-gray-500 font-medium">Besoin d'assistance ?</span>
-            </div>
-          </div>
-          <div class="mt-4">
-            <a href="#" @click.prevent="showContactModal = true" class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 group">
-              <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-              </svg>
-              Contactez l'administrateur
-            </a>
-            <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
-          </div>
-          <div class="mt-6">
-            <NuxtLink to="/" class="group inline-flex items-center text-sm text-gray-500 hover:text-emerald-600 font-semibold transition-colors duration-200 px-4 py-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-emerald-50 shadow-sm">
-              <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-              Retour à l'accueil
-            </NuxtLink>
-          </div>
-        </div>
       </div>
 
       <!-- Message d'info -->
-      <div class="mt-4 text-center">
+      <div class="mt-6 text-center">
         <p class="text-xs text-gray-500">
-          En vous inscrivant, vous acceptez les conditions d'utilisation et reglement de la résidence
+          En vous inscrivant, vous acceptez les conditions d'utilisation de la résidence
         </p>
       </div>
     </div>
   </div>
-  <AppFooter />
 </template>
 
 <script setup lang="ts">
-
-const showContactModal = ref(false)
-
-import AppFooter from '~/components/AppFooter.vue'
+import { ref } from 'vue'
 
 // Métadonnées de la page
 useHead({

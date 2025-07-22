@@ -1,16 +1,18 @@
-
 <?php
+
 use Illuminate\Support\Facades\Route;
 
-// Fallback pour servir les fichiers de storage/incidents/ en dev (php artisan serve)
-Route::get('/storage/incidents/{path}', function ($path) {
-    $fullPath = storage_path('app/public/incidents/' . $path);
-    if (!file_exists($fullPath)) {
-        abort(404);
-    }
-    return response()->file($fullPath);
-})->where('path', '.*');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
 
-// Autres routes existantes...
-
-
+Route::get('/', function () {
+    return view('welcome');
+});

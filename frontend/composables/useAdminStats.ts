@@ -1,7 +1,7 @@
 
 
 import axios from 'axios';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const stats = ref<any>(null);
@@ -9,9 +9,7 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 
 
-
-async function fetchStats() {
-  loading.value = true;
+onMounted(async () => {
   try {
     // Utilise la config Nuxt pour l'URL de l'API
     // @ts-ignore
@@ -29,6 +27,6 @@ async function fetchStats() {
   } finally {
     loading.value = false;
   }
-}
+});
 
-export { stats, loading, error, fetchStats };
+export { stats, loading, error };

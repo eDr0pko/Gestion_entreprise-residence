@@ -4,10 +4,8 @@
       <h2 class="text-2xl font-bold">Gestion des visiteurs</h2>
       <div class="flex items-center gap-2 flex-wrap">
         <input v-model="searchQuery" @input="filterPersons" type="text" placeholder="Rechercher un visiteur..." class="input w-64" />
-        <button @click="displayMode = displayMode === 'cards' ? 'list' : 'cards'" class="ml-2 px-3 py-1 rounded border text-sm font-semibold transition-all duration-150"
-          :class="displayMode === 'cards' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'">
-          <span v-if="displayMode === 'cards'">Affichage liste</span>
-          <span v-else>Affichage cartes</span>
+        <button @click="toggleView" class="px-3 py-1 rounded bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 text-sm">
+          {{ isListView ? 'Affichage par cartes' : 'Affichage par liste' }}
         </button>
       </div>
     </div>
@@ -16,9 +14,9 @@
       <div>
         <h3 class="text-xl font-semibold mb-3 capitalize">Visiteurs</h3>
         <div v-if="persons && persons.length === 0" class="text-gray-400 italic mb-4">Aucun visiteur</div>
-        <div v-if="displayMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="person in (persons ?? [])" :key="person.id" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-2 relative group hover:shadow-md transition">
-            <!-- ...existing card content... -->
+        <div v-if="!isListView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="person in (persons ?? [])" :key="person.id" class="card bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col gap-3 relative group hover:shadow-xl transition">
+            <!-- ...existing card code... -->
             <div class="flex items-center gap-3">
               <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil)" class="w-12 h-12 rounded-full object-cover border" alt="avatar" />
               <div v-else class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">{{ person.prenom[0] }}{{ person.nom[0] }}</div>
@@ -34,8 +32,8 @@
                 <div class="text-xs mt-1">
                   <span class="font-semibold">Actif :</span> <span :class="person.actif ? 'text-green-600' : 'text-red-600'">{{ person.actif ? 'Oui' : 'Non' }}</span>
                 </div>
-                <div v-if="person.date_inscription" class="text-xs text-blue-500">Inscrit le : {{ formatDate(person.date_inscription) }}</div>
-                <div v-if="person.date_expiration" class="text-xs text-red-500">Expire le : {{ formatDate(person.date_expiration) }}</div>
+                <div v-if="person.date_inscription" class="text-xs text-blue-500">Inscrit le : {{ formatDate(person.date_inscription ?? '') }}</div>
+                <div v-if="person.date_expiration" class="text-xs text-red-500">Expire le : {{ formatDate(person.date_expiration ?? '') }}</div>
                 <div v-if="person.invite_par && getInviterName(person.invite_par)" class="text-xs text-gray-500">
                   Invité par : {{ getInviterName(person.invite_par) }}
                 </div>
@@ -43,7 +41,7 @@
               </div>
             </div>
             <div class="flex flex-col gap-1 mt-2">
-              <div class="text-sm"><span class="font-medium">Téléphone :</span> {{ person.numero_telephone }}</div>
+              <div class="text-sm"><span class="font-medium">Téléphone :</span> {{ formatPhoneNumber(person.numero_telephone) }}</div>
             </div>
             <div class="flex gap-2 mt-3">
               <template v-if="person.actif">
@@ -56,34 +54,38 @@
             </div>
           </div>
         </div>
-        <table v-else class="min-w-full divide-y divide-gray-200 bg-white rounded-xl border border-gray-200 shadow-sm">
+        <table v-else class="min-w-full rounded-xl overflow-hidden shadow-lg bg-white">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Nom</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Email</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Téléphone</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Actif</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Invité par</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Inscription</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Expiration</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Actions</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Prénom</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Téléphone</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actif</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Inscription</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Expiration</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Invité par</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Commentaire</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="person in (persons ?? [])" :key="person.id" class="hover:bg-gray-50">
-              <td class="px-4 py-2 font-medium">{{ person.prenom }} {{ person.nom }}</td>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="person in (persons ?? [])" :key="person.id">
+              <td class="px-4 py-2">{{ person.nom }}</td>
+              <td class="px-4 py-2">{{ person.prenom }}</td>
               <td class="px-4 py-2">{{ person.email }}</td>
               <td class="px-4 py-2">{{ person.numero_telephone }}</td>
               <td class="px-4 py-2">
                 <span :class="person.actif ? 'text-green-600' : 'text-red-600'">{{ person.actif ? 'Oui' : 'Non' }}</span>
               </td>
-              <td class="px-4 py-2">{{ getInviterName(person.invite_par) || '-' }}</td>
-              <td class="px-4 py-2">{{ person.date_inscription ? formatDate(person.date_inscription) : '-' }}</td>
-              <td class="px-4 py-2">{{ person.date_expiration ? formatDate(person.date_expiration) : '-' }}</td>
+              <td class="px-4 py-2">{{ formatDate(person.date_inscription ?? '') }}</td>
+              <td class="px-4 py-2">{{ formatDate(person.date_expiration ?? '') }}</td>
+              <td class="px-4 py-2">{{ getInviterName(person.invite_par) }}</td>
+              <td class="px-4 py-2">{{ person.commentaire }}</td>
               <td class="px-4 py-2">
                 <template v-if="person.actif">
                   <button @click="banPerson(person)" :disabled="!person.actif" class="px-2 py-1 rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 text-xs">Bannir</button>
-                  <button @click="editPerson(person)" class="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs ml-1">Modifier</button>
+                  <button @click="editPerson(person)" class="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs">Modifier</button>
                 </template>
                 <template v-else>
                   <span class="px-2 py-1 rounded bg-gray-100 text-gray-400 border border-gray-200 text-xs">Banni</span>
@@ -96,8 +98,8 @@
       <div class="mt-10">
         <h3 class="text-xl font-semibold mb-3 capitalize text-red-700">Visiteurs bannis</h3>
         <div v-if="bannedPersons.length === 0" class="text-gray-400 italic mb-4">Aucun visiteur banni</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="person in bannedPersons" :key="person.id" class="bg-gray-100 rounded-xl border border-gray-300 shadow-sm p-4 flex flex-col gap-2 relative group">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="person in bannedPersons" :key="person.id" class="card bg-gradient-to-br from-gray-100 via-gray-50 to-red-50 rounded-2xl shadow-lg border border-gray-200 p-6 flex flex-col gap-3 relative group">
             <div class="flex items-center gap-3">
               <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil)" class="w-12 h-12 rounded-full object-cover border" alt="avatar" />
               <div v-else class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-500">{{ person.prenom[0] }}{{ person.nom[0] }}</div>
@@ -107,8 +109,8 @@
                 <div class="text-xs mt-1">
                   <span class="font-semibold">Actif :</span> <span class="text-red-600">Non</span>
                 </div>
-                <div v-if="person.date_inscription" class="text-xs text-blue-500">Inscrit le : {{ formatDate(person.date_inscription) }}</div>
-                <div v-if="person.date_expiration" class="text-xs text-red-500">Expire le : {{ formatDate(person.date_expiration) }}</div>
+                <div v-if="person.date_inscription" class="text-xs text-blue-500">Inscrit le : {{ formatDate(person.date_inscription ?? '') }}</div>
+                <div v-if="person.date_expiration" class="text-xs text-red-500">Expire le : {{ formatDate(person.date_expiration ?? '') }}</div>
                 <div v-if="person.invite_par" class="text-xs text-gray-500">Invité par : {{ person.invite_par }}</div>
                 <div v-if="person.commentaire" class="text-xs text-gray-500 mt-1">Commentaire : {{ person.commentaire }}</div>
               </div>
@@ -159,6 +161,39 @@
 </template>
 
 <script setup lang="ts">
+// Formate le numéro selon l'indicatif international
+function formatPhoneNumber(num: string) {
+  // Si le numéro commence par +
+  if (num.startsWith('+')) {
+    // Sépare l'indicatif (ex: +33, +228, etc.)
+    const match = num.match(/^(\+\d{1,3})(\d+)$/)
+    if (match) {
+      const indicatif = match[1]
+      const reste = match[2]
+      // Format FR (+33)
+      if (indicatif === '+33' && reste.length === 9) {
+        return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
+      }
+      // Format Togo (+228)
+      if (indicatif === '+228' && reste.length === 8) {
+        return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
+      }
+      // Format générique (groupe de 2)
+      return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
+    }
+  }
+  // Format FR local (0X XX XX XX XX)
+  if (num.startsWith('0') && num.length === 10) {
+    return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
+  }
+  return num
+}
+// ...existing imports...
+
+  const isListView = ref(false)
+  function toggleView() {
+    isListView.value = !isListView.value
+  }
 // Fonction utilitaire pour afficher le nom complet de l'invitant à partir de son id (exposée au template)
 function getInviterName(inviteParId: string | number | null | undefined) {
   if (!inviteParId) return null
@@ -172,7 +207,6 @@ function getInviterName(inviteParId: string | number | null | undefined) {
   return null
 }
   import { ref, onMounted } from 'vue'
-  const displayMode = ref<'cards' | 'list'>('cards')
   import type { InvitePerson } from '~/types/invitePerson'
   import { useAuthStore } from '~/stores/auth'
 
@@ -307,14 +341,13 @@ function getInviterName(inviteParId: string | number | null | undefined) {
 
 <style scoped>
   .input {
-    border: 1px solid #e0e7ef;
-    border-radius: 0.6rem;
-    padding: 0.5rem 0.8rem;
-    font-size: 1rem;
-    outline: none;
-    transition: border 0.2s;
+    @apply border border-gray-200 rounded-lg px-3 py-2 text-base outline-none transition-colors bg-gray-50 shadow-sm;
   }
   .input:focus {
-    border-color: #0097b2;
+    @apply border-blue-400 bg-white;
+  }
+  .card {
+    @apply rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col gap-3 relative transition hover:shadow-xl;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
   }
 </style>

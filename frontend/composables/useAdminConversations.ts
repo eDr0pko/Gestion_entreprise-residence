@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '~/stores/auth';
 
 
@@ -44,6 +44,6 @@ async function fetchConversations() {
   loading.value = false;
 }
 
-
+onMounted(fetchConversations);
 
 export { conversations, loading, error, fetchConversations };

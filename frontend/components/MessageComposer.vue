@@ -1,23 +1,5 @@
-
 <template>
   <div class="bg-white border-t border-gray-200 p-3 lg:p-4 flex-shrink-0">
-    <!-- Zone de citation (réponse) -->
-    <div v-if="replyToMessage" class="mb-2 flex items-center bg-blue-50 border-l-4 border-[#0097b2] px-3 py-2 rounded relative">
-      <div class="flex-1">
-        <div class="text-xs text-gray-500 mb-1">
-          Réponse à <span class="font-semibold">{{ replyToMessage.auteur_nom }}</span>
-        </div>
-        <div class="text-sm text-gray-700 truncate max-w-xs">
-          {{ replyToMessage.contenu_message }}
-        </div>
-      </div>
-      <button @click="$emit('cancel-reply')" class="ml-2 text-gray-400 hover:text-red-500" title="Annuler la réponse">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-
     <!-- Zone d'upload si fichiers sélectionnés -->
     <div v-if="showFileUpload" class="mb-3">
       <FileUploadZone
@@ -106,20 +88,16 @@
 </template>
 
 <script setup lang="ts">
-
 import FileUploadZone from './FileUploadZone.vue'
-import type { Message } from '~/types'
 
 interface Props {
   sending: boolean
-  replyToMessage?: Message | null
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'send-message': []
-  'cancel-reply': []
 }>()
 
 const message = defineModel<string>('message', { required: true })
@@ -128,8 +106,6 @@ const selectedFiles = defineModel<File[]>('selectedFiles', { required: true })
 const messageInput = ref<HTMLTextAreaElement | null>(null)
 const fileUploadRef = ref()
 const showFileUpload = ref(false)
-
-const replyToMessage = computed(() => props.replyToMessage)
 
 const toggleFileUpload = () => {
   showFileUpload.value = !showFileUpload.value
@@ -170,9 +146,6 @@ defineExpose({
     selectedFiles.value = []
     showFileUpload.value = false
     fileUploadRef.value?.clearFiles()
-  },
-  focusInput: () => {
-    if (messageInput.value) messageInput.value.focus()
   }
 })
 </script>
