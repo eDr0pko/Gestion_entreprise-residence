@@ -14,6 +14,16 @@
           <p class="text-gray-600 text-sm">Créez votre compte pour accéder à la résidence</p>
         </div>
 
+        <!-- Bouton retour à l'accueil -->
+        <div class="mb-6 flex justify-start">
+          <NuxtLink to="/" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 text-[#0097b2] border border-gray-200 hover:bg-cyan-50 text-sm font-semibold shadow-sm transition-all duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Retour à l'accueil
+          </NuxtLink>
+        </div>
+        
         <!-- Formulaire d'inscription -->
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <!-- Email -->
@@ -137,12 +147,37 @@
           </button>
         </form>
 
-        <!-- Lien de connexion -->
-        <div class="mt-6 text-center">
+        <!-- Liens de navigation -->
+        <div class="mt-6 text-center space-y-2">
           <p class="text-sm text-gray-600">
             Déjà un compte invité ?
             <NuxtLink to="/connexion" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
               Se connecter
+            </NuxtLink>
+          </p>
+          <p class="text-sm text-gray-600">
+            Vous êtes membre de la résidence ?
+            <NuxtLink to="/login" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200ù">
+              Connexion membre
+            </NuxtLink>
+          </p>
+        </div>
+
+        <!-- Section aide moderne et discrète -->
+        <div class="mt-8 text-center space-y-2">
+          <div class="flex flex-col items-center gap-2 mb-2">
+            <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">Besoin d'assistance ?</span>
+          </div>
+          <p class="text-sm text-gray-600">
+            Besoin d'assistance ?
+            <a href="#" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200ù">
+              Contactez l'administrateur
+            </a>
+          </p>
+          <p class="text-sm text-gray-600">
+            Mot de passe oublié ?
+            <NuxtLink to="/mot-de-passe-oublie" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+              Cliquez ici
             </NuxtLink>
           </p>
         </div>
@@ -159,132 +194,134 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+  import { ref } from 'vue'
 
-// Métadonnées de la page
-useHead({
-  title: 'Inscription Invité - Gestion Entreprise de Résidence'
-})
+  // Métadonnées de la page
+  useHead({
+    title: 'Inscription Invité - Gestion Entreprise de Résidence'
+  })
 
-// État du formulaire
-const form = ref({
-  email: '',
-  nom: '',
-  prenom: '',
-  numero_telephone: '',
-  mot_de_passe: '',
-  mot_de_passe_confirmation: ''
-})
+  // État du formulaire
+  const form = ref({
+    email: '',
+    nom: '',
+    prenom: '',
+    numero_telephone: '',
+    mot_de_passe: '',
+    mot_de_passe_confirmation: ''
+  })
 
-// État de l'UI
-const loading = ref(false)
-const message = ref({
-  text: '',
-  type: 'info' as 'success' | 'error' | 'info'
-})
+  // État de l'UI
+  const loading = ref(false)
+  const message = ref({
+    text: '',
+    type: 'info' as 'success' | 'error' | 'info'
+  })
 
-// Configuration
-const config = useRuntimeConfig()
+  // Configuration
+  const config = useRuntimeConfig()
 
-// Fonction pour afficher un message
-const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
-  message.value = { text, type }
-  // Auto-hide après 5 secondes pour les messages de succès et d'info
-  if (type !== 'error') {
-    setTimeout(() => {
-      message.value = { text: '', type: 'info' }
-    }, 5000)
-  }
-}
-
-// Fonction de soumission du formulaire
-const handleSubmit = async () => {
-  // Réinitialiser les messages
-  message.value = { text: '', type: 'info' }
-  
-  // Validation côté client
-  if (!form.value.email || !form.value.nom || !form.value.prenom || !form.value.numero_telephone || !form.value.mot_de_passe || !form.value.mot_de_passe_confirmation) {
-    showMessage('Veuillez remplir tous les champs obligatoires.', 'error')
-    return
-  }
-
-  if (form.value.mot_de_passe !== form.value.mot_de_passe_confirmation) {
-    showMessage('Les mots de passe ne correspondent pas.', 'error')
-    return
-  }
-
-  if (form.value.mot_de_passe.length < 6) {
-    showMessage('Le mot de passe doit contenir au moins 6 caractères.', 'error')
-    return
-  }
-
-  // Validation du format de téléphone (accepter les espaces)
-  const cleanPhone = form.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
-  if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
-    showMessage('Le numéro de téléphone doit être au format international (+33123456789)', 'error')
-    return
-  }
-
-  loading.value = true
-
-  try {
-    console.log('🚀 [INSCRIPTION] Envoi des données:', form.value)
-    
-    const response: any = await $fetch(`${config.public.apiBase}/guests/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: {
-        email: form.value.email,
-        nom: form.value.nom,
-        prenom: form.value.prenom,
-        numero_telephone: form.value.numero_telephone,
-        mot_de_passe: form.value.mot_de_passe,
-        mot_de_passe_confirmation: form.value.mot_de_passe_confirmation
-      }
-    })
-
-    console.log('✅ [INSCRIPTION] Réponse API:', response)
-
-    if (response.success && response.user) {
-      showMessage('Inscription réussie ! Redirection en cours...', 'success')
-      
-      // Stocker les informations de l'utilisateur dans le store
-      const authStore = useAuthStore()
-      authStore.setAuth(response.token, response.user)
-      
-      // Petit délai pour afficher le message de succès
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Redirection vers les messages
-      await navigateTo('/messages')
-    } else {
-      showMessage(response.message || 'Erreur lors de l\'inscription', 'error')
+  // Fonction pour afficher un message
+  const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+    message.value = { text, type }
+    // Auto-hide après 5 secondes pour les messages de succès et d'info
+    if (type !== 'error') {
+      setTimeout(() => {
+        message.value = { text: '', type: 'info' }
+      }, 5000)
     }
-  } catch (error: any) {
-    console.error('❌ [INSCRIPTION] Erreur:', error)
+  }
+
+  // Fonction de soumission du formulaire
+  const handleSubmit = async () => {
+    // Réinitialiser les messages
+    message.value = { text: '', type: 'info' }
     
-    if (error.status === 422) {
-      // Erreurs de validation
-      console.log('Erreurs de validation détaillées:', error.data)
-      if (error.data?.errors) {
-        // Afficher la première erreur trouvée
-        const firstErrorKey = Object.keys(error.data.errors)[0]
-        const firstError = error.data.errors[firstErrorKey]
-        const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
-        showMessage(errorMessage, 'error')
+    // Validation côté client
+    if (!form.value.email || !form.value.nom || !form.value.prenom || !form.value.numero_telephone || !form.value.mot_de_passe || !form.value.mot_de_passe_confirmation) {
+      showMessage('Veuillez remplir tous les champs obligatoires.', 'error')
+      return
+    }
+
+    if (form.value.mot_de_passe !== form.value.mot_de_passe_confirmation) {
+      showMessage('Les mots de passe ne correspondent pas.', 'error')
+      return
+    }
+
+    if (form.value.mot_de_passe.length < 6) {
+      showMessage('Le mot de passe doit contenir au moins 6 caractères.', 'error')
+      return
+    }
+
+    // Validation du format de téléphone (accepter les espaces)
+    const cleanPhone = form.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
+    if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
+      showMessage('Le numéro de téléphone doit être au format international (+33123456789)', 'error')
+      return
+    }
+
+    loading.value = true
+
+    try {
+      console.log('🚀 [INSCRIPTION] Envoi des données:', form.value)
+      
+      const response: any = await $fetch(`${config.public.apiBase}/guests/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: {
+          email: form.value.email,
+          nom: form.value.nom,
+          prenom: form.value.prenom,
+          numero_telephone: form.value.numero_telephone,
+          mot_de_passe: form.value.mot_de_passe,
+          mot_de_passe_confirmation: form.value.mot_de_passe_confirmation
+        }
+      })
+
+      console.log('✅ [INSCRIPTION] Réponse API:', response)
+
+      if (response.success && response.user) {
+        showMessage('Inscription réussie ! Redirection en cours...', 'success')
+        
+        // Stocker les informations de l'utilisateur dans le store
+        const authStore = useAuthStore()
+        authStore.setAuth(response.token, response.user)
+        
+        // Petit délai pour afficher le message de succès
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Redirection vers les messages
+        await navigateTo('/messages')
       } else {
-        showMessage(error.data?.message || 'Données invalides', 'error')
+        showMessage(response.message || 'Erreur lors de l\'inscription', 'error')
       }
-    } else if (error.status === 409 || error.message?.includes('unique')) {
-      showMessage('Un compte avec cette adresse email existe déjà', 'error')
-    } else {
-      showMessage(error.data?.message || 'Une erreur est survenue lors de l\'inscription', 'error')
+    } catch (error: any) {
+      console.error('❌ [INSCRIPTION] Erreur:', error)
+      
+      if (error.status === 422) {
+        // Erreurs de validation
+        console.log('Erreurs de validation détaillées:', error.data)
+        if (error.data?.errors) {
+          // Afficher la première erreur trouvée
+          const firstErrorKey = Object.keys(error.data.errors)[0]
+          const firstError = error.data.errors[firstErrorKey]
+          const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
+          showMessage(errorMessage, 'error')
+        } else {
+          showMessage(error.data?.message || 'Données invalides', 'error')
+        }
+      } else if (error.status === 409 || error.message?.includes('unique')) {
+        showMessage('Un compte avec cette adresse email existe déjà', 'error')
+      } else {
+        showMessage(error.data?.message || 'Une erreur est survenue lors de l\'inscription', 'error')
+      }
+    } finally {
+      loading.value = false
     }
-  } finally {
-    loading.value = false
   }
-}
 </script>
+
+

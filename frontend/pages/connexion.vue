@@ -14,6 +14,16 @@
           <p class="text-gray-600 text-sm">Connectez-vous avec votre compte invité</p>
         </div>
 
+        <!-- Bouton retour à l'accueil -->
+        <div class="mb-6 flex justify-start">
+          <NuxtLink to="/" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 text-[#0097b2] border border-gray-200 hover:bg-cyan-50 text-sm font-semibold shadow-sm transition-all duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Retour à l'accueil
+          </NuxtLink>
+        </div>
+
         <!-- Formulaire de connexion -->
         <form @submit.prevent="handleSubmit" class="space-y-5">
           <!-- Email -->
@@ -95,24 +105,23 @@
           </p>
         </div>
 
-        <!-- Bouton contacter l'administrateur -->
-        <div class="mt-6 text-center">
-          <button @click="showContactModal = true" class="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-800 font-semibold transition-colors duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-            </svg>
-            Contacter l'administrateur
-          </button>
-        </div>
-
-        <!-- Bouton retour à l'accueil -->
-        <div class="mt-6 text-center">
-          <NuxtLink to="/" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Retour à l'accueil
-          </NuxtLink>
+        <!-- Section aide moderne et discrète -->
+        <div class="mt-8 text-center space-y-2">
+          <div class="flex flex-col items-center gap-2 mb-2">
+            <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">Besoin d'assistance ?</span>
+          </div>
+          <p class="text-sm text-gray-600">
+            Besoin d'assistance ?
+            <a href="#" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+              Contactez l'administrateur
+            </a>
+          </p>
+          <p class="text-sm text-gray-600">
+            Mot de passe oublié ?
+            <NuxtLink to="/mot-de-passe-oublie" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+              Cliquez ici
+            </NuxtLink>
+          </p>
         </div>
 
         <!-- Message d'info -->
@@ -129,125 +138,127 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+  import { ref } from 'vue'
 
-import AppFooter from '~/components/AppFooter.vue'
-import ContactAdminModal from '../components/ContactAdminModal.vue'
+  import AppFooter from '~/components/AppFooter.vue'
+  import ContactAdminModal from '../components/ContactAdminModal.vue'
 
-const showContactModal = ref(false)
+  const showContactModal = ref(false)
 
-// Métadonnées de la page
-useHead({
-  title: 'Connexion Invité - Gestion Entreprise de Résidence'
-})
+  // Métadonnées de la page
+  useHead({
+    title: 'Connexion Invité - Gestion Entreprise de Résidence'
+  })
 
-// État du formulaire
-const form = ref({
-  email: '',
-  password: ''
-})
+  // État du formulaire
+  const form = ref({
+    email: '',
+    password: ''
+  })
 
-// État de l'UI
-const loading = ref(false)
-const message = ref({
-  text: '',
-  type: 'info' as 'success' | 'error' | 'info'
-})
+  // État de l'UI
+  const loading = ref(false)
+  const message = ref({
+    text: '',
+    type: 'info' as 'success' | 'error' | 'info'
+  })
 
-// Configuration
-const config = useRuntimeConfig()
-const authStore = useAuthStore()
+  // Configuration
+  const config = useRuntimeConfig()
+  const authStore = useAuthStore()
 
-// Fonction pour afficher un message
-const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
-  message.value = { text, type }
-  // Auto-hide après 5 secondes pour les messages de succès et d'info
-  if (type !== 'error') {
-    setTimeout(() => {
-      message.value = { text: '', type: 'info' }
-    }, 5000)
-  }
-}
-
-// Fonction de soumission du formulaire
-const handleSubmit = async () => {
-  // Réinitialiser les messages
-  message.value = { text: '', type: 'info' }
-  
-  // Validation côté client
-  if (!form.value.email.trim()) {
-    showMessage('L\'adresse email est requise', 'error')
-    return
+  // Fonction pour afficher un message
+  const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+    message.value = { text, type }
+    // Auto-hide après 5 secondes pour les messages de succès et d'info
+    if (type !== 'error') {
+      setTimeout(() => {
+        message.value = { text: '', type: 'info' }
+      }, 5000)
+    }
   }
 
-  if (!form.value.password) {
-    showMessage('Le mot de passe est requis', 'error')
-    return
-  }
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-    showMessage('L\'adresse email n\'est pas valide', 'error')
-    return
-  }
-
-  loading.value = true
-
-  try {
-    console.log('🚀 [CONNEXION] Tentative de connexion invité:', form.value.email)
+  // Fonction de soumission du formulaire
+  const handleSubmit = async () => {
+    // Réinitialiser les messages
+    message.value = { text: '', type: 'info' }
     
-    // Connexion avec email et mot de passe
-    const response: any = await $fetch(`${config.public.apiBase}/guests/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: {
-        email: form.value.email.trim(),
-        mot_de_passe: form.value.password
+    // Validation côté client
+    if (!form.value.email.trim()) {
+      showMessage('L\'adresse email est requise', 'error')
+      return
+    }
+
+    if (!form.value.password) {
+      showMessage('Le mot de passe est requis', 'error')
+      return
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
+      showMessage('L\'adresse email n\'est pas valide', 'error')
+      return
+    }
+
+    loading.value = true
+
+    try {
+      console.log('🚀 [CONNEXION] Tentative de connexion invité:', form.value.email)
+      
+      // Connexion avec email et mot de passe
+      const response: any = await $fetch(`${config.public.apiBase}/guests/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: {
+          email: form.value.email.trim(),
+          mot_de_passe: form.value.password
+        }
+      })
+
+      console.log('✅ [CONNEXION] Réponse API:', response)
+
+      if (response.success && response.token && response.user) {
+        showMessage('Connexion réussie ! Redirection en cours...', 'success')
+        
+        // Stocker les informations de l'utilisateur dans le store
+        authStore.setAuth(response.token, response.user)
+        
+        // Petit délai pour afficher le message de succès
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Redirection vers les messages
+        await navigateTo('/messages')
+      } else {
+        showMessage(response.message || 'Erreur lors de la connexion', 'error')
       }
-    })
-
-    console.log('✅ [CONNEXION] Réponse API:', response)
-
-    if (response.success && response.token && response.user) {
-      showMessage('Connexion réussie ! Redirection en cours...', 'success')
+    } catch (error: any) {
+      console.error('❌ [CONNEXION] Erreur:', error)
       
-      // Stocker les informations de l'utilisateur dans le store
-      authStore.setAuth(response.token, response.user)
-      
-      // Petit délai pour afficher le message de succès
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Redirection vers les messages
-      await navigateTo('/messages')
-    } else {
-      showMessage(response.message || 'Erreur lors de la connexion', 'error')
+      if (error.status === 404) {
+        showMessage('Aucun compte invité trouvé avec cette adresse email', 'error')
+      } else if (error.status === 422) {
+        showMessage('Email ou mot de passe incorrect', 'error')
+      } else if (error.status === 403) {
+        showMessage('Votre compte a été désactivé. Contactez l\'administration.', 'error')
+      } else {
+        showMessage(error.data?.message || 'Une erreur est survenue. Veuillez réessayer.', 'error')
+      }
+    } finally {
+      loading.value = false
     }
-  } catch (error: any) {
-    console.error('❌ [CONNEXION] Erreur:', error)
+  }
+
+  // Vérifier si l'utilisateur est déjà connecté
+  onMounted(async () => {
+    authStore.initAuth()
     
-    if (error.status === 404) {
-      showMessage('Aucun compte invité trouvé avec cette adresse email', 'error')
-    } else if (error.status === 422) {
-      showMessage('Email ou mot de passe incorrect', 'error')
-    } else if (error.status === 403) {
-      showMessage('Votre compte a été désactivé. Contactez l\'administration.', 'error')
-    } else {
-      showMessage(error.data?.message || 'Une erreur est survenue. Veuillez réessayer.', 'error')
+    // Si l'utilisateur est déjà connecté, rediriger vers les messages
+    if (authStore.isAuthenticated) {
+      await navigateTo('/planning')
     }
-  } finally {
-    loading.value = false
-  }
-}
-
-// Vérifier si l'utilisateur est déjà connecté
-onMounted(async () => {
-  authStore.initAuth()
-  
-  // Si l'utilisateur est déjà connecté, rediriger vers les messages
-  if (authStore.isAuthenticated) {
-    await navigateTo('/planning')
-  }
-})
+  })
 </script>
+
+

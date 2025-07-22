@@ -34,6 +34,16 @@
             <!-- Gradient décoratif interne -->
             <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-12 translate-x-12"></div>
             
+            <!-- Bouton retour à l'accueil -->
+            <div class="mb-6 flex justify-start">
+              <NuxtLink to="/" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 text-[#0097b2] border border-gray-200 hover:bg-cyan-50 text-sm font-semibold shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                Retour à l'accueil
+              </NuxtLink>
+            </div>
+
             <form @submit.prevent="handleLogin" class="space-y-6 relative">
               <!-- Champ email moderne -->
               <div class="space-y-3">
@@ -145,34 +155,39 @@
               </button>
             </form>
 
-            <!-- Aide moderne -->
-            <div class="mt-8 text-center">
-              <div class="relative">
-                <div class="absolute inset-0 flex items-center">
-                  <div class="w-full border-t border-gray-200"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                  <span class="px-4 bg-white bg-opacity-80 text-gray-500 font-medium">Besoin d'assistance ?</span>
-                </div>
+            <!-- Liens de navigation -->
+            <div class="mt-6 text-center space-y-2">
+              <p class="text-sm text-gray-600">
+                Pas encore de compte invité ?
+                <NuxtLink to="/Inscription" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                  S'inscrire ici
+                </NuxtLink>
+              </p>
+              <p class="text-sm text-gray-600">
+                Vous avez déjà un compte invité ?
+                <NuxtLink to="/connexion" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                  Connexion invité
+                </NuxtLink>
+              </p>
+            </div>
+
+            <!-- Section aide moderne et discrète -->
+            <div class="mt-8 text-center space-y-2">
+              <div class="flex flex-col items-center gap-2 mb-2">
+                <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">Besoin d'assistance ?</span>
               </div>
-              <div class="mt-4 space-y-3">
-                <div>
-                  <a href="#" class="inline-flex items-center text-[#0097b2] hover:text-[#007a94] font-semibold transition-colors duration-200 group">
-                    <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                    </svg>
-                    Contactez l'administrateur
-                  </a>
-                </div>
-                <div>
-                  <NuxtLink to="/Inscription" class="inline-flex items-center text-gray-600 hover:text-[#0097b2] font-medium transition-colors duration-200 group">
-                    <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                    </svg>
-                    S'inscrire comme invité
-                  </NuxtLink>
-                </div>
-              </div>
+              <p class="text-sm text-gray-600">
+                Besoin d'assistance ?
+                <a href="#" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                  Contactez l'administrateur
+                </a>
+              </p>
+              <p class="text-sm text-gray-600">
+                Mot de passe oublié ?
+                <NuxtLink to="/mot-de-passe-oublie" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                  Cliquez ici
+                </NuxtLink>
+              </p>
             </div>
           </div>
         </div>
