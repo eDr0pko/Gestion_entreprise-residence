@@ -178,7 +178,7 @@
               </div>
               <p class="text-sm text-gray-600">
                 Besoin d'assistance ?
-                <a href="#" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                <a href="#" @click.prevent="showContactModal = true" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 cursor-pointer">
                   Contactez l'administrateur
                 </a>
               </p>
@@ -188,6 +188,7 @@
                   Cliquez ici
                 </NuxtLink>
               </p>
+              <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
             </div>
           </div>
         </div>
@@ -219,6 +220,7 @@
   })
 
   const showPassword = ref(false)
+  const showContactModal = ref(false)
 
   // Gestion des erreurs
   const errors = reactive({

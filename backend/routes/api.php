@@ -66,6 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Vérification de la base de données
+
+    // Route publique pour contacter l'admin (incidents non authentifiés)
+    Route::post('/contact-admin', [\App\Http\Controllers\IncidentController::class, 'store']); // Ajout de la route pour contacter l'admin
     Route::get('/db-check', function () {
         try {
             $userCount = \App\Models\Personne::count();

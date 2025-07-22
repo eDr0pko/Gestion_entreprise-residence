@@ -96,7 +96,7 @@ class IncidentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur serveur: ' . $e->getMessage(),
+                'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }

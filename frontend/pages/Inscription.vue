@@ -170,7 +170,7 @@
           </div>
           <p class="text-sm text-gray-600">
             Besoin d'assistance ?
-            <a href="#" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200ù">
+            <a href="#" @click.prevent="showContactModal = true" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 cursor-pointer">
               Contactez l'administrateur
             </a>
           </p>
@@ -180,6 +180,7 @@
               Cliquez ici
             </NuxtLink>
           </p>
+          <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
         </div>
       </div>
 
@@ -195,6 +196,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
+  import ContactAdminModal from '../components/ContactAdminModal.vue'
 
   // Métadonnées de la page
   useHead({
@@ -217,6 +219,7 @@
     text: '',
     type: 'info' as 'success' | 'error' | 'info'
   })
+  const showContactModal = ref(false)
 
   // Configuration
   const config = useRuntimeConfig()

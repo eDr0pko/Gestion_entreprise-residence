@@ -11,7 +11,7 @@
       <form @submit.prevent="submitContact" class="flex flex-col gap-4 mt-4" enctype="multipart/form-data">
         <div>
           <label class="block text-sm font-semibold mb-1">Votre email</label>
-          <input v-model="email" type="email" required class="w-full border rounded-lg px-3 py-2" :disabled="true" />
+          <input v-model="email" type="email" required class="w-full border rounded-lg px-3 py-2" />
         </div>
         <div>
           <label class="block text-sm font-semibold mb-1">Message <span class="text-red-500">*</span></label>
@@ -75,17 +75,20 @@ async function submitContact() {
   loading.value = true
   try {
     const formData = new FormData()
-    formData.append('datetime', new Date().toISOString())
-    formData.append('object', `[Contact Admin] ${message.value}`)
-    formData.append('statut', 'a_venir')
-    formData.append('email', email.value)
+    // Préparer le JSON details
+    const details = {
+      datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      object: `[Contact Admin] ${message.value}`,
+      statut: 'a_venir',
+      email_signaleur: email.value
+    }
+    formData.append('details', JSON.stringify(details))
     files.value.forEach(f => formData.append('pieces_jointes[]', f))
 
     const apiBase = useRuntimeConfig().public.apiBase
-    await $fetch(`${apiBase}/admin/incidents`, {
+    await $fetch(`${apiBase}/contact-admin`, {
       method: 'POST',
-      body: formData,
-      headers: { Authorization: `Bearer ${authStore.token}` },
+      body: formData
     })
     success.value = true
     message.value = ''
@@ -94,7 +97,8 @@ async function submitContact() {
       emit('close')
     }, 1200)
   } catch (e: any) {
-    error.value = e?.data?.message || 'Erreur lors de l\'envoi du message.'
+    console.error('Erreur backend:', e)
+    error.value = e?.data?.message || e?.message || 'Erreur lors de l\'envoi du message.'
   } finally {
     loading.value = false
   }
