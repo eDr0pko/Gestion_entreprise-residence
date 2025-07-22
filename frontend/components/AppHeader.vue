@@ -1,9 +1,38 @@
+/*
+==========================================================================
+| Composant AppHeader
+|--------------------------------------------------------------------------
+| Affiche l'en-tête global de l'application
+| - Effet de glassmorphisme subtil
+| - Boutons de navigation (planning, messages, dashboard, profil)
+| - Badge de notification
+| - Statut de connexion
+| - Menu hamburger mobile
+|--------------------------------------------------------------------------
+| Auteur : milei
+| Date   : 2025-07-22
+==========================================================================
+*/
+
 <template>
+  <!--
+  =====================================================================
+  | Template principal du header
+  |---------------------------------------------------------------------
+  | Structure :
+  | - Bouton retour planning
+  | - Titre et badge
+  | - Actions à droite (incident, messages, dashboard, profil, menu)
+  | - Statut de connexion
+  =====================================================================
+  -->
+
   <header class="bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-200 px-6 lg:px-10 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm min-h-[56px]">
+    
     <!-- Effet de glassmorphisme subtil -->
     <div class="absolute inset-0 bg-gradient-to-r from-[#0097b2]/3 via-transparent to-[#00b4d8]/3 pointer-events-none"></div>
-    
     <div class="relative flex items-center gap-6 w-full min-h-[40px]">
+
       <!-- Bouton retour planning (gauche, partout sauf sur /planning) -->
       <NuxtLink
         v-if="$route.path !== '/planning'"
@@ -21,6 +50,7 @@
       <!-- Titre et badges -->
       <div class="flex items-center gap-5 flex-1 min-w-0">
         <h1 class="truncate text-xl lg:text-2xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">{{ title }}</h1>
+        
         <!-- Badge global (ex: messages non lus) -->
         <Transition name="badge">
           <div 
@@ -36,6 +66,7 @@
 
     <!-- Actions à droite -->
     <div class="relative flex items-center gap-6 lg:gap-7 xl:gap-9">
+
       <!-- Bouton signalement d'incident (flottant, orange, visible partout) -->
       <button
         @click="showIncidentModal = true"
@@ -47,6 +78,7 @@
         </svg>
       </button>
       <ReportIncidentModal v-if="showIncidentModal" @close="showIncidentModal = false" />
+
       <!-- Statut de connexion (si props fournis) -->
       <div class="flex items-center gap-2 mr-4 px-5 py-2 min-h-[38px] min-w-[135px] max-w-[180px] bg-white/60 rounded-2xl shadow-inner border border-gray-200 backdrop-blur-md transition-all duration-200 scale-95">
         <div 
@@ -58,6 +90,7 @@
         <span v-else-if="loadingConversations" class="text-sm font-bold text-yellow-600 hidden lg:inline">Chargement...</span>
         <span v-else class="text-sm font-bold text-green-600 hidden lg:inline">En ligne</span>
       </div>
+
       <!-- Actions personnalisées -->
       <slot name="actions"></slot>
 
@@ -113,87 +146,98 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
-import { ref } from 'vue'
-import ReportIncidentModal from '~/components/ReportIncidentModal.vue'
-interface Badge {
-  count: number
-  title: string
-}
+  /*
+  ==========================================================================
+  | Script principal du composant AppHeader
+  |--------------------------------------------------------------------------
+  | - Gestion des props et des événements
+  | - Récupération du rôle utilisateur
+  | - Affichage du modal d'incident
+  ==========================================================================
+  */
 
+  import { useAuthStore } from '~/stores/auth'
+  import { ref } from 'vue'
+  import ReportIncidentModal from '~/components/ReportIncidentModal.vue'
 
-interface Props {
-  title: string
-  backTo?: string
-  showBackButton?: boolean
-  showMobileMenu?: boolean
-  hideProfileButton?: boolean
-  badge?: Badge
-  error?: string
-  loadingConversations?: boolean
-}
+  interface Badge {
+    count: number
+    title: string
+  }
 
+  interface Props {
+    title: string
+    backTo?: string
+    showBackButton?: boolean
+    showMobileMenu?: boolean
+    hideProfileButton?: boolean
+    badge?: Badge
+    error?: string
+    loadingConversations?: boolean
+  }
 
-const props = withDefaults(defineProps<Props>(), {
-  showBackButton: false,
-  showMobileMenu: false,
-  hideProfileButton: false,
-  error: '',
-  loadingConversations: false
-})
+  const props = withDefaults(defineProps<Props>(), {
+    showBackButton: false,
+    showMobileMenu: false,
+    hideProfileButton: false,
+    error: '',
+    loadingConversations: false
+  })
 
-const emit = defineEmits<{
-  toggleMobileMenu: []
-  goBack: []
-}>()
+  const emit = defineEmits<{
+    toggleMobileMenu: []
+    goBack: []
+  }>()
 
-const goBack = () => {
-  emit('goBack')
-}
+  const goBack = () => {
+    emit('goBack')
+  }
 
-const toggleMobileMenu = () => {
-  emit('toggleMobileMenu')
-}
+  const toggleMobileMenu = () => {
+    emit('toggleMobileMenu')
+  }
 
-// Récupérer le rôle utilisateur depuis le store
-const authStore = useAuthStore()
-const userRole = authStore.userRole
+  // Récupérer le rôle utilisateur depuis le store
+  const authStore = useAuthStore()
+  const userRole = authStore.userRole
 
-const showIncidentModal = ref(false)
+  const showIncidentModal = ref(false)
 </script>
 
 <style scoped>
-.badge-enter-active, .badge-leave-active {
-  transition: all 0.3s ease;
-}
-
-.badge-enter-from {
-  opacity: 0;
-  transform: scale(0.3);
-}
-
-.badge-leave-to {
-  opacity: 0;
-  transform: scale(0.3);
-}
-
-.tooltip-container:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: -2rem;
-  right: 0;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 1000;
-}
-
-@media (max-width: 1024px) {
-  .tooltip-container:hover::after {
-    display: none;
+  .badge-enter-active, .badge-leave-active {
+    transition: all 0.3s ease;
   }
-}
+
+  .badge-enter-from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  .badge-leave-to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  .tooltip-container:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -2rem;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+  }
+
+  @media (max-width: 1024px) {
+    .tooltip-container:hover::after {
+      display: none;
+    }
+  }
 </style>
+
+
