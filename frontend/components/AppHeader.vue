@@ -50,7 +50,7 @@
       <!-- Titre et badges + logo personnalisé -->
       <div class="flex items-center gap-5 flex-1 min-w-0">
         <div v-if="appSettings.logoUrl" class="flex items-center gap-3">
-          <img :src="appSettings.logoUrl" alt="Logo" class="h-10 w-10 rounded-xl object-contain border border-gray-200 shadow" />
+          <img :src="getLogoUrl(appSettings.logoUrl)" alt="Logo" class="h-10 w-10 rounded-xl object-contain border border-gray-200 shadow" />
         </div>
         <h1 class="truncate text-xl lg:text-2xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">{{ appSettings.appName || title }}</h1>
         <!-- Badge global (ex: messages non lus) -->
@@ -163,9 +163,11 @@
   import { useI18n } from 'vue-i18n'
   import ReportIncidentModal from '~/components/ReportIncidentModal.vue'
   import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
 
   const { t } = useI18n()
   const { settings, fetchSettings } = useAppSettings()
+  const { getLogoUrl } = useAssets()
   const appSettings = computed(() => settings.value)
 
   onMounted(() => {

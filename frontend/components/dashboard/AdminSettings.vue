@@ -286,6 +286,7 @@
 
 <script setup lang="ts">
 const { fetchSettings } = useAppSettings()
+const { getLogoUrl } = useAssets()
 
 const loading = ref(false)
 const error = ref('')
@@ -315,11 +316,6 @@ const form = ref({
   contactAddress: '',
   footerText: ''
 })
-
-const getLogoUrl = (logoUrl: string | null) => {
-  if (!logoUrl) return ''
-  return logoUrl.startsWith('/') ? logoUrl : '/logos/' + logoUrl
-}
 
 const triggerFileInput = () => {
   fileInput.value?.click()
