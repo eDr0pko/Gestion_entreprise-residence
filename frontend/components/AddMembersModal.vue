@@ -10,7 +10,7 @@
           <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
             <!-- Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900">Ajouter des membres</h3>
+              <h3 class="text-lg font-semibold text-gray-900">{{ t('components.addMembersModal.title') }}</h3>
               <button 
                 @click="closeModal"
                 class="p-1 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
@@ -27,7 +27,7 @@
               <div class="flex-1 min-h-0 flex flex-col">
                 <div class="p-4 border-b border-gray-100">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Sélectionner de nouveaux membres ({{ selectedUsers.length }} sélectionné{{ selectedUsers.length > 1 ? 's' : '' }})
+                    {{ t('components.addMembersModal.selectMembers', { count: selectedUsers.length }) }} ({{ selectedUsers.length }} {{ t('components.addMembersModal.selected', { count: selectedUsers.length }) }})
                   </label>
                   
                   <!-- Barre de recherche -->
@@ -35,7 +35,7 @@
                     <input
                       v-model="searchQuery"
                       type="text"
-                      placeholder="Rechercher un utilisateur..."
+                      :placeholder="t('components.addMembersModal.searchPlaceholder')"
                       class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
                     />
                     <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,13 +73,13 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="text-sm">Chargement...</span>
+                    <span class="text-sm">{{ t('components.addMembersModal.loading') }}</span>
                   </div>
 
                   <div v-else-if="error" class="p-4 text-center text-red-500">
                     <p class="text-sm">{{ error }}</p>
                     <button @click="loadAvailableUsers" class="text-xs text-[#0097b2] hover:text-[#007a94] mt-2">
-                      Réessayer
+                      {{ t('components.addMembersModal.retry') }}
                     </button>
                   </div>
 
@@ -111,12 +111,18 @@
                       <!-- Informations utilisateur -->
                       <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900 truncate">{{ user.nom_complet }}</p>
-                        <p class="text-xs text-gray-500 truncate">{{ user.role }}</p>
+                        <p class="text-xs text-gray-500 truncate">{{ t('components.addMembersModal.role', { role: user.role }) }}</p>
                       </div>
                     </div>
 
                     <div v-if="filteredAvailableUsers.length === 0" class="p-4 text-center text-gray-500">
-                      <p class="text-sm">{{ availableUsers.length === 0 ? 'Tous les utilisateurs sont déjà membres' : 'Aucun utilisateur trouvé' }}</p>
+                      <p class="text-sm">
+                        {{
+                          availableUsers.length === 0
+                            ? t('components.addMembersModal.allUsersAreMembers')
+                            : t('components.addMembersModal.noUserFound')
+                        }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -130,7 +136,7 @@
                   class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   :disabled="adding"
                 >
-                  Annuler
+                  {{ t('components.addMembersModal.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -141,7 +147,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {{ adding ? 'Ajout...' : `Ajouter ${selectedUsers.length} membre${selectedUsers.length > 1 ? 's' : ''}` }}
+                  {{ adding ? t('components.addMembersModal.adding') : t('components.addMembersModal.addMembers', { count: selectedUsers.length }) }}
                 </button>
               </div>
             </form>
@@ -153,179 +159,185 @@
 </template>
 
 <script setup lang="ts">
-interface User {
-  email: string
-  nom_complet: string
-  nom: string
-  prenom: string
-  role: string
-}
+  import { useI18n } from 'vue-i18n'
 
-interface Member {
-  email: string
-  nom_complet: string
-  nom: string
-  prenom: string
-  role: string
-  is_current_user: boolean
-  date_adhesion: string
-}
+  const { t } = useI18n()
 
-interface Conversation {
-  id_groupe_message: number
-  nom_groupe: string
-}
-
-interface Props {
-  show: boolean
-  conversation: Conversation | null
-  existingMembers: Member[]
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  close: []
-  membersAdded: [members: Member[]]
-}>()
-
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
-
-// État réactif
-const searchQuery = ref('')
-const selectedUsers = ref<User[]>([])
-const availableUsers = ref<User[]>([])
-const loadingUsers = ref(false)
-const adding = ref(false)
-const error = ref('')
-
-// Utilisateurs filtrés (qui ne sont pas déjà membres)
-const filteredAvailableUsers = computed(() => {
-  let filtered = availableUsers.value
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(user => 
-      user.nom_complet.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.role.toLowerCase().includes(query)
-    )
+  interface User {
+    email: string
+    nom_complet: string
+    nom: string
+    prenom: string
+    role: string
   }
-  
-  return filtered
-})
 
-// Vérifier si un utilisateur est sélectionné
-const isSelected = (user: User) => {
-  return selectedUsers.value.some(selected => selected.email === user.email)
-}
-
-// Ajouter/retirer un utilisateur
-const toggleUser = (user: User) => {
-  if (isSelected(user)) {
-    removeUser(user)
-  } else {
-    selectedUsers.value.push(user)
+  interface Member {
+    email: string
+    nom_complet: string
+    nom: string
+    prenom: string
+    role: string
+    is_current_user: boolean
+    date_adhesion: string
   }
-}
 
-// Retirer un utilisateur
-const removeUser = (user: User) => {
-  const index = selectedUsers.value.findIndex(selected => selected.email === user.email)
-  if (index !== -1) {
-    selectedUsers.value.splice(index, 1)
+  interface Conversation {
+    id_groupe_message: number
+    nom_groupe: string
   }
-}
 
-// Charger les utilisateurs disponibles (qui ne sont pas déjà membres)
-const loadAvailableUsers = async () => {
-  try {
-    loadingUsers.value = true
+  interface Props {
+    show: boolean
+    conversation: Conversation | null
+    existingMembers: Member[]
+  }
+
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    close: []
+    membersAdded: [members: Member[]]
+  }>()
+
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
+
+  // État réactif
+  const searchQuery = ref('')
+  const selectedUsers = ref<User[]>([])
+  const availableUsers = ref<User[]>([])
+  const loadingUsers = ref(false)
+  const adding = ref(false)
+  const error = ref('')
+
+  // Utilisateurs filtrés (qui ne sont pas déjà membres)
+  const filteredAvailableUsers = computed(() => {
+    let filtered = availableUsers.value
+    
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase()
+      filtered = filtered.filter(user => 
+        user.nom_complet.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.role.toLowerCase().includes(query)
+      )
+    }
+    
+    return filtered
+  })
+
+  // Vérifier si un utilisateur est sélectionné
+  const isSelected = (user: User) => {
+    return selectedUsers.value.some(selected => selected.email === user.email)
+  }
+
+  // Ajouter/retirer un utilisateur
+  const toggleUser = (user: User) => {
+    if (isSelected(user)) {
+      removeUser(user)
+    } else {
+      selectedUsers.value.push(user)
+    }
+  }
+
+  // Retirer un utilisateur
+  const removeUser = (user: User) => {
+    const index = selectedUsers.value.findIndex(selected => selected.email === user.email)
+    if (index !== -1) {
+      selectedUsers.value.splice(index, 1)
+    }
+  }
+
+  // Charger les utilisateurs disponibles (qui ne sont pas déjà membres)
+  const loadAvailableUsers = async () => {
+    try {
+      loadingUsers.value = true
+      error.value = ''
+      
+      const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+      
+      if (response.success && response.users) {
+        // Filtrer les utilisateurs qui ne sont pas déjà membres
+        const existingEmails = props.existingMembers.map(member => member.email)
+        availableUsers.value = response.users.filter(user => !existingEmails.includes(user.email))
+      } else {
+        throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+      }
+      
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des utilisateurs:', err)
+      error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
+    } finally {
+      loadingUsers.value = false
+    }
+  }
+
+  // Ajouter les membres sélectionnés
+  const addMembers = async () => {
+    if (!props.conversation || selectedUsers.value.length === 0) return
+    
+    try {
+      adding.value = true
+      
+      const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: {
+          members: selectedUsers.value.map(user => user.email)
+        }
+      })
+      
+      if (response.success && response.members) {
+        emit('membersAdded', response.members)
+        closeModal()
+      } else {
+        throw new Error(response.error || 'Erreur lors de l\'ajout des membres')
+      }
+      
+    } catch (err: any) {
+      console.error('Erreur lors de l\'ajout des membres:', err)
+      error.value = err.data?.message || err.message || 'Impossible d\'ajouter les membres'
+    } finally {
+      adding.value = false
+    }
+  }
+
+  // Fermer la modal
+  const closeModal = () => {
+    // Reset des données
+    searchQuery.value = ''
+    selectedUsers.value = []
     error.value = ''
     
-    const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
-    })
-    
-    if (response.success && response.users) {
-      // Filtrer les utilisateurs qui ne sont pas déjà membres
-      const existingEmails = props.existingMembers.map(member => member.email)
-      availableUsers.value = response.users.filter(user => !existingEmails.includes(user.email))
-    } else {
-      throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+    emit('close')
+  }
+
+  // Charger les utilisateurs à l'ouverture
+  watch(() => props.show, (newShow) => {
+    if (newShow) {
+      loadAvailableUsers()
     }
-    
-  } catch (err: any) {
-    console.error('Erreur lors du chargement des utilisateurs:', err)
-    error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
-  } finally {
-    loadingUsers.value = false
-  }
-}
-
-// Ajouter les membres sélectionnés
-const addMembers = async () => {
-  if (!props.conversation || selectedUsers.value.length === 0) return
-  
-  try {
-    adding.value = true
-    
-    const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: {
-        members: selectedUsers.value.map(user => user.email)
-      }
-    })
-    
-    if (response.success && response.members) {
-      emit('membersAdded', response.members)
-      closeModal()
-    } else {
-      throw new Error(response.error || 'Erreur lors de l\'ajout des membres')
-    }
-    
-  } catch (err: any) {
-    console.error('Erreur lors de l\'ajout des membres:', err)
-    error.value = err.data?.message || err.message || 'Impossible d\'ajouter les membres'
-  } finally {
-    adding.value = false
-  }
-}
-
-// Fermer la modal
-const closeModal = () => {
-  // Reset des données
-  searchQuery.value = ''
-  selectedUsers.value = []
-  error.value = ''
-  
-  emit('close')
-}
-
-// Charger les utilisateurs à l'ouverture
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    loadAvailableUsers()
-  }
-})
+  })
 </script>
 
 <style scoped>
-.modal-enter-active, .modal-leave-active {
-  transition: all 0.3s ease;
-}
+  .modal-enter-active, .modal-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.modal-enter-from, .modal-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
+  .modal-enter-from, .modal-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 </style>
+
+

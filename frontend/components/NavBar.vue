@@ -51,8 +51,8 @@
         <!-- Informations utilisateur et déconnexion -->
         <div class="hidden md:flex items-center space-x-4">
           <div class="text-sm text-gray-600">
-            Bonjour, <span class="font-medium">{{ authStore.user?.prenom }}</span>
-            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{{ getRoleLabel(authStore.user?.role) }}</span>
+            Bonjour, <span class="font-medium">{{ user?.prenom }}</span>
+            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{{ getRoleLabel(user?.role) }}</span>
           </div>
           <button 
             @click="handleLogout"
@@ -120,9 +120,12 @@
   </nav>
 </template>
 
+
 <script setup lang="ts">
+import type { User } from '~/types/index'
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
+const user = computed(() => authStore.user as User | null)
 
 // Obtenir le libellé du rôle
 const getRoleLabel = (role?: string) => {

@@ -1,3 +1,4 @@
+
 <template>
   <div 
     class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300"
@@ -12,12 +13,12 @@
       <!-- Section Messages avec badge -->
       <div class="flex items-center justify-center mb-4">
         <div class="flex items-center space-x-3">
-          <h2 class="text-lg lg:text-xl font-semibold text-gray-900">Vos conversations</h2>
+          <h2 class="text-lg lg:text-xl font-semibold text-gray-900">{{ t('conversationsList.title') }}</h2>
           <Transition name="badge">
             <div 
               v-if="totalMessagesNonLus > 0"
               class="bg-red-500 text-white text-xs lg:text-sm font-bold rounded-full min-w-[20px] lg:min-w-[24px] h-5 lg:h-6 flex items-center justify-center px-1 lg:px-2"
-              :title="`${totalMessagesNonLus} message${totalMessagesNonLus > 1 ? 's' : ''} non lu${totalMessagesNonLus > 1 ? 's' : ''} au total`"
+              :title="t('conversationsList.unreadBadge', { count: totalMessagesNonLus })"
             >
               {{ totalMessagesNonLus > 99 ? '99+' : totalMessagesNonLus }}
             </div>
@@ -31,7 +32,7 @@
             :value="searchQuery"
             @input="searchQuery = ($event.target as HTMLInputElement).value"
             type="text"
-            placeholder="Rechercher une conversation..."
+            :placeholder="t('conversationsList.searchPlaceholder')"
             class="w-full pl-10 pr-4 py-2 text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
           />
           <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +45,7 @@
           @click="$emit('refresh-conversations')"
           :disabled="loading"
           class="lg:hidden p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200"
-          title="Rafraîchir les conversations"
+          :title="t('conversationsList.refresh')"
         >
           <svg 
             class="w-5 h-5 transition-transform duration-200"
@@ -60,7 +61,7 @@
         <button
           @click="$emit('create-conversation')"
           class="lg:hidden p-2 bg-[#0097b2] text-white rounded-lg hover:bg-[#007a94] transition-colors"
-          title="Nouvelle conversation"
+          :title="t('conversationsList.newConversation')"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -77,14 +78,14 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
           </svg>
-          Nouvelle conversation
+          {{ t('conversationsList.newConversation') }}
         </button>
         
         <button
           @click="$emit('refresh-conversations')"
           :disabled="loading"
           class="px-3 py-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200"
-          title="Rafraîchir les conversations"
+          :title="t('conversationsList.refresh')"
         >
           <svg 
             class="w-4 h-4 transition-transform duration-200"
@@ -101,7 +102,7 @@
 
     <!-- Loading des conversations -->
     <div v-if="loading" class="flex-1 flex items-center justify-center p-4">
-      <div class="text-gray-500 text-sm">Chargement...</div>
+      <div class="text-gray-500 text-sm">{{ t('conversationsList.loading') }}</div>
     </div>
 
     <!-- Message d'erreur -->
@@ -118,13 +119,13 @@
             @click="$emit('retry-load')" 
             class="block w-full px-4 py-2 text-sm bg-[#0097b2] text-white rounded-lg hover:bg-[#007a94] transition-colors"
           >
-            Réessayer
+            {{ t('conversationsList.retry') }}
           </button>
           <button 
             @click="$emit('debug-auth')" 
             class="block w-full px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
-            Debug connexion
+            {{ t('conversationsList.debugAuth') }}
           </button>
         </div>
       </div>
@@ -134,7 +135,7 @@
     <div v-else class="flex-1 overflow-y-auto custom-scrollbar">
       <div v-if="filteredConversations.length === 0" class="flex-1 flex items-center justify-center p-4">
         <div class="text-center text-gray-500">
-          <p class="text-sm">Aucune conversation trouvée</p>
+          <p class="text-sm">{{ t('conversationsList.noConversation') }}</p>
         </div>
       </div>
       
@@ -156,7 +157,7 @@
             <div 
               v-if="conversation.messages_non_lus > 0"
               class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] lg:min-w-[20px] h-4 lg:h-5 flex items-center justify-center px-1 shadow-lg"
-              :title="`${conversation.messages_non_lus} message${conversation.messages_non_lus > 1 ? 's' : ''} non lu${conversation.messages_non_lus > 1 ? 's' : ''}`"
+              :title="t('conversationsList.unreadBadge', { count: conversation.messages_non_lus })"
             >
               {{ conversation.messages_non_lus > 99 ? '99+' : conversation.messages_non_lus }}
             </div>
@@ -177,7 +178,7 @@
               <div 
                 v-if="conversation.messages_non_lus > 0"
                 class="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-red-500 rounded-full"
-                title="Messages non lus"
+                :title="t('conversationsList.unread')"
               ></div>
             </div>
           </div>
@@ -185,7 +186,7 @@
           <p class="text-xs lg:text-sm text-gray-500 truncate mt-1"
              :class="{ 'font-medium text-gray-700': conversation.messages_non_lus > 0 }">
             <span v-if="conversation.dernier_auteur" class="font-medium">{{ conversation.dernier_auteur }}:</span>
-            {{ conversation.dernier_contenu || 'Aucun message' }}
+            {{ conversation.dernier_contenu || t('conversationsList.noMessage') }}
           </p>
         </div>
       </div>
@@ -194,6 +195,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
+const { t } = useI18n()
+
 interface Conversation {
   id_groupe_message: number
   nom_groupe: string
@@ -233,30 +238,28 @@ const searchQuery = computed({
 
 const filteredConversations = computed(() => {
   if (!searchQuery.value) return props.conversations
-  
   return props.conversations.filter((conv: Conversation) => 
     conv.nom_groupe?.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
 
-const totalMessagesNonLus = computed(() => {
-  return props.totalMessagesNonLus
-})
+const totalMessagesNonLus = computed(() => props.totalMessagesNonLus)
+
+const selectedConversation = computed(() => props.selectedConversation)
+const isMobile = computed(() => props.isMobile)
 
 // Formater l'heure
 const formatTime = (dateString: string): string => {
   if (!dateString) return ''
-  
   try {
     const date = new Date(dateString)
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
     if (days === 0) {
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
     } else if (days === 1) {
-      return 'Hier'
+      return t('conversationsList.yesterday')
     } else if (days < 7) {
       return date.toLocaleDateString('fr-FR', { weekday: 'short' })
     } else {

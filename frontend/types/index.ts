@@ -44,6 +44,7 @@ export interface ApiResponse {
   conversations?: Conversation[]
   messages?: Message[]
   conversation?: Conversation
+  data?: any // Pour les données génériques comme les stats
 }
 
 // Types pour l'authentification

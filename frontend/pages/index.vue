@@ -1,4 +1,4 @@
-<template>
+s<template>
   <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden">
     <!-- Éléments décoratifs de fond -->
     <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
@@ -6,7 +6,7 @@
     <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent rounded-full opacity-10 animate-pulse"></div>
     
     <!-- Contenu principal centré -->
-    <div class="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="flex-grow flex items-center justify-center px-2 sm:px-6 lg:px-8 relative z-10">
       <div class="max-w-4xl w-full">
         <!-- En-tête avec logo et titre -->
         <div class="text-center mb-12">
@@ -17,22 +17,22 @@
             </svg>
           </div>
           <h1 class="text-5xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-4">
-            Gestion Résidence
+            {{ t('index.title') }}
           </h1>
           <p class="text-xl text-gray-600 font-medium mb-2">
-            Plateforme de communication résidentielle
+            {{ t('index.subtitle') }}
           </p>
           <p class="text-lg text-gray-500">
-            Choisissez votre mode d'accès
+            {{ t('index.chooseAccess') }}
           </p>
         </div>
 
         <!-- Choix d'accès -->
-        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
           <!-- Option Membres (Résidents, Gardiens, Administrateurs) -->
           <div class="relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-[#0097b2] to-[#008699] rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
-            <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-xl border border-white border-opacity-50 p-8 hover:shadow-2xl transition-all duration-500 transform hover:scale-105">
+            <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-xl border border-white border-opacity-50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-500 transform hover:scale-105 w-full">
               <!-- Icône -->
               <div class="flex justify-center mb-6">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-2xl flex items-center justify-center shadow-lg">
@@ -44,29 +44,29 @@
               
               <!-- Contenu -->
               <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">
-                Membres de la Résidence
+                {{ t('index.membersTitle') }}
               </h2>
               <p class="text-gray-600 text-center mb-6 leading-relaxed">
-                Résidents, gardiens et administrateurs
+                {{ t('index.membersDesc') }}
               </p>
               <ul class="text-sm text-gray-500 mb-8 space-y-2">
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-[#0097b2] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Accès complet aux conversations
+                  {{ t('index.membersFeature1') }}
                 </li>
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-[#0097b2] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Gestion des groupes et événements
+                  {{ t('index.membersFeature2') }}
                 </li>
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-[#0097b2] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Profil permanent
+                  {{ t('index.membersFeature3') }}
                 </li>
               </ul>
               
@@ -84,12 +84,12 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
-                    Accéder à l'espace membre
+                    {{ t('index.accessGuest') }}
                   </span>
                 </NuxtLink>
                 <button @click="authStore.logout()"
                   class="mt-3 w-full py-2 px-4 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200">
-                  Se déconnecter
+                  {{ t('logout') || 'Se déconnecter' }}
                 </button>
               </div>
               <div v-else>
@@ -101,7 +101,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                     </svg>
-                    Se connecter
+                    {{ t('index.login') }}
                   </span>
                 </NuxtLink>
               </div>
@@ -111,7 +111,7 @@
           <!-- Option Invités -->
           <div class="relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
-            <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-xl border border-white border-opacity-50 p-8 hover:shadow-2xl transition-all duration-500 transform hover:scale-105">
+            <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-xl border border-white border-opacity-50 p-4 sm:p-8 hover:shadow-2xl transition-all duration-500 transform hover:scale-105 w-full">
               <!-- Icône -->
               <div class="flex justify-center mb-6">
                 <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -123,29 +123,29 @@
               
               <!-- Contenu -->
               <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">
-                Accès Invité
+                {{ t('index.guestTitle') }}
               </h2>
               <p class="text-gray-600 text-center mb-6 leading-relaxed">
-                Visiteurs et invités temporaires
+                {{ t('index.guestDesc') }}
               </p>
               <ul class="text-sm text-gray-500 mb-8 space-y-2">
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Participation aux conversations
+                  {{ t('index.guestFeature1') }}
                 </li>
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Accès sécurisé et simplifié
+                  {{ t('index.guestFeature2') }}
                 </li>
                 <li class="flex items-center">
                   <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  Inscription rapide en ligne
+                  {{ t('index.guestFeature3') }}
                 </li>
               </ul>
               
@@ -159,7 +159,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
-                    S'enregistrer comme invité
+                {{ t('index.registerGuest') }}
                   </span>
                 </NuxtLink>
                 
@@ -170,7 +170,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
                     </svg>
-                    Accéder à mon compte invité
+                    {{ t('index.accessGuest') }}
                   </span>
                 </NuxtLink>
               </div>
@@ -186,6 +186,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 definePageMeta({
   layout: false
 })
@@ -194,6 +196,7 @@ useHead({
   title: 'Accueil - Gestion Entreprise de Résidence'
 })
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 // Vérifier si l'utilisateur est déjà connecté au montage

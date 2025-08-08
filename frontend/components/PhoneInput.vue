@@ -1,46 +1,11 @@
 <template>
   <div class="phone-input-container">
     <label v-if="label" class="block text-sm font-semibold text-gray-800 mb-2">
-      {{ label }}
+      {{ $t(label) }}
     </label>
     
     <div class="relative">
-      <div class="flex rounded-xl border border-gray-300 focus-within:ring-2 focus-within:ring-eme  {
-    name:  {
-    {
-    name: 'Ghana',
-    code: '+233',
-    flag: '🇬🇭',
-    dialCode: '233',
-    placeh  {
-    name: 'Corée du Sud',
-    code: '+82',
-    flag: '🇰🇷',
-    dialCode: '82',
-    placeholder: 'xx-xxxx-xxxx',
-    format: /^(\d{2})(\d{4})(\d{4})$/
-  },xxx xxx xxxx',
-    format: /^(\d{3})(\d{3})(\d{4})$/
-  },'Ghana',
-    code: '+233',
-    flag: '🇬🇭',
-    dialCode: '233',
-    placeholder: 'xxx xxx xxxx',
-    format: /^(\d{3})(\d{3})(\d{4})$/
-  },,
-    code: '+233',
-    flag: '🇬🇭',
-    dialCode: '233',
-    placeh  {
-    name: 'Corée du Sud',
-    code: '+82',
-    flag: '🇰🇷',
-    dialCode: '82',
-    placeholder: 'xx-xxxx-xxxx',
-    format: /^(\d{2})(\d{4})(\d{4})$/
-  },xxx xxx xxxx',
-    format: /^(\d{3})(\d{3})(\d{4})$/
-  }, focus-within:border-transparent transition-all duration-200 bg-gray-50 focus-within:bg-white">
+      <div class="flex rounded-xl border border-gray-300 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all duration-200 bg-gray-50 focus-within:bg-white">
         <!-- Sélecteur de pays -->
         <div class="relative">
           <button
@@ -62,7 +27,7 @@
               <input
                 v-model="countrySearch"
                 type="text"
-                placeholder="Rechercher un pays..."
+                :placeholder="$t('components.phoneInput.country') + '...'"
                 class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -76,7 +41,7 @@
               >
                 <span class="text-lg flex-shrink-0">{{ country.flag }}</span>
                 <div class="flex-1 min-w-0">
-                  <div class="text-sm font-medium text-gray-900 truncate">{{ country.name }}</div>
+                  <div class="text-sm font-medium text-gray-900 truncate">{{ $t('components.phoneInput.country') }}: {{ country.name }}</div>
                   <div class="text-xs text-gray-500">{{ country.code }}</div>
                 </div>
               </button>
@@ -89,7 +54,7 @@
           ref="phoneInput"
           v-model="formattedPhone"
           type="tel"
-          :placeholder="selectedCountry.placeholder"
+          :placeholder="$t('components.phoneInput.placeholder')"
           :disabled="disabled"
           class="flex-1 px-4 py-3 bg-transparent border-0 rounded-r-xl focus:outline-none text-gray-900 placeholder-gray-500"
           @input="handlePhoneInput"
@@ -99,10 +64,10 @@
       </div>
       
       <!-- Message d'aide -->
-      <p v-if="helpText" class="text-xs text-gray-500 mt-1 ml-1">{{ helpText }}</p>
+      <p v-if="helpText" class="text-xs text-gray-500 mt-1 ml-1">{{ $t(helpText) }}</p>
       
       <!-- Message d'erreur -->
-      <p v-if="error" class="text-xs text-red-600 mt-1 ml-1">{{ error }}</p>
+      <p v-if="error" class="text-xs text-red-600 mt-1 ml-1">{{ $t(error) }}</p>
     </div>
     
     <!-- Overlay pour fermer le sélecteur -->

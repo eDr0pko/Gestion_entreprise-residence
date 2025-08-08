@@ -1,0 +1,138 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Gestion_entreprise-residence",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\"\n}"
+        },
+        "url": {
+          "raw": "{{API_CLIENT}}/login",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Incidents",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/incidents",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["incidents"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/logs",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["logs"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Residents",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/residents",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["residents"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Visitors",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/visitors",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["visitors"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Conversations",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/conversations",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["conversations"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Stats",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{API_CLIENT}}/stats",
+          "host": ["{{API_CLIENT}}"],
+          "path": ["stats"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Ce script peut être utilisé pour initialiser des variables avant chaque requête"
+        ],
+        "type": "text/javascript"
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Ce script peut être utilisé pour traiter les réponses après chaque requête"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+}

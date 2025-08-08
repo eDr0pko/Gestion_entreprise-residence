@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-cyan-50 relative overflow-hidden">
     <!-- Éléments décoratifs de fond -->
     <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
     <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
     <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent rounded-full opacity-10 animate-pulse"></div>
     
     <!-- Contenu principal -->
-    <div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="flex-1 flex items-center justify-center py-8 px-2 sm:px-6 lg:px-8 relative z-10">
       <div class="max-w-md w-full space-y-8">
         <!-- En-tête moderne avec effet glassmorphism -->
         <div class="text-center">
@@ -17,13 +17,13 @@
             </svg>
           </div>
           <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-3">
-            Gestion Résidence
+            {{ t('login.title') }}
           </h1>
           <p class="text-gray-600 text-lg font-medium">
-            Révolutionnez votre gestion résidentielle
+            {{ t('login.subtitle') }}
           </p>
           <p class="text-gray-500 text-base mt-2">
-            Connectez-vous à votre espace personnel
+            {{ t('login.description') }}
           </p>
         </div>
 
@@ -40,7 +40,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
-                Retour à l'accueil
+                {{ t('login.backHome') }}
               </NuxtLink>
             </div>
 
@@ -48,7 +48,7 @@
               <!-- Champ email moderne -->
               <div class="space-y-3">
                 <label for="email" class="block text-sm font-semibold text-gray-800">
-                  Adresse email
+                  {{ t('login.email') }}
                 </label>
                 <div class="relative group/input">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -66,7 +66,7 @@
                       'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.email || errors.general,
                       'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.email && !errors.general
                     }"
-                    placeholder="votre.email@exemple.com"
+                    :placeholder="t('login.emailPlaceholder')"
                   />
                 </div>
                 <Transition name="error" mode="out-in">
@@ -82,7 +82,7 @@
               <!-- Champ mot de passe moderne -->
               <div class="space-y-3">
                 <label for="password" class="block text-sm font-semibold text-gray-800">
-                  Mot de passe
+                  {{ t('login.password') }}
                 </label>
                 <div class="relative group/input">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -100,7 +100,7 @@
                       'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.password || errors.general,
                       'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.password && !errors.general
                     }"
-                    placeholder="••••••••••••"
+                    :placeholder="t('login.passwordPlaceholder')"
                   />
                   <button
                     type="button"
@@ -128,7 +128,7 @@
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
-                      Adresse mail ou mot de passe incorrect
+                      {{ errors.general }}
                     </p>
                   </div>
                 </Transition>
@@ -149,7 +149,7 @@
                   <svg v-else class="mr-3 h-5 w-5 text-white group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                   </svg>
-                  {{ authStore.isLoading ? 'Connexion en cours...' : 'Se connecter' }}
+                  {{ authStore.isLoading ? t('login.loading') : t('login.submit') }}
                 </span>
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"></div>
               </button>
@@ -158,15 +158,15 @@
             <!-- Liens de navigation -->
             <div class="mt-6 text-center space-y-2">
               <p class="text-sm text-gray-600">
-                Pas encore de compte invité ?
+                {{ t('login.noGuestAccount') }}
                 <NuxtLink to="/Inscription" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-                  S'inscrire ici
+                  {{ t('login.signupHere') }}
                 </NuxtLink>
               </p>
               <p class="text-sm text-gray-600">
-                Vous avez déjà un compte invité ?
+                {{ t('login.haveGuestAccount') }}
                 <NuxtLink to="/connexion" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-                  Connexion invité
+                  {{ t('login.guestLogin') }}
                 </NuxtLink>
               </p>
             </div>
@@ -174,18 +174,18 @@
             <!-- Section aide moderne et discrète -->
             <div class="mt-8 text-center space-y-2">
               <div class="flex flex-col items-center gap-2 mb-2">
-                <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">Besoin d'assistance ?</span>
+                <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">{{ t('login.needHelp') }}</span>
               </div>
               <p class="text-sm text-gray-600">
-                Besoin d'assistance ?
+                {{ t('login.needHelp') }}
                 <a href="#" @click.prevent="showContactModal = true" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 cursor-pointer">
-                  Contactez l'administrateur
+                  {{ t('login.contactAdmin') }}
                 </a>
               </p>
               <p class="text-sm text-gray-600">
-                Mot de passe oublié ?
+                {{ t('login.forgotPassword') }}
                 <NuxtLink to="/mot-de-passe-oublie" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-                  Cliquez ici
+                  {{ t('login.clickHere') }}
                 </NuxtLink>
               </p>
               <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
@@ -206,8 +206,12 @@
     auth: false
   })
 
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   useHead({
-    title: 'Connexion - Gestion Entreprise de Résidence'
+    title: computed(() => t('login.pageTitle'))
   })
 
   const authStore = useAuthStore()
@@ -231,66 +235,56 @@
 
   // Nettoyer les erreurs
   const clearErrors = () => {
-    errors.email = ''
-    errors.password = ''
-    errors.general = ''
+          errors.email = ''
+          errors.password = ''
+          errors.general = ''
   }
 
   // Gérer la soumission du formulaire
   const handleLogin = async () => {
-    clearErrors()
+          clearErrors()
 
-    // Validation côté client
-    if (!form.email) {
-      errors.email = 'L\'adresse email est requise'
-      return
-    }
+          // Validation côté client
+          if (!form.email) {
+            errors.email = t('login.errorEmailRequired')
+            return
+          }
 
-    if (!form.password) {
-      errors.password = 'Le mot de passe est requis'
-      return
-    }
+          if (!form.password) {
+            errors.password = t('login.errorPasswordRequired')
+            return
+          }
 
-    try {
-      console.log('Tentative de connexion avec:', form.email)
-      
-      const result = await authStore.login(form.email, form.password)
-      
-      console.log('Connexion réussie:', result)
-      
-      // Attendre un peu pour s'assurer que le store est bien mis à jour
-      await nextTick()
-      
-      // Redirection selon le rôle
-      const user = authStore.user
-      if (user) {
-        console.log('Redirection pour le rôle:', (user as any).role)
-        switch ((user as any).role) {
-          case 'admin':
-            await router.push('/planning')
-            break
-          case 'gardien':
-            await router.push('/planning')
-            break
-          case 'resident':
-            await router.push('/planning')
-            break
-          default:
-            await router.push('/planning')
-        }
-      } else {
-        console.error('Utilisateur non défini après connexion')
-        await router.push('/messages')
-      }
-    } catch (error: any) {
-      console.error('Erreur de connexion:', error)
-      
-      if (error.status === 422 || error.status === 401) {
-        errors.general = 'auth_failed'
-      } else {
-        errors.general = 'Une erreur est survenue. Veuillez réessayer.'
-      }
-    }
+          try {
+            console.log('Tentative de connexion avec:', form.email)
+            const result = await authStore.login(form.email, form.password)
+            console.log('Connexion réussie:', result)
+            await nextTick()
+            // Redirection selon le rôle
+            const user = authStore.user
+            if (user) {
+              console.log('Redirection pour le rôle:', (user as any).role)
+              switch ((user as any).role) {
+                case 'admin':
+                case 'gardien':
+                case 'resident':
+                  await router.push('/planning')
+                  break
+                default:
+                  await router.push('/planning')
+              }
+            } else {
+              console.error('Utilisateur non défini après connexion')
+              await router.push('/messages')
+            }
+          } catch (error: any) {
+            console.error('Erreur de connexion:', error)
+            if (error.status === 422 || error.status === 401) {
+              errors.general = t('login.errorInvalidCredentials')
+            } else {
+              errors.general = t('login.errorUnknown')
+            }
+          }
   }
 
   // Rediriger si déjà connecté
@@ -302,5 +296,6 @@
     }
   })
 </script>
+
 
 

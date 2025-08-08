@@ -1,5 +1,14 @@
 # Nuxt Minimal Starter
 
+## Architecture API
+
+Le frontend communique uniquement avec le backend-client (`http://localhost:8000/api`).
+Pour les endpoints propriétaires NHS, il passe par le proxy `/nhs` du backend-client, qui relaie vers le backend-nhs.
+
+```
+Frontend → backend-client (/api, /nhs) → backend-nhs
+```
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

@@ -10,7 +10,7 @@
           <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
             <!-- Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900">Nouvelle conversation</h3>
+              <h3 class="text-lg font-semibold text-gray-900">{{ t('createConversationModal.title') }}</h3>
               <button 
                 @click="closeModal"
                 class="p-1 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
@@ -26,13 +26,13 @@
               <!-- Nom de la conversation -->
               <div class="p-4 border-b border-gray-100">
                 <label for="nom_groupe" class="block text-sm font-medium text-gray-700 mb-2">
-                  Nom de la conversation
+                  {{ t('createConversationModal.nameLabel') }}
                 </label>
                 <input
                   id="nom_groupe"
                   v-model="nomGroupe"
                   type="text"
-                  placeholder="Ex: Équipe projet, Voisins étage 2..."
+                  :placeholder="t('createConversationModal.namePlaceholder')"
                   class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
                   required
                   maxlength="100"
@@ -43,7 +43,7 @@
               <div class="flex-1 min-h-0 flex flex-col">
                 <div class="p-4 border-b border-gray-100">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Participants ({{ selectedUsers.length }} sélectionné{{ selectedUsers.length > 1 ? 's' : '' }})
+                    {{ t('createConversationModal.participantsLabel', { count: selectedUsers.length }) }}
                   </label>
                   
                   <!-- Barre de recherche -->
@@ -51,7 +51,7 @@
                     <input
                       v-model="searchQuery"
                       type="text"
-                      placeholder="Rechercher un utilisateur..."
+                      :placeholder="t('createConversationModal.searchPlaceholder')"
                       class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
                     />
                     <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,13 +89,13 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="text-sm">Chargement...</span>
+                    <span class="text-sm">{{ t('createConversationModal.loadingUsers') }}</span>
                   </div>
 
                   <div v-else-if="error" class="p-4 text-center text-red-500">
                     <p class="text-sm">{{ error }}</p>
                     <button @click="loadUsers" class="text-xs text-[#0097b2] hover:text-[#007a94] mt-2">
-                      Réessayer
+                      {{ t('createConversationModal.retry') }}
                     </button>
                   </div>
 
@@ -132,7 +132,7 @@
                     </div>
 
                     <div v-if="filteredUsers.length === 0" class="p-4 text-center text-gray-500">
-                      <p class="text-sm">Aucun utilisateur trouvé</p>
+                      <p class="text-sm">{{ t('createConversationModal.noUser') }}</p>
                     </div>
                   </div>
                 </div>
@@ -146,7 +146,7 @@
                   class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   :disabled="creating"
                 >
-                  Annuler
+                  {{ t('createConversationModal.cancel') }}
                 </button>
                 <button
                   type="submit"
@@ -157,7 +157,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {{ creating ? 'Création...' : 'Créer' }}
+                  {{ creating ? t('createConversationModal.creating') : t('createConversationModal.create') }}
                 </button>
               </div>
             </form>
@@ -169,6 +169,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { ref, computed, watch } from 'vue'
+const { t } = useI18n()
+
 interface User {
   email: string
   nom_complet: string
@@ -191,7 +195,6 @@ const emit = defineEmits<{
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
 
-// État réactif
 const nomGroupe = ref('')
 const searchQuery = ref('')
 const selectedUsers = ref<User[]>([])
@@ -200,10 +203,8 @@ const loadingUsers = ref(false)
 const creating = ref(false)
 const error = ref('')
 
-// Utilisateurs filtrés
 const filteredUsers = computed(() => {
   if (!searchQuery.value) return users.value
-  
   const query = searchQuery.value.toLowerCase()
   return users.value.filter(user => 
     user.nom_complet.toLowerCase().includes(query) ||
@@ -212,12 +213,10 @@ const filteredUsers = computed(() => {
   )
 })
 
-// Vérifier si un utilisateur est sélectionné
 const isSelected = (user: User) => {
   return selectedUsers.value.some(selected => selected.email === user.email)
 }
 
-// Ajouter/retirer un utilisateur
 const toggleUser = (user: User) => {
   if (isSelected(user)) {
     removeUser(user)
@@ -226,7 +225,6 @@ const toggleUser = (user: User) => {
   }
 }
 
-// Retirer un utilisateur
 const removeUser = (user: User) => {
   const index = selectedUsers.value.findIndex(selected => selected.email === user.email)
   if (index !== -1) {
@@ -234,25 +232,21 @@ const removeUser = (user: User) => {
   }
 }
 
-// Charger les utilisateurs
 const loadUsers = async () => {
   try {
     loadingUsers.value = true
     error.value = ''
-    
     const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`,
         'Accept': 'application/json'
       }
     })
-    
     if (response.success && response.users) {
       users.value = response.users
     } else {
       throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
     }
-    
   } catch (err: any) {
     console.error('Erreur lors du chargement des utilisateurs:', err)
     error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
@@ -261,11 +255,9 @@ const loadUsers = async () => {
   }
 }
 
-// Créer la conversation
 const createConversation = async () => {
   try {
     creating.value = true
-    
     const response = await $fetch<{success: boolean, conversation: any, error?: string}>(`${config.public.apiBase}/conversations`, {
       method: 'POST',
       headers: {
@@ -278,14 +270,12 @@ const createConversation = async () => {
         participants: selectedUsers.value.map(user => user.email)
       }
     })
-    
     if (response.success && response.conversation) {
       emit('created', response.conversation)
       closeModal()
     } else {
       throw new Error(response.error || 'Erreur lors de la création de la conversation')
     }
-    
   } catch (err: any) {
     console.error('Erreur lors de la création de la conversation:', err)
     error.value = err.data?.message || err.message || 'Impossible de créer la conversation'
@@ -294,18 +284,14 @@ const createConversation = async () => {
   }
 }
 
-// Fermer la modal
 const closeModal = () => {
-  // Reset des données
   nomGroupe.value = ''
   searchQuery.value = ''
   selectedUsers.value = []
   error.value = ''
-  
   emit('close')
 }
 
-// Charger les utilisateurs à l'ouverture
 watch(() => props.show, (newShow) => {
   if (newShow) {
     loadUsers()

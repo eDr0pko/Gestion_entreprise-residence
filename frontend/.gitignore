@@ -4,10 +4,13 @@
 .nuxt
 .nitro
 .cache
-dist
+# Build output
+dist/
 
 # Node dependencies
 node_modules
+# Node modules
+node_modules/
 
 # Logs
 logs
@@ -22,3 +25,7 @@ logs
 .env
 .env.*
 !.env.example
+# Nuxt build
+.nuxt/
+# Local output
+.output/

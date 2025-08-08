@@ -1,8 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
-      <!-- Card principale -->
-      <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">
+    <div class="flex-1 flex items-center justify-center p-2 sm:p-4">
+      <div class="max-w-md w-full">
+        <!-- Card principale -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-8 border border-white/20">
         <!-- Header -->
         <div class="text-center mb-6">
           <div class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
@@ -130,11 +131,12 @@
             Accès sécurisé pour les invités de la résidence
           </p>
         </div>
-      </div> <!-- FIN .bg-white/90 ... -->
-    </div> <!-- FIN .max-w-md ... -->
-  </div> <!-- FIN .min-h-screen ... -->
-  <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
-  <AppFooter />
+        </div> <!-- FIN .bg-white/90 ... -->
+      </div> <!-- FIN .max-w-md ... -->
+    </div>
+    <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
+    <AppFooter />
+  </div>
 </template>
 
 <script setup lang="ts">

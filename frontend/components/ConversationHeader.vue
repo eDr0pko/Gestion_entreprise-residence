@@ -12,7 +12,10 @@
       </div>
       <div>
         <h2 class="text-sm lg:text-base font-semibold text-gray-900">{{ conversation?.nom_groupe }}</h2>
-        <p class="text-xs lg:text-sm text-gray-500">{{ conversation?.nombre_membres || 0 }} membre{{ (conversation?.nombre_membres || 0) > 1 ? 's' : '' }}</p>
+        <p class="text-xs lg:text-sm text-gray-500">
+          {{ conversation?.nombre_membres || 0 }}
+          {{ t('conversationHeader.member', { count: conversation?.nombre_membres || 0 }) }}
+        </p>
       </div>
     </div>
     <!-- Icône pour indiquer que c'est cliquable -->
@@ -23,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 interface Conversation {
   id_groupe_message: number
   nom_groupe: string

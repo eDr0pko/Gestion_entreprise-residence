@@ -9,7 +9,7 @@
       <template #default>
         <div class="w-full flex justify-center items-center">
           <span class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#0097b2] via-[#00b4d8] to-[#43e6ff] bg-clip-text text-transparent tracking-tight drop-shadow animate-fadein">
-            Messages
+            {{ t('messages.title') }}
           </span>
         </div>
       </template>
@@ -20,7 +20,7 @@
             v-if="!selectedConversation || !isMobile"
             @click="showCreateModal = true"
             class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 mr-2"
-            title="Nouvelle conversation"
+            :title="t('messages.newConversation')"
           >
             <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -42,10 +42,10 @@
             <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span class="text-sm">{{ error }}</span>
+            <span class="text-sm">{{ t(error) }}</span>
           </div>
           <button 
-            @click="error = ''"
+            @click="clearError"
             class="ml-2 text-white hover:text-gray-200 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,8 +154,15 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { t } = useI18n()
+
+useHead({
+  title: computed(() => t('messages.pageTitle'))
+})
+
 // Import des composables
 import type { Conversation, Message, FichierMessage, ApiResponse } from '~/types'
+import { useI18n } from 'vue-i18n'
 
 // Configuration et composables
 const config = useRuntimeConfig()
@@ -191,6 +198,11 @@ const searchQuery = ref('')
 const selectedConversation = ref<Conversation | null>(null)
 const newMessage = ref('')
 const error = ref('')
+
+// Fonction pour effacer l'erreur
+const clearError = () => {
+  error.value = ''
+}
 
 // États de chargement
 const loadingConversations = ref(true)
@@ -270,7 +282,7 @@ const loadConversations = async () => {
       return
     }
     
-    error.value = handleNetworkError(err, 'Impossible de charger les conversations')
+    error.value = 'messages.errors.loadConversations'
     conversations.value = []
   } finally {
     loadingConversations.value = false
@@ -321,7 +333,7 @@ const loadMessages = async (groupId: number) => {
       return
     }
     
-    error.value = handleNetworkError(err, 'Impossible de charger les messages')
+    error.value = 'messages.errors.loadMessages'
     messages.value = []
   } finally {
     loadingMessages.value = false
@@ -348,12 +360,12 @@ const sendMessage = async () => {
   
   // Vérification des prérequis
   if (!authStore.token) {
-    error.value = 'Token d\'authentification manquant'
+    error.value = 'messages.errors.missingToken'
     return
   }
   
   if (!selectedConversation.value?.id_groupe_message) {
-    error.value = 'Conversation non sélectionnée'
+    error.value = 'messages.errors.noConversationSelected'
     return
   }
   
@@ -520,7 +532,7 @@ const sendMessage = async () => {
       // Note: Les fichiers ne peuvent pas être restaurés pour des raisons de sécurité
     }
     
-    error.value = handleNetworkError(err, 'Impossible d\'envoyer le message')
+    error.value = 'messages.errors.sendMessage'
   } finally {
     sendingMessage.value = false
   }
@@ -625,7 +637,7 @@ const handleReactionToggled = async (messageId: number, emoji: string) => {
     
   } catch (err: any) {
     console.error('Erreur lors de la gestion de la réaction:', err)
-    error.value = handleNetworkError(err, 'Impossible de modifier la réaction')
+    error.value = 'messages.errors.reaction'
     
     // En cas d'erreur réseau, recharger les messages pour récupérer l'état correct
     if (selectedConversation.value) {
@@ -654,7 +666,7 @@ const downloadFile = async (fichierId: number) => {
     }
   } catch (err) {
     console.error('Erreur lors du téléchargement:', err)
-    error.value = 'Impossible de télécharger le fichier'
+    error.value = 'messages.errors.downloadFile'
   }
 }
 
@@ -787,3 +799,4 @@ watch(messages, async (newMessages, oldMessages) => {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
+

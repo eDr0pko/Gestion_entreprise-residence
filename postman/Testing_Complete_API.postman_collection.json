@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "testing-complete-api",
+		"name": "Gestion Residence - API Testing Complete",
+		"description": "Collection complète pour tester toutes les API du système de gestion de résidence",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url_client",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "base_url_nhs",
+			"value": "http://localhost:8001/api",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.access_token) {",
+									"        pm.collectionVariables.set('auth_token', response.access_token);",
+									"        console.log('Token saved:', response.access_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@residence.com\",\n    \"password\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url_client}}/login",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Auth Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/check",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"check"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔍 Search APIs",
+			"item": [
+				{
+					"name": "Search Residents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/residents/search?q=admin",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"residents",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "admin"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Visitors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/visitors/search?q=marie",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"visitors",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "marie"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📅 Visits Management",
+			"item": [
+				{
+					"name": "Get All Visits",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/visites",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"visites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Visit - Resident to Resident",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"motif_visite\": \"Visite de test entre résidents\",\n    \"email_visiteur\": \"admin@residence.com\",\n    \"date_visite_start\": \"2024-12-17 14:30:00\",\n    \"date_visite_end\": \"2024-12-17 15:30:00\",\n    \"statut_visite\": \"programmee\",\n    \"id_invite\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url_client}}/visites",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"visites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Visit - External Visitor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"motif_visite\": \"Visite familiale\",\n    \"email_visiteur\": \"visiteur.externe@example.com\",\n    \"date_visite_start\": \"2024-12-17 16:00:00\",\n    \"date_visite_end\": \"2024-12-17 17:00:00\",\n    \"statut_visite\": \"en_attente\",\n    \"id_invite\": 1,\n    \"nom_invite\": \"Dupont\",\n    \"prenom_invite\": \"Jean\",\n    \"tel_invite\": \"0123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url_client}}/visites",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"visites"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🏠 Health Checks",
+			"item": [
+				{
+					"name": "Backend Client Health",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/health",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Backend NHS Health",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_nhs}}/health",
+							"host": [
+								"{{base_url_nhs}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Database Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/db-check",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"db-check"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👥 User Management",
+			"item": [
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/user",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admin Guests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url_client}}/admin/guests",
+							"host": [
+								"{{base_url_client}}"
+							],
+							"path": [
+								"admin",
+								"guests"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

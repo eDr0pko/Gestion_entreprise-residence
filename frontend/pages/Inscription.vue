@@ -1,8 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 flex items-center justify-center p-4">
-    <div class="max-w-lg w-full">
-      <!-- Card principale -->
-      <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">
+    <div class="flex-1 flex items-center justify-center p-4">
+      <div class="max-w-lg w-full">
+        <!-- Card principale -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
         <!-- Header -->
         <div class="text-center mb-6">
           <div class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
@@ -10,8 +11,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-2">Inscription Invité</h1>
-          <p class="text-gray-600 text-sm">Créez votre compte pour accéder à la résidence</p>
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('auth.register.title') }}</h1>
+          <p class="text-gray-600 text-sm">{{ t('auth.register.description') }}</p>
         </div>
 
         <!-- Bouton retour à l'accueil -->
@@ -20,7 +21,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
-            Retour à l'accueil
+            {{ t('auth.register.backToHome') }}
           </NuxtLink>
         </div>
         
@@ -29,7 +30,7 @@
           <!-- Email -->
           <div>
             <label for="email" class="block text-sm font-semibold text-gray-800 mb-2">
-              Adresse email
+              {{ t('auth.register.email') }}
             </label>
             <input
               id="email"
@@ -37,7 +38,7 @@
               type="email"
               required
               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="votre@email.com"
+              :placeholder="t('auth.register.emailPlaceholder')"
               :disabled="loading"
             />
           </div>
@@ -46,7 +47,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label for="nom" class="block text-sm font-semibold text-gray-800 mb-2">
-                Nom
+                {{ t('auth.register.lastName') }}
               </label>
               <input
                 id="nom"
@@ -54,13 +55,13 @@
                 type="text"
                 required
                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                placeholder="Nom"
+                :placeholder="t('auth.register.lastNamePlaceholder')"
                 :disabled="loading"
               />
             </div>
             <div>
               <label for="prenom" class="block text-sm font-semibold text-gray-800 mb-2">
-                Prénom
+                {{ t('auth.register.firstName') }}
               </label>
               <input
                 id="prenom"
@@ -68,7 +69,7 @@
                 type="text"
                 required
                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                placeholder="Prénom"
+                :placeholder="t('auth.register.firstNamePlaceholder')"
                 :disabled="loading"
               />
             </div>
@@ -77,7 +78,7 @@
           <!-- Téléphone -->
           <PhoneInput
             v-model="form.numero_telephone"
-            label="Numéro de téléphone"
+            :label="t('auth.register.phone')"
             :disabled="loading"
             required
           />
@@ -85,7 +86,7 @@
           <!-- Mot de passe -->
           <div>
             <label for="mot_de_passe" class="block text-sm font-semibold text-gray-800 mb-2">
-              Mot de passe
+              {{ t('auth.register.password') }}
             </label>
             <input
               id="mot_de_passe"
@@ -94,7 +95,7 @@
               required
               minlength="6"
               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="Minimum 6 caractères"
+              :placeholder="t('auth.register.passwordPlaceholder')"
               :disabled="loading"
             />
           </div>
@@ -102,7 +103,7 @@
           <!-- Confirmation mot de passe -->
           <div>
             <label for="mot_de_passe_confirmation" class="block text-sm font-semibold text-gray-800 mb-2">
-              Confirmer le mot de passe
+              {{ t('auth.register.confirmPassword') }}
             </label>
             <input
               id="mot_de_passe_confirmation"
@@ -111,7 +112,7 @@
               required
               minlength="6"
               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-              placeholder="Confirmez votre mot de passe"
+              :placeholder="t('auth.register.confirmPasswordPlaceholder')"
               :disabled="loading"
             />
           </div>
@@ -141,24 +142,24 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Inscription en cours...
+              {{ t('auth.register.loading') }}
             </span>
-            <span v-else>S'inscrire</span>
+            <span v-else>{{ t('auth.register.registerButton') }}</span>
           </button>
         </form>
 
         <!-- Liens de navigation -->
         <div class="mt-6 text-center space-y-2">
           <p class="text-sm text-gray-600">
-            Déjà un compte invité ?
+            {{ t('auth.register.alreadyAccount') }}
             <NuxtLink to="/connexion" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-              Se connecter
+              {{ t('auth.register.loginHere') }}
             </NuxtLink>
           </p>
           <p class="text-sm text-gray-600">
-            Vous êtes membre de la résidence ?
-            <NuxtLink to="/login" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200ù">
-              Connexion membre
+            {{ t('auth.register.memberAccount') }}
+            <NuxtLink to="/login" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+              {{ t('auth.register.memberLogin') }}
             </NuxtLink>
           </p>
         </div>
@@ -166,41 +167,48 @@
         <!-- Section aide moderne et discrète -->
         <div class="mt-8 text-center space-y-2">
           <div class="flex flex-col items-center gap-2 mb-2">
-            <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">Besoin d'assistance ?</span>
+            <span class="text-base font-medium text-[#0097b2] bg-cyan-50 rounded px-3 py-1 shadow-sm">{{ t('auth.register.needHelp') }}</span>
           </div>
           <p class="text-sm text-gray-600">
-            Besoin d'assistance ?
+            {{ t('auth.register.needHelp') }}
             <a href="#" @click.prevent="showContactModal = true" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200 cursor-pointer">
-              Contactez l'administrateur
+              {{ t('auth.register.contactAdmin') }}
             </a>
           </p>
           <p class="text-sm text-gray-600">
-            Mot de passe oublié ?
+            {{ t('auth.register.forgotPassword') }}
             <NuxtLink to="/mot-de-passe-oublie" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-              Cliquez ici
+              {{ t('auth.register.clickHere') }}
             </NuxtLink>
           </p>
           <ContactAdminModal :show="showContactModal" @close="showContactModal = false" />
         </div>
-      </div>
 
-      <!-- Message d'info -->
+        <!-- Message d'info -->
       <div class="mt-6 text-center">
         <p class="text-xs text-gray-500">
-          En vous inscrivant, vous acceptez les conditions d'utilisation de la résidence
+          {{ t('auth.register.terms') }}
         </p>
       </div>
+
+        </div>      
+      </div>
     </div>
+    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import ContactAdminModal from '../components/ContactAdminModal.vue'
+  import AppFooter from '../components/AppFooter.vue'
+
+  const { t } = useI18n()
 
   // Métadonnées de la page
   useHead({
-    title: 'Inscription Invité - Gestion Entreprise de Résidence'
+    title: computed(() => t('auth.register.pageTitle'))
   })
 
   // État du formulaire
@@ -267,7 +275,6 @@
 
     try {
       console.log('🚀 [INSCRIPTION] Envoi des données:', form.value)
-      
       const response: any = await $fetch(`${config.public.apiBase}/guests/register`, {
         method: 'POST',
         headers: {
@@ -286,20 +293,20 @@
 
       console.log('✅ [INSCRIPTION] Réponse API:', response)
 
-      if (response.success && response.user) {
+      const token = response.token || response.access_token;
+      if (response.success && token && response.user) {
         showMessage('Inscription réussie ! Redirection en cours...', 'success')
-        
         // Stocker les informations de l'utilisateur dans le store
         const authStore = useAuthStore()
-        authStore.setAuth(response.token, response.user)
-        
-        // Petit délai pour afficher le message de succès
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
+        authStore.setAuth(token, response.user)
+        // Forcer le rendu du message avant de rediriger
+        await nextTick()
+        // Délai plus long pour laisser le temps de voir le message
+        await new Promise(resolve => setTimeout(resolve, 1800))
         // Redirection vers les messages
         await navigateTo('/messages')
       } else {
-        showMessage(response.message || 'Erreur lors de l\'inscription', 'error')
+        showMessage(response.message || 'Erreur inattendue lors de l\'inscription', 'error')
       }
     } catch (error: any) {
       console.error('❌ [INSCRIPTION] Erreur:', error)

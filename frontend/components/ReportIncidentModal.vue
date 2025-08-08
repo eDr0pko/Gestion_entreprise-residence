@@ -6,38 +6,38 @@
         <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 20H3a2 2 0 01-2-2V6a2 2 0 012-2h18a2 2 0 012 2v12a2 2 0 01-2 2z" />
         </svg>
-        Signaler un incident
+        {{ t('components.reportIncidentModal.title') }}
       </h3>
       <form @submit.prevent="submitIncident" class="flex flex-col gap-4 mt-4" enctype="multipart/form-data">
         <div>
-          <label class="block text-sm font-semibold mb-1">Description de l'incident <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold mb-1">{{ t('components.reportIncidentModal.descriptionLabel') }} <span class="text-red-500">*</span></label>
           <textarea v-model="description" required rows="3" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
         </div>
         <div>
-          <label class="block text-sm font-semibold mb-1">Statut initial</label>
+          <label class="block text-sm font-semibold mb-1">{{ t('components.reportIncidentModal.statusLabel') }}</label>
           <select v-model="status" class="w-full border rounded-lg px-3 py-2">
-            <option value="a_venir">À venir</option>
-            <option value="en_cours">En cours</option>
-            <option value="resolu">Résolu</option>
+            <option value="a_venir">{{ t('components.reportIncidentModal.statusUpcoming') }}</option>
+            <option value="en_cours">{{ t('components.reportIncidentModal.statusInProgress') }}</option>
+            <option value="resolu">{{ t('components.reportIncidentModal.statusResolved') }}</option>
           </select>
         </div>
         <div v-if="!user?.email">
-          <label class="block text-sm font-semibold mb-1">Votre email <span class="text-red-500">*</span></label>
-          <input v-model="emailSignaleur" type="email" required class="w-full border rounded-lg px-3 py-2" placeholder="Votre email" />
+          <label class="block text-sm font-semibold mb-1">{{ t('components.reportIncidentModal.emailLabel') }} <span class="text-red-500">*</span></label>
+          <input v-model="emailSignaleur" type="email" required class="w-full border rounded-lg px-3 py-2" :placeholder="t('components.reportIncidentModal.emailPlaceholder')" />
         </div>
         <div>
-          <label class="block text-sm font-semibold mb-1">Pièces jointes</label>
+          <label class="block text-sm font-semibold mb-1">{{ t('components.reportIncidentModal.attachmentsLabel') }}</label>
           <input type="file" multiple @change="handleFiles" class="w-full border rounded-lg px-3 py-2" />
           <div v-if="files.length" class="mt-1 text-xs text-gray-600">
             <div v-for="(file, idx) in files" :key="idx">{{ file.name }}</div>
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-2">
-          <button type="button" @click="$emit('close')" class="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700">Annuler</button>
-          <button type="submit" :disabled="loading" class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold shadow disabled:opacity-60">Envoyer</button>
+          <button type="button" @click="$emit('close')" class="px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700">{{ t('components.reportIncidentModal.cancel') }}</button>
+          <button type="submit" :disabled="loading" class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold shadow disabled:opacity-60">{{ t('components.reportIncidentModal.send') }}</button>
         </div>
-        <div v-if="error" class="text-red-500 text-sm mt-2">{{ error }}</div>
-        <div v-if="success" class="text-green-600 text-sm mt-2">Incident signalé avec succès !</div>
+        <div v-if="error" class="text-red-500 text-sm mt-2">{{ t(error) }}</div>
+        <div v-if="success" class="text-green-600 text-sm mt-2">{{ t('components.reportIncidentModal.successMessage') }}</div>
       </form>
     </div>
   </div>
@@ -45,7 +45,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '~/stores/auth'
+
+const { t } = useI18n()
 
 type User = {
   email?: string
@@ -78,11 +81,11 @@ async function submitIncident() {
   error.value = ''
   success.value = false
   if (!description.value.trim()) {
-    error.value = 'La description est obligatoire.'
+    error.value = 'components.reportIncidentModal.errorDescriptionRequired'
     return
   }
   if (!user?.email && !emailSignaleur.value.trim()) {
-    error.value = 'Veuillez renseigner votre email.'
+    error.value = 'components.reportIncidentModal.errorEmailRequired'
     return
   }
   loading.value = true
@@ -125,7 +128,7 @@ async function submitIncident() {
     } else if (e instanceof Error) {
       error.value = e.message
     } else {
-      error.value = 'Erreur lors de l\'envoi du signalement.'
+      error.value = 'components.reportIncidentModal.errorSend'
     }
   } finally {
     loading.value = false
@@ -142,3 +145,4 @@ async function submitIncident() {
   to { opacity: 1; transform: scale(1); }
 }
 </style>
+

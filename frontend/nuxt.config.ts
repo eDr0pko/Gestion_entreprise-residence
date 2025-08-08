@@ -4,27 +4,32 @@ export default defineNuxtConfig({
     enabled: true,
   },
   css: ['@/assets/css/tailwind.css'],
-  postcss: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
-  },
   modules: [
-    '@pinia/nuxt'
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt',
+    '@nuxtjs/i18n'
   ],
+  i18n: {
+    locales: [
+      { code: 'fr', name: 'Français', file: 'fr.json' },
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'zh', name: '中文', file: 'zh.json' }
+    ],
+    langDir: 'locales/',
+    defaultLocale: 'fr',
+    strategy: 'no_prefix',
+    compilation: {
+      strictMessage: false,
+      escapeHtml: false
+    }
+  },
   imports: {
-    dirs: ['stores'],
-    presets: [
-      {
-        from: '~/stores/auth',
-        imports: ['useAuthStore']
-      }
-    ]
+    dirs: ['stores']
   },
   runtimeConfig: {
     public: {
-      apiBase: 'http://127.0.0.1:8000/api'
+      apiBase: 'http://localhost:8000/api', // backend-client
+      nhsBase: 'http://localhost:8000/api/nhs'  // proxy NHS via backend-client
     }
   },
   ssr: false // Pour simplifier l'authentification côté client

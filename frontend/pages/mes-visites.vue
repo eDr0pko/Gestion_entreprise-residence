@@ -61,9 +61,10 @@
               🚫 Bannir
             </button>
             <button
-              @click="console.log('Reporter pas encore implémenté')"
+              @click="showReportMessage"
               class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-sm opacity-50 cursor-not-allowed"
               disabled
+              :title="'Fonctionnalité non disponible'"
             >
               📅 Reporter
             </button>
@@ -147,6 +148,11 @@ const formatDate = (str: string) => {
     day: '2-digit', month: '2-digit',
     hour: '2-digit', minute: '2-digit'
   })
+}
+
+// Fonction pour afficher un message d'information
+const showReportMessage = () => {
+  // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
 }
 
 onMounted(() => {
