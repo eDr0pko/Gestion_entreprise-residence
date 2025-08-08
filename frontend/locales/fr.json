@@ -875,7 +875,7 @@
       "loading": "Chargement...",
       "submit": "Soumettre",
       "reset": "Réinitialiser",
-      "clear": "Effacer",
+      "saving": "Sauvegarde...",
       "select": "Sélectionner",
       "choose": "Choisir",
       "browse": "Parcourir",
@@ -958,6 +958,35 @@
       "showMore": "Afficher plus",
       "showLess": "Afficher moins"
     }
+  },
+  "adminSettings": {
+    "title": "Personnalisation du site",
+    "subtitle": "Customisez l'apparence et le contenu de votre plateforme.",
+    "identity": "Identité de la plateforme",
+    "siteName": "Nom du site",
+    "companyName": "Société",
+    "tagline": "Slogan",
+    "logo": "Logo",
+    "currentLogo": "Logo actuel",
+    "replaceLogo": "Cliquez ou glissez une nouvelle image pour remplacer",
+    "addLogo": "Ajoutez votre logo",
+    "dropOrBrowse": "Glissez-déposez votre fichier ou cliquez pour parcourir",
+    "logoFormats": "PNG, JPG, SVG jusqu'à 2MB",
+    "colors": "Palette de couleurs",
+    "primaryColor": "Couleur primaire",
+    "secondaryColor": "Couleur secondaire",
+    "accentColor": "Couleur d'accent",
+    "backgroundColor": "Arrière-plan",
+    "textContent": "Contenu textuel",
+    "homePage": "Page d'accueil",
+    "welcomeTitle": "Titre principal",
+    "welcomeTitlePlaceholder": "Bienvenue sur notre plateforme",
+    "welcomeMessage": "Message d'accueil",
+    "welcomeMessagePlaceholder": "Découvrez notre solution complète...",
+    "saveChanges": "Enregistrer les modifications",
+    "error": "Erreur",
+    "success": "Modifications enregistrées avec succès !",
+    "reset": "Réinitialiser par défaut"
   }
 }
 

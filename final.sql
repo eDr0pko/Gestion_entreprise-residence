@@ -6,16 +6,25 @@ COLLATE utf8mb4_unicode_ci;
 USE gestion_entreprise_residence;
 DROP TABLE IF EXISTS app_settings ,incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
 
--- TABLE app_settings (stockage du nom et du logo du site)
+-- TABLE app_settings (stockage de la personnalisation complète du site)
 CREATE TABLE app_settings (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   app_name VARCHAR(255) NOT NULL DEFAULT 'Gestion Résidence',
   logo_url VARCHAR(512) DEFAULT NULL,
+  primary_color VARCHAR(7) DEFAULT '#3B82F6',
+  secondary_color VARCHAR(7) DEFAULT '#10B981',
+  accent_color VARCHAR(7) DEFAULT '#F59E0B',
+  background_color VARCHAR(7) DEFAULT '#F8FAFC',
+  company_name VARCHAR(255) DEFAULT 'Ma Société',
+  app_tagline VARCHAR(512) DEFAULT 'Gérez votre résidence facilement',
+  welcome_title VARCHAR(255) DEFAULT 'Bienvenue',
+  welcome_message VARCHAR(512) DEFAULT 'Bienvenue dans votre espace de gestion',
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Valeur par défaut
-INSERT INTO app_settings (app_name, logo_url) VALUES ('Gestion Résidence', NULL);
+-- Valeur par défaut avec personnalisation complète
+INSERT INTO app_settings (app_name, logo_url, primary_color, secondary_color, accent_color, background_color, company_name, app_tagline, welcome_title, welcome_message) 
+VALUES ('Gestion Résidence', NULL, '#3B82F6', '#10B981', '#F59E0B', '#F8FAFC', 'Ma Société', 'Gérez votre résidence facilement', 'Bienvenue', 'Bienvenue dans votre espace de gestion');
 
 
 -- TABLE personne

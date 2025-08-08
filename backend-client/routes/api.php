@@ -33,15 +33,13 @@
     // Upload de logo
     Route::post('/upload-logo', [LogoUploadController::class, 'upload']);
 
-    // Vérification de la base de données locale
-    Route::get('/db-check', [DatabaseController::class, 'healthCheck']);
-
-    // Test de connectivité NHS
-    Route::get('/nhs-test', [UnifiedProxyController::class, 'testConnection']);
-
-
-    // 🔧 Personnalisation du site (app-settings)
+    // 🔧 Personnalisation du site (settings)
     use App\Http\Controllers\Api\AppSettingController;
+    Route::get('/settings', [AppSettingController::class, 'index']);
+    Route::post('/settings', [AppSettingController::class, 'store']);
+    Route::post('/settings/upload-logo', [LogoUploadController::class, 'upload']);
+    
+    // Legacy routes for compatibility
     Route::get('/app-settings', [AppSettingController::class, 'show']);
     Route::put('/app-settings', [AppSettingController::class, 'update']);
 

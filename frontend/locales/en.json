@@ -861,7 +861,8 @@
             "filter": "Filter",
             "sort": "Sort",
             "export": "Export",
-            "import": "Import"
+            "import": "Import",
+            "saving": "Saving..."
         },
         "form": {
             "required": "Required field",
@@ -936,6 +937,33 @@
             "showMore": "Show more",
             "showLess": "Show less"
         }
+    },
+    "adminSettings": {
+        "title": "Site personalization",
+        "subtitle": "Customize the appearance and content of your platform.",
+        "identity": "Platform identity",
+        "siteName": "Site name",
+        "companyName": "Company",
+        "tagline": "Tagline",
+        "logo": "Logo",
+        "currentLogo": "Current logo",
+        "replaceLogo": "Click or drag a new image to replace",
+        "addLogo": "Add your logo",
+        "dropOrBrowse": "Drag and drop your file or click to browse",
+        "logoFormats": "PNG, JPG, SVG up to 2MB",
+        "colors": "Color palette",
+        "primaryColor": "Primary color",
+        "secondaryColor": "Secondary color",
+        "accentColor": "Accent color",
+        "backgroundColor": "Background",
+        "textContent": "Text content",
+        "homePage": "Home page",
+        "welcomeTitle": "Main title",
+        "welcomeTitlePlaceholder": "Welcome to our platform",
+        "welcomeMessage": "Welcome message",
+        "welcomeMessagePlaceholder": "Discover our complete solution...",
+        "saveChanges": "Save changes",
+        "reset": "Reset to default"
     }
 }
 
