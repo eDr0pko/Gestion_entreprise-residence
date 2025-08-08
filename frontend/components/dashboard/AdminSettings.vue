@@ -371,6 +371,9 @@ const handleFile = async (file: File) => {
 }
 
 const resetForm = async () => {
+  if (!confirm($t('adminSettings.resetConfirm'))) {
+    return
+  }
   try {
     await loadSettings()
     success.value = false
@@ -388,7 +391,7 @@ const loadSettings = async () => {
     
     if (settings) {
       form.value = {
-        appName: settings.app_name || '',
+        appName: settings.app_name || 'Gestion Résidence',
         logoUrl: settings.logo_url || null,
         companyName: settings.company_name || '',
         appTagline: settings.app_tagline || '',
@@ -396,19 +399,20 @@ const loadSettings = async () => {
         secondaryColor: settings.secondary_color || '#10B981',
         accentColor: settings.accent_color || '#F59E0B',
         backgroundColor: settings.background_color || '#F8FAFC',
-        enableRegistration: settings.enable_registration ?? true,
-        enableDarkMode: settings.enable_dark_mode ?? false,
-        showFooter: settings.show_footer ?? true,
         welcomeTitle: settings.welcome_title || '',
         welcomeMessage: settings.welcome_message || '',
-        loginTitle: settings.login_title || '',
-        loginSubtitle: settings.login_subtitle || '',
-        registerTitle: settings.register_title || '',
-        registerSubtitle: settings.register_subtitle || '',
-        contactEmail: settings.contact_email || '',
-        contactPhone: settings.contact_phone || '',
-        contactAddress: settings.contact_address || '',
-        footerText: settings.footer_text || ''
+        // Champs non utilisés mais gardés pour compatibilité frontend
+        enableRegistration: true,
+        enableDarkMode: false,
+        showFooter: true,
+        loginTitle: '',
+        loginSubtitle: '',
+        registerTitle: '',
+        registerSubtitle: '',
+        contactEmail: '',
+        contactPhone: '',
+        contactAddress: '',
+        footerText: ''
       }
     }
   } catch (err) {
@@ -426,7 +430,7 @@ const onSave = async () => {
     await $fetch('/api/settings', {
       method: 'POST',
       body: {
-        app_name: form.value.appName || '',
+        app_name: form.value.appName || 'Gestion Résidence',
         logo_url: form.value.logoUrl || '',
         company_name: form.value.companyName || '',
         app_tagline: form.value.appTagline || '',
@@ -434,19 +438,8 @@ const onSave = async () => {
         secondary_color: form.value.secondaryColor || '#10B981',
         accent_color: form.value.accentColor || '#F59E0B',
         background_color: form.value.backgroundColor || '#F8FAFC',
-        enable_registration: !!form.value.enableRegistration,
-        enable_dark_mode: !!form.value.enableDarkMode,
-        show_footer: !!form.value.showFooter,
         welcome_title: form.value.welcomeTitle || '',
-        welcome_message: form.value.welcomeMessage || '',
-        login_title: form.value.loginTitle || '',
-        login_subtitle: form.value.loginSubtitle || '',
-        register_title: form.value.registerTitle || '',
-        register_subtitle: form.value.registerSubtitle || '',
-        contact_email: form.value.contactEmail && form.value.contactEmail.includes('@') ? form.value.contactEmail : '',
-        contact_phone: form.value.contactPhone || '',
-        contact_address: form.value.contactAddress || '',
-        footer_text: form.value.footerText || ''
+        welcome_message: form.value.welcomeMessage || ''
       },
       baseURL: 'http://localhost:8000'
     })

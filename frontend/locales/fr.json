@@ -986,7 +986,8 @@
     "saveChanges": "Enregistrer les modifications",
     "error": "Erreur",
     "success": "Modifications enregistrées avec succès !",
-    "reset": "Réinitialiser par défaut"
+    "reset": "Réinitialiser par défaut",
+    "resetConfirm": "Êtes-vous sûr de vouloir réinitialiser les paramètres par défaut ?"
   }
 }
 

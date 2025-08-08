@@ -963,7 +963,9 @@
         "welcomeMessage": "Welcome message",
         "welcomeMessagePlaceholder": "Discover our complete solution...",
         "saveChanges": "Save changes",
-        "reset": "Reset to default"
+        "reset": "Reset to default",
+        "resetConfirm": "Are you sure you want to reset to default settings?",
+        "error": "Error"
     }
 }
 
