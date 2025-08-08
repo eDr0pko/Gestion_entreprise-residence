@@ -41,62 +41,64 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-const props = defineProps({
-  selectedDate: {
-    type: Date,
-    required: true
-  },
-  visites: {
-    type: Array,
-    default: () => []
+  const props = defineProps({
+    selectedDate: {
+      type: Date,
+      required: true
+    },
+    visites: {
+      type: Array,
+      default: () => []
+    }
+  })
+
+  const emit = defineEmits(['visit-click', 'cell-click', 'visit-edit'])
+
+  const dayVisites = computed(() => {
+    return props.visites.filter(visite => {
+      const visiteDate = new Date(visite.date_visite_start)
+      return visiteDate.toDateString() === props.selectedDate.toDateString()
+    }).sort((a, b) => new Date(a.date_visite_start) - new Date(b.date_visite_start))
+  })
+
+  function getVisiteColorClass(visite) {
+    switch (visite.statut_visite) {
+      case 'programmee':
+        return 'border-blue-500'
+      case 'en_cours':
+        return 'border-green-500'
+      case 'terminee':
+        return 'border-gray-500'
+      case 'annulee':
+        return 'border-red-500'
+      default:
+        return 'border-yellow-500'
+    }
   }
-})
 
-const emit = defineEmits(['visit-click', 'cell-click', 'visit-edit'])
-
-const dayVisites = computed(() => {
-  return props.visites.filter(visite => {
-    const visiteDate = new Date(visite.date_visite_start)
-    return visiteDate.toDateString() === props.selectedDate.toDateString()
-  }).sort((a, b) => new Date(a.date_visite_start) - new Date(b.date_visite_start))
-})
-
-function getVisiteColorClass(visite) {
-  switch (visite.statut_visite) {
-    case 'programmee':
-      return 'border-blue-500'
-    case 'en_cours':
-      return 'border-green-500'
-    case 'terminee':
-      return 'border-gray-500'
-    case 'annulee':
-      return 'border-red-500'
-    default:
-      return 'border-yellow-500'
+  function formatVisiteTime(visite) {
+    const start = new Date(visite.date_visite_start)
+    const end = new Date(visite.date_visite_end)
+    return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`
   }
-}
-
-function formatVisiteTime(visite) {
-  const start = new Date(visite.date_visite_start)
-  const end = new Date(visite.date_visite_end)
-  return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`
-}
 </script>
 
 <style scoped>
-.visite-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+  .visite-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
 
-.visite-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  .visite-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 
-.dark .visite-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
+  .dark .visite-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
 </style>
+
+

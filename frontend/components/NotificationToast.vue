@@ -49,190 +49,192 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
 
-const notifications = ref([])
-let notificationId = 0
-let intervals = new Map()
+  const notifications = ref([])
+  let notificationId = 0
+  let intervals = new Map()
 
-const props = defineProps({
-  duration: {
-    type: Number,
-    default: 5000
-  }
-})
-
-function addNotification(notification) {
-  const id = ++notificationId
-  const newNotification = {
-    id,
-    progress: 100,
-    autoDismiss: notification.autoDismiss !== false,
-    ...notification
-  }
-  
-  notifications.value.push(newNotification)
-  
-  if (newNotification.autoDismiss) {
-    startProgressTimer(newNotification)
-  }
-  
-  return id
-}
-
-function startProgressTimer(notification) {
-  const startTime = Date.now()
-  const duration = notification.duration || props.duration
-  
-  const interval = setInterval(() => {
-    const elapsed = Date.now() - startTime
-    const progress = Math.max(0, 100 - (elapsed / duration) * 100)
-    
-    notification.progress = progress
-    
-    if (progress <= 0) {
-      removeNotification(notification.id)
+  const props = defineProps({
+    duration: {
+      type: Number,
+      default: 5000
     }
-  }, 50)
-  
-  intervals.set(notification.id, interval)
-}
+  })
 
-function removeNotification(id) {
-  const index = notifications.value.findIndex(n => n.id === id)
-  if (index > -1) {
-    notifications.value.splice(index, 1)
+  function addNotification(notification) {
+    const id = ++notificationId
+    const newNotification = {
+      id,
+      progress: 100,
+      autoDismiss: notification.autoDismiss !== false,
+      ...notification
+    }
+    
+    notifications.value.push(newNotification)
+    
+    if (newNotification.autoDismiss) {
+      startProgressTimer(newNotification)
+    }
+    
+    return id
   }
-  
-  if (intervals.has(id)) {
-    clearInterval(intervals.get(id))
-    intervals.delete(id)
-  }
-}
 
-function getBorderClass(type) {
-  switch (type) {
-    case 'success': return 'border-green-500'
-    case 'error': return 'border-red-500'
-    case 'warning': return 'border-yellow-500'
-    case 'info': return 'border-blue-500'
-    default: return 'border-gray-500'
+  function startProgressTimer(notification) {
+    const startTime = Date.now()
+    const duration = notification.duration || props.duration
+    
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.max(0, 100 - (elapsed / duration) * 100)
+      
+      notification.progress = progress
+      
+      if (progress <= 0) {
+        removeNotification(notification.id)
+      }
+    }, 50)
+    
+    intervals.set(notification.id, interval)
   }
-}
 
-function getProgressClass(type) {
-  switch (type) {
-    case 'success': return 'bg-green-500'
-    case 'error': return 'bg-red-500'
-    case 'warning': return 'bg-yellow-500'
-    case 'info': return 'bg-blue-500'
-    default: return 'bg-gray-500'
+  function removeNotification(id) {
+    const index = notifications.value.findIndex(n => n.id === id)
+    if (index > -1) {
+      notifications.value.splice(index, 1)
+    }
+    
+    if (intervals.has(id)) {
+      clearInterval(intervals.get(id))
+      intervals.delete(id)
+    }
   }
-}
 
-function getIcon(type) {
-  switch (type) {
-    case 'success': return '✅'
-    case 'error': return '❌'
-    case 'warning': return '⚠️'
-    case 'info': return 'ℹ️'
-    default: return '📢'
+  function getBorderClass(type) {
+    switch (type) {
+      case 'success': return 'border-green-500'
+      case 'error': return 'border-red-500'
+      case 'warning': return 'border-yellow-500'
+      case 'info': return 'border-blue-500'
+      default: return 'border-gray-500'
+    }
   }
-}
 
-// API exposée
-defineExpose({
-  success(title, message, options = {}) {
-    return addNotification({
-      type: 'success',
-      title,
-      message,
-      ...options
-    })
-  },
-  
-  error(title, message, options = {}) {
-    return addNotification({
-      type: 'error',
-      title,
-      message,
-      autoDismiss: false, // Les erreurs ne se ferment pas automatiquement
-      ...options
-    })
-  },
-  
-  warning(title, message, options = {}) {
-    return addNotification({
-      type: 'warning',
-      title,
-      message,
-      ...options
-    })
-  },
-  
-  info(title, message, options = {}) {
-    return addNotification({
-      type: 'info',
-      title,
-      message,
-      ...options
-    })
-  },
-  
-  custom(notification) {
-    return addNotification(notification)
-  },
-  
-  clear() {
+  function getProgressClass(type) {
+    switch (type) {
+      case 'success': return 'bg-green-500'
+      case 'error': return 'bg-red-500'
+      case 'warning': return 'bg-yellow-500'
+      case 'info': return 'bg-blue-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
+  function getIcon(type) {
+    switch (type) {
+      case 'success': return '✅'
+      case 'error': return '❌'
+      case 'warning': return '⚠️'
+      case 'info': return 'ℹ️'
+      default: return '📢'
+    }
+  }
+
+  // API exposée
+  defineExpose({
+    success(title, message, options = {}) {
+      return addNotification({
+        type: 'success',
+        title,
+        message,
+        ...options
+      })
+    },
+    
+    error(title, message, options = {}) {
+      return addNotification({
+        type: 'error',
+        title,
+        message,
+        autoDismiss: false, // Les erreurs ne se ferment pas automatiquement
+        ...options
+      })
+    },
+    
+    warning(title, message, options = {}) {
+      return addNotification({
+        type: 'warning',
+        title,
+        message,
+        ...options
+      })
+    },
+    
+    info(title, message, options = {}) {
+      return addNotification({
+        type: 'info',
+        title,
+        message,
+        ...options
+      })
+    },
+    
+    custom(notification) {
+      return addNotification(notification)
+    },
+    
+    clear() {
+      intervals.forEach(interval => clearInterval(interval))
+      intervals.clear()
+      notifications.value = []
+    },
+    
+    remove: removeNotification
+  })
+
+  onUnmounted(() => {
     intervals.forEach(interval => clearInterval(interval))
     intervals.clear()
-    notifications.value = []
-  },
-  
-  remove: removeNotification
-})
-
-onUnmounted(() => {
-  intervals.forEach(interval => clearInterval(interval))
-  intervals.clear()
-})
+  })
 </script>
 
 <style scoped>
-@keyframes slideIn {
-  from {
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .toast-enter-active {
+    transition: all 0.3s ease-out;
+  }
+
+  .toast-leave-active {
+    transition: all 0.3s ease-in;
+  }
+
+  .toast-enter-from {
     opacity: 0;
     transform: translateX(100%);
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  .toast-leave-to {
+    opacity: 0;
+    transform: translateX(100%);
   }
-}
 
-.animate-slideIn {
-  animation: slideIn 0.3s ease-out;
-}
-
-.toast-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.toast-leave-active {
-  transition: all 0.3s ease-in;
-}
-
-.toast-enter-from {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.toast-move {
-  transition: transform 0.3s ease;
-}
+  .toast-move {
+    transition: transform 0.3s ease;
+  }
 </style>
+
+

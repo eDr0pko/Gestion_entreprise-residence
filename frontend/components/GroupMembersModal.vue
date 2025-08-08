@@ -123,91 +123,93 @@
 </template>
 
 <script setup lang="ts">
-import type { Member, Conversation } from '~/types'
+  import type { Member, Conversation } from '~/types'
 
-interface Props {
-  show: boolean
-  conversation: Conversation | null
-}
+  interface Props {
+    show: boolean
+    conversation: Conversation | null
+  }
 
-const props = defineProps<Props>()
+  const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  close: []
-  membersUpdated: [members: Member[]]
-}>()
+  const emit = defineEmits<{
+    close: []
+    membersUpdated: [members: Member[]]
+  }>()
 
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-// État réactif
-const members = ref<Member[]>([])
-const loadingMembers = ref(false)
-const error = ref('')
-const showAddMembers = ref(false)
+  // État réactif
+  const members = ref<Member[]>([])
+  const loadingMembers = ref(false)
+  const error = ref('')
+  const showAddMembers = ref(false)
 
-// Charger les membres du groupe
-const loadMembers = async () => {
-  if (!props.conversation) return
-  
-  try {
-    loadingMembers.value = true
-    error.value = ''
+  // Charger les membres du groupe
+  const loadMembers = async () => {
+    if (!props.conversation) return
     
-    const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
+    try {
+      loadingMembers.value = true
+      error.value = ''
+      
+      const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+      
+      if (response.success && response.members) {
+        members.value = response.members
+      } else {
+        throw new Error(response.error || 'Erreur lors du chargement des membres')
       }
-    })
-    
-    if (response.success && response.members) {
-      members.value = response.members
-    } else {
-      throw new Error(response.error || 'Erreur lors du chargement des membres')
+      
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des membres:', err)
+      error.value = err.data?.message || err.message || 'Impossible de charger les membres'
+    } finally {
+      loadingMembers.value = false
     }
+  }
+
+  // Gérer l'ajout de nouveaux membres
+  const onMembersAdded = (newMembers: Member[]) => {
+    // Ajouter les nouveaux membres à la liste
+    members.value.push(...newMembers)
     
-  } catch (err: any) {
-    console.error('Erreur lors du chargement des membres:', err)
-    error.value = err.data?.message || err.message || 'Impossible de charger les membres'
-  } finally {
-    loadingMembers.value = false
+    // Émettre l'événement pour mettre à jour le parent
+    emit('membersUpdated', members.value)
+    
+    // Fermer la modal d'ajout
+    showAddMembers.value = false
   }
-}
 
-// Gérer l'ajout de nouveaux membres
-const onMembersAdded = (newMembers: Member[]) => {
-  // Ajouter les nouveaux membres à la liste
-  members.value.push(...newMembers)
-  
-  // Émettre l'événement pour mettre à jour le parent
-  emit('membersUpdated', members.value)
-  
-  // Fermer la modal d'ajout
-  showAddMembers.value = false
-}
-
-// Fermer la modal
-const closeModal = () => {
-  showAddMembers.value = false
-  emit('close')
-}
-
-// Charger les membres à l'ouverture
-watch(() => props.show, (newShow) => {
-  if (newShow && props.conversation) {
-    loadMembers()
+  // Fermer la modal
+  const closeModal = () => {
+    showAddMembers.value = false
+    emit('close')
   }
-})
+
+  // Charger les membres à l'ouverture
+  watch(() => props.show, (newShow) => {
+    if (newShow && props.conversation) {
+      loadMembers()
+    }
+  })
 </script>
 
 <style scoped>
-.modal-enter-active, .modal-leave-active {
-  transition: all 0.3s ease;
-}
+  .modal-enter-active, .modal-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.modal-enter-from, .modal-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
+  .modal-enter-from, .modal-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 </style>
+
+

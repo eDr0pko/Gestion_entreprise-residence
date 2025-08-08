@@ -243,220 +243,222 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAuthStore } from '@/stores/auth'
 
-const { t } = useI18n()
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
+  const { t } = useI18n()
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-const props = defineProps({
-  defaultStart: String,
-  defaultEnd: String,
-})
+  const props = defineProps({
+    defaultStart: String,
+    defaultEnd: String,
+  })
 
-const emit = defineEmits(['close', 'refresh'])
+  const emit = defineEmits(['close', 'refresh'])
 
-const motif = ref('')
-const start = ref(props.defaultStart || '')
-const end = ref(props.defaultEnd || '')
+  const motif = ref('')
+  const start = ref(props.defaultStart || '')
+  const end = ref(props.defaultEnd || '')
 
-// Recherche de résident (pour invité/gardien)
-const residentQuery = ref('')
-const residentResults = ref([])
-const selectedResident = ref(null)
+  // Recherche de résident (pour invité/gardien)
+  const residentQuery = ref('')
+  const residentResults = ref([])
+  const selectedResident = ref(null)
 
-async function searchResidents() {
-  if (residentQuery.value.length < 2) { 
+  async function searchResidents() {
+    if (residentQuery.value.length < 2) { 
+      residentResults.value = []
+      return
+    }
+    
+    try {
+      const res = await fetch(`${config.public.apiBase}/residents/search?q=${encodeURIComponent(residentQuery.value)}`, {
+        headers: { 'Authorization': `Bearer ${authStore.token}` }
+      })
+      const data = await res.json()
+      residentResults.value = data.residents || []
+    } catch (error) {
+      console.error('Error searching residents:', error)
+      residentResults.value = []
+    }
+  }
+
+  function selectResident(person) {
+    selectedResident.value = person
     residentResults.value = []
-    return
+    residentQuery.value = `${person.prenom} ${person.nom}`
   }
-  
-  try {
-    const res = await fetch(`${config.public.apiBase}/residents/search?q=${encodeURIComponent(residentQuery.value)}`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
-    })
-    const data = await res.json()
-    residentResults.value = data.residents || []
-  } catch (error) {
-    console.error('Error searching residents:', error)
-    residentResults.value = []
+
+  // Saisie invité (pour résident/gardien)
+  const inviteNom = ref('')
+  const invitePrenom = ref('')
+  const inviteEmail = ref('')
+  const inviteTel = ref('')
+
+  // Détection du rôle utilisateur
+  const userRole = computed(() => authStore.userRole)
+  const showResidentSearch = computed(() => 
+    userRole.value === 'invite' || userRole.value === 'gardien' || userRole.value === 'admin'
+  )
+  const showInviteFields = computed(() => 
+    userRole.value === 'resident' || userRole.value === 'gardien' || userRole.value === 'admin'
+  )
+  const showVisitorSearch = computed(() => 
+    userRole.value === 'gardien' || userRole.value === 'admin'
+  )
+
+  // Recherche de visiteur (pour admin/gardien)
+  const visitorQuery = ref('')
+  const visitorResults = ref([])
+  const selectedVisitor = ref(null)
+
+  async function searchVisitors() {
+    if (visitorQuery.value.length < 2) { 
+      visitorResults.value = []
+      return
+    }
+    
+    try {
+      const res = await fetch(`${config.public.apiBase}/visitors/search?q=${encodeURIComponent(visitorQuery.value)}`, {
+        headers: { 'Authorization': `Bearer ${authStore.token}` }
+      })
+      const data = await res.json()
+      visitorResults.value = data.visitors || []
+    } catch (error) {
+      console.error('Error searching visitors:', error)
+      visitorResults.value = []
+    }
   }
-}
 
-function selectResident(person) {
-  selectedResident.value = person
-  residentResults.value = []
-  residentQuery.value = `${person.prenom} ${person.nom}`
-}
-
-// Saisie invité (pour résident/gardien)
-const inviteNom = ref('')
-const invitePrenom = ref('')
-const inviteEmail = ref('')
-const inviteTel = ref('')
-
-// Détection du rôle utilisateur
-const userRole = computed(() => authStore.userRole)
-const showResidentSearch = computed(() => 
-  userRole.value === 'invite' || userRole.value === 'gardien' || userRole.value === 'admin'
-)
-const showInviteFields = computed(() => 
-  userRole.value === 'resident' || userRole.value === 'gardien' || userRole.value === 'admin'
-)
-const showVisitorSearch = computed(() => 
-  userRole.value === 'gardien' || userRole.value === 'admin'
-)
-
-// Recherche de visiteur (pour admin/gardien)
-const visitorQuery = ref('')
-const visitorResults = ref([])
-const selectedVisitor = ref(null)
-
-async function searchVisitors() {
-  if (visitorQuery.value.length < 2) { 
+  function selectVisitor(person) {
+    selectedVisitor.value = person
     visitorResults.value = []
-    return
+    visitorQuery.value = `${person.prenom} ${person.nom}`
+    // Pré-remplir les champs invité
+    inviteNom.value = person.nom
+    invitePrenom.value = person.prenom
+    inviteEmail.value = person.email
+    inviteTel.value = person.numero_telephone || ''
   }
-  
-  try {
-    const res = await fetch(`${config.public.apiBase}/visitors/search?q=${encodeURIComponent(visitorQuery.value)}`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
-    })
-    const data = await res.json()
-    visitorResults.value = data.visitors || []
-  } catch (error) {
-    console.error('Error searching visitors:', error)
-    visitorResults.value = []
-  }
-}
 
-function selectVisitor(person) {
-  selectedVisitor.value = person
-  visitorResults.value = []
-  visitorQuery.value = `${person.prenom} ${person.nom}`
-  // Pré-remplir les champs invité
-  inviteNom.value = person.nom
-  invitePrenom.value = person.prenom
-  inviteEmail.value = person.email
-  inviteTel.value = person.numero_telephone || ''
-}
-
-async function createVisite() {
-  try {
-    // Construction du body selon le rôle
-    let body = {
-      motif_visite: motif.value,
-      date_visite_start: start.value.length === 16 ? start.value + ':00' : start.value,
-      date_visite_end: end.value.length === 16 ? end.value + ':00' : end.value,
-    }
-    
-    if (userRole.value === 'invite') {
-      if (!selectedResident.value) { 
-        alert(t('planning.createVisit.errors.selectResident', 'Veuillez sélectionner un résident à visiter.'))
-        return
+  async function createVisite() {
+    try {
+      // Construction du body selon le rôle
+      let body = {
+        motif_visite: motif.value,
+        date_visite_start: start.value.length === 16 ? start.value + ':00' : start.value,
+        date_visite_end: end.value.length === 16 ? end.value + ':00' : end.value,
       }
-      body.id_invite = selectedResident.value.id_personne
-      body.email_visiteur = authStore.user?.email || ''
-      body.statut_visite = 'en_attente'
-    } else if (userRole.value === 'resident') {
-      // Saisie d'un invité
-      if (!inviteNom.value || !invitePrenom.value || !inviteEmail.value) { 
-        alert(t('planning.createVisit.errors.fillGuestInfo', 'Veuillez remplir toutes les infos de l\'invité.'))
-        return
+      
+      if (userRole.value === 'invite') {
+        if (!selectedResident.value) { 
+          alert(t('planning.createVisit.errors.selectResident', 'Veuillez sélectionner un résident à visiter.'))
+          return
+        }
+        body.id_invite = selectedResident.value.id_personne
+        body.email_visiteur = authStore.user?.email || ''
+        body.statut_visite = 'en_attente'
+      } else if (userRole.value === 'resident') {
+        // Saisie d'un invité
+        if (!inviteNom.value || !invitePrenom.value || !inviteEmail.value) { 
+          alert(t('planning.createVisit.errors.fillGuestInfo', 'Veuillez remplir toutes les infos de l\'invité.'))
+          return
+        }
+        body.id_invite = authStore.user?.id_personne
+        body.email_visiteur = inviteEmail.value
+        body.nom_invite = inviteNom.value
+        body.prenom_invite = invitePrenom.value
+        body.tel_invite = inviteTel.value
+        body.statut_visite = 'programmee'
+      } else if (userRole.value === 'gardien' || userRole.value === 'admin') {
+        // Recherche résident + saisie ou recherche visiteur
+        if (!selectedResident.value) { 
+          alert(t('planning.createVisit.errors.selectResident', 'Veuillez sélectionner un résident à visiter.'))
+          return
+        }
+        if (!inviteNom.value || !invitePrenom.value || !inviteEmail.value) { 
+          alert(t('planning.createVisit.errors.fillVisitorInfo', 'Veuillez remplir toutes les infos du visiteur.'))
+          return
+        }
+        body.id_invite = selectedResident.value.id_personne
+        body.email_visiteur = inviteEmail.value
+        body.nom_invite = inviteNom.value
+        body.prenom_invite = invitePrenom.value
+        body.tel_invite = inviteTel.value
+        body.statut_visite = 'programmee'
       }
-      body.id_invite = authStore.user?.id_personne
-      body.email_visiteur = inviteEmail.value
-      body.nom_invite = inviteNom.value
-      body.prenom_invite = invitePrenom.value
-      body.tel_invite = inviteTel.value
-      body.statut_visite = 'programmee'
-    } else if (userRole.value === 'gardien' || userRole.value === 'admin') {
-      // Recherche résident + saisie ou recherche visiteur
-      if (!selectedResident.value) { 
-        alert(t('planning.createVisit.errors.selectResident', 'Veuillez sélectionner un résident à visiter.'))
-        return
+      
+      const response = await fetch(`${config.public.apiBase}/visites`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+      
+      const text = await response.text()
+      let data = {}
+      try { 
+        data = JSON.parse(text) 
+      } catch (e) { 
+        alert(t('planning.createVisit.errors.serverError', 'Erreur serveur: ') + text)
+        return 
       }
-      if (!inviteNom.value || !invitePrenom.value || !inviteEmail.value) { 
-        alert(t('planning.createVisit.errors.fillVisitorInfo', 'Veuillez remplir toutes les infos du visiteur.'))
-        return
+      
+      if (response.ok) {
+        emit('refresh')
+        emit('close')
+      } else {
+        alert(data.message || t('planning.createVisit.errors.creationFailed', 'Erreur lors de la création'))
       }
-      body.id_invite = selectedResident.value.id_personne
-      body.email_visiteur = inviteEmail.value
-      body.nom_invite = inviteNom.value
-      body.prenom_invite = invitePrenom.value
-      body.tel_invite = inviteTel.value
-      body.statut_visite = 'programmee'
+    } catch (e) {
+      console.error(e)
+      alert(t('planning.createVisit.errors.requestFailed', 'Erreur lors de la requête'))
     }
-    
-    const response = await fetch(`${config.public.apiBase}/visites`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-    
-    const text = await response.text()
-    let data = {}
-    try { 
-      data = JSON.parse(text) 
-    } catch (e) { 
-      alert(t('planning.createVisit.errors.serverError', 'Erreur serveur: ') + text)
-      return 
-    }
-    
-    if (response.ok) {
-      emit('refresh')
-      emit('close')
-    } else {
-      alert(data.message || t('planning.createVisit.errors.creationFailed', 'Erreur lors de la création'))
-    }
-  } catch (e) {
-    console.error(e)
-    alert(t('planning.createVisit.errors.requestFailed', 'Erreur lors de la requête'))
   }
-}
 </script>
 
 <style scoped>
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
-}
 
-/* Custom scrollbar for form */
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
-}
+  /* Custom scrollbar for form */
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  }
 
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 3px;
-}
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 3px;
+  }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+  }
 </style>
+
+

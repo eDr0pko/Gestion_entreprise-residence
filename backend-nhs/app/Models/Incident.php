@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Models;
+    namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Model;
 
-class Incident extends Model
-{
-    use HasFactory;
+    class Incident extends Model
+    {
+        use HasFactory;
 
-    protected $table = 'incident';
-    protected $primaryKey = 'id';
-    public $timestamps = false;
+        protected $table = 'incident';
+        protected $primaryKey = 'id';
+        public $timestamps = false;
 
-    protected $fillable = [
-        'datetime',
-        'object',
-        'statut',
-        'id_signaleur',
-        'pieces_jointes',
-    ];
-}
+        protected $fillable = [
+            'datetime',
+            'object',
+            'statut',
+            'id_signaleur',
+            'pieces_jointes',
+        ];
+    }
+?>
+
+

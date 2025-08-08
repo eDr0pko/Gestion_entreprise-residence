@@ -303,601 +303,603 @@
 </template>
 
 <script setup lang="ts">
-interface FichierMessage {
-  id_fichier: number
-  nom_original: string
-  type_fichier: string
-  taille_fichier: number
-}
-
-interface Props {
-  fichiers: FichierMessage[]
-  isCurrentUser: boolean
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'download-file': [fichierId: number]
-}>()
-
-// Configuration
-const config = useRuntimeConfig()
-const authStore = useAuthStore()
-
-// État pour la modal d'image
-const showImageModal = ref(false)
-const modalImage = ref<FichierMessage | null>(null)
-
-// Cache des images chargées
-const imageDataUrls = ref<Record<number, string>>({})
-const imageErrors = ref<Record<number, boolean>>({})
-
-// Fonction pour tester la connectivité de l'API
-const testApiConnectivity = async () => {
-  try {
-    const response = await fetch(`${config.public.apiBase}/conversations`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
-    })
-    return response.ok
-  } catch (error) {
-    return false
+  interface FichierMessage {
+    id_fichier: number
+    nom_original: string
+    type_fichier: string
+    taille_fichier: number
   }
-}
 
-// Fonction pour charger une image avec authentification
-const loadImageWithAuth = async (fichierId: number) => {
-  if (imageDataUrls.value[fichierId] || imageErrors.value[fichierId]) {
-    return // Déjà chargée ou en erreur
+  interface Props {
+    fichiers: FichierMessage[]
+    isCurrentUser: boolean
   }
-  
-  // Test de connectivité avant de charger l'image
-  const apiOk = await testApiConnectivity()
-  if (!apiOk) {
-    imageErrors.value[fichierId] = true
-    return
-  }
-  
-  try {
-    // Essayer plusieurs URLs/méthodes en cas d'échec
-    const attempts = [
-      { url: `${config.public.apiBase}/files/${fichierId}?inline=1`, method: 'inline' },
-      { url: `${config.public.apiBase}/files/${fichierId}`, method: 'direct' },
-      { url: `${config.public.apiBase}/files/${fichierId}?format=jpeg`, method: 'format' }
-    ]
-    
-    for (const attempt of attempts) {
-      try {
-        const headers = {
+
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    'download-file': [fichierId: number]
+  }>()
+
+  // Configuration
+  const config = useRuntimeConfig()
+  const authStore = useAuthStore()
+
+  // État pour la modal d'image
+  const showImageModal = ref(false)
+  const modalImage = ref<FichierMessage | null>(null)
+
+  // Cache des images chargées
+  const imageDataUrls = ref<Record<number, string>>({})
+  const imageErrors = ref<Record<number, boolean>>({})
+
+  // Fonction pour tester la connectivité de l'API
+  const testApiConnectivity = async () => {
+    try {
+      const response = await fetch(`${config.public.apiBase}/conversations`, {
+        headers: {
           'Authorization': `Bearer ${authStore.token}`,
-          'Accept': 'image/*,*/*'
+          'Accept': 'application/json'
         }
-        
-        const response = await fetch(attempt.url, { headers })
+      })
+      return response.ok
+    } catch (error) {
+      return false
+    }
+  }
 
-        if (!response.ok) {
-          continue // Essayer la méthode suivante
-        }
-
-        const blob = await response.blob()
-        
-        if (blob.size === 0) {
-          continue
-        }
-
-        // Diagnostic approfondi du blob
-        await diagnoseBlobContent(fichierId, blob)
-        
-        // Tenter de réparer l'image si la signature est corrompue
-        const repairedBlob = await attemptImageRepair(fichierId, blob)
-        const finalBlob = repairedBlob || blob
-        
-        const dataUrl = URL.createObjectURL(finalBlob)
-        imageDataUrls.value[fichierId] = dataUrl
-        
-        // Test immédiat de l'URL créée
-        const isValid = await testImageValidity(fichierId, dataUrl)
-        if (isValid) {
-          return // Succès complet
-        } else {
-          URL.revokeObjectURL(dataUrl)
-          delete imageDataUrls.value[fichierId]
-          
-          // Si c'est la dernière tentative, essayer la conversion Canvas
-          if (attempt === attempts[attempts.length - 1]) {
-            const canvasBlob = await convertImageViaCanvas(fichierId, finalBlob)
-            if (canvasBlob) {
-              const canvasDataUrl = URL.createObjectURL(canvasBlob)
-              const canvasValid = await testImageValidity(fichierId, canvasDataUrl)
-              if (canvasValid) {
-                imageDataUrls.value[fichierId] = canvasDataUrl
-                return
-              } else {
-                URL.revokeObjectURL(canvasDataUrl)
-              }
-            }
+  // Fonction pour charger une image avec authentification
+  const loadImageWithAuth = async (fichierId: number) => {
+    if (imageDataUrls.value[fichierId] || imageErrors.value[fichierId]) {
+      return // Déjà chargée ou en erreur
+    }
+    
+    // Test de connectivité avant de charger l'image
+    const apiOk = await testApiConnectivity()
+    if (!apiOk) {
+      imageErrors.value[fichierId] = true
+      return
+    }
+    
+    try {
+      // Essayer plusieurs URLs/méthodes en cas d'échec
+      const attempts = [
+        { url: `${config.public.apiBase}/files/${fichierId}?inline=1`, method: 'inline' },
+        { url: `${config.public.apiBase}/files/${fichierId}`, method: 'direct' },
+        { url: `${config.public.apiBase}/files/${fichierId}?format=jpeg`, method: 'format' }
+      ]
+      
+      for (const attempt of attempts) {
+        try {
+          const headers = {
+            'Authorization': `Bearer ${authStore.token}`,
+            'Accept': 'image/*,*/*'
           }
           
-          continue // Essayer la méthode suivante
+          const response = await fetch(attempt.url, { headers })
+
+          if (!response.ok) {
+            continue // Essayer la méthode suivante
+          }
+
+          const blob = await response.blob()
+          
+          if (blob.size === 0) {
+            continue
+          }
+
+          // Diagnostic approfondi du blob
+          await diagnoseBlobContent(fichierId, blob)
+          
+          // Tenter de réparer l'image si la signature est corrompue
+          const repairedBlob = await attemptImageRepair(fichierId, blob)
+          const finalBlob = repairedBlob || blob
+          
+          const dataUrl = URL.createObjectURL(finalBlob)
+          imageDataUrls.value[fichierId] = dataUrl
+          
+          // Test immédiat de l'URL créée
+          const isValid = await testImageValidity(fichierId, dataUrl)
+          if (isValid) {
+            return // Succès complet
+          } else {
+            URL.revokeObjectURL(dataUrl)
+            delete imageDataUrls.value[fichierId]
+            
+            // Si c'est la dernière tentative, essayer la conversion Canvas
+            if (attempt === attempts[attempts.length - 1]) {
+              const canvasBlob = await convertImageViaCanvas(fichierId, finalBlob)
+              if (canvasBlob) {
+                const canvasDataUrl = URL.createObjectURL(canvasBlob)
+                const canvasValid = await testImageValidity(fichierId, canvasDataUrl)
+                if (canvasValid) {
+                  imageDataUrls.value[fichierId] = canvasDataUrl
+                  return
+                } else {
+                  URL.revokeObjectURL(canvasDataUrl)
+                }
+              }
+            }
+            
+            continue // Essayer la méthode suivante
+          }
+          
+        } catch (attemptError: any) {
+          // Continuer avec la méthode suivante
+        }
+      }
+      
+      // Toutes les tentatives ont échoué
+      throw new Error('Toutes les méthodes de chargement ont échoué')
+    } catch (error: any) {
+      imageErrors.value[fichierId] = true
+    }
+  }
+
+  // Fonction pour réessayer de charger une image avec diagnostic avancé
+  const retryImageLoad = async (fichierId: number) => {
+    // Nettoyer l'ancienne URL pour éviter les fuites mémoire
+    if (imageDataUrls.value[fichierId]) {
+      URL.revokeObjectURL(imageDataUrls.value[fichierId])
+      delete imageDataUrls.value[fichierId]
+    }
+    
+    // Supprimer l'erreur précédente
+    delete imageErrors.value[fichierId]
+    
+    try {
+      await loadImageWithAuth(fichierId)
+      
+      // Si succès, vérifier que l'image est réellement valide
+      const isValid = await testImageValidity(fichierId, imageDataUrls.value[fichierId])
+      if (!isValid) {
+        throw new Error('Image chargée mais invalide pour le navigateur')
+      }
+    } catch (error) {
+      imageErrors.value[fichierId] = true
+    }
+  }
+
+  // Fonction de téléchargement de secours
+  const downloadImageFallback = async (fichierId: number) => {
+    try {
+      // Utiliser directement l'API de téléchargement sans inline
+      const response = await fetch(`${config.public.apiBase}/files/${fichierId}`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': '*/*'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      
+      // Créer un lien de téléchargement temporaire
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `image_${fichierId}.jpg`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      // Échec silencieux
+    }
+  }
+
+  // Fonction de conversion canvas pour images très corrompues
+  const convertImageViaCanvas = async (fichierId: number, blob: Blob): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      try {
+        const img = new Image()
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        if (!ctx) {
+          resolve(null)
+          return
         }
         
-      } catch (attemptError: any) {
-        // Continuer avec la méthode suivante
-      }
-    }
-    
-    // Toutes les tentatives ont échoué
-    throw new Error('Toutes les méthodes de chargement ont échoué')
-  } catch (error: any) {
-    imageErrors.value[fichierId] = true
-  }
-}
-
-// Fonction pour réessayer de charger une image avec diagnostic avancé
-const retryImageLoad = async (fichierId: number) => {
-  // Nettoyer l'ancienne URL pour éviter les fuites mémoire
-  if (imageDataUrls.value[fichierId]) {
-    URL.revokeObjectURL(imageDataUrls.value[fichierId])
-    delete imageDataUrls.value[fichierId]
-  }
-  
-  // Supprimer l'erreur précédente
-  delete imageErrors.value[fichierId]
-  
-  try {
-    await loadImageWithAuth(fichierId)
-    
-    // Si succès, vérifier que l'image est réellement valide
-    const isValid = await testImageValidity(fichierId, imageDataUrls.value[fichierId])
-    if (!isValid) {
-      throw new Error('Image chargée mais invalide pour le navigateur')
-    }
-  } catch (error) {
-    imageErrors.value[fichierId] = true
-  }
-}
-
-// Fonction de téléchargement de secours
-const downloadImageFallback = async (fichierId: number) => {
-  try {
-    // Utiliser directement l'API de téléchargement sans inline
-    const response = await fetch(`${config.public.apiBase}/files/${fichierId}`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': '*/*'
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    
-    const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    
-    // Créer un lien de téléchargement temporaire
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `image_${fichierId}.jpg`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  } catch (error) {
-    // Échec silencieux
-  }
-}
-
-// Fonction de conversion canvas pour images très corrompues
-const convertImageViaCanvas = async (fichierId: number, blob: Blob): Promise<Blob | null> => {
-  return new Promise((resolve) => {
-    try {
-      const img = new Image()
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      
-      if (!ctx) {
-        resolve(null)
-        return
-      }
-      
-      img.onload = () => {
-        try {
-          canvas.width = img.naturalWidth
-          canvas.height = img.naturalHeight
-          
-          // Dessiner l'image sur le canvas
-          ctx.drawImage(img, 0, 0)
-          
-          // Convertir en nouveau blob JPEG
-          canvas.toBlob((newBlob) => {
+        img.onload = () => {
+          try {
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            
+            // Dessiner l'image sur le canvas
+            ctx.drawImage(img, 0, 0)
+            
+            // Convertir en nouveau blob JPEG
+            canvas.toBlob((newBlob) => {
+              URL.revokeObjectURL(img.src)
+              resolve(newBlob)
+            }, 'image/jpeg', 0.9)
+          } catch (canvasError) {
             URL.revokeObjectURL(img.src)
-            resolve(newBlob)
-          }, 'image/jpeg', 0.9)
-        } catch (canvasError) {
+            resolve(null)
+          }
+        }
+        
+        img.onerror = () => {
           URL.revokeObjectURL(img.src)
           resolve(null)
         }
-      }
-      
-      img.onerror = () => {
-        URL.revokeObjectURL(img.src)
+        
+        // Timeout de sécurité
+        setTimeout(() => {
+          URL.revokeObjectURL(img.src)
+          resolve(null)
+        }, 10000)
+        
+        img.src = URL.createObjectURL(blob)
+      } catch (error) {
         resolve(null)
-      }
-      
-      // Timeout de sécurité
-      setTimeout(() => {
-        URL.revokeObjectURL(img.src)
-        resolve(null)
-      }, 10000)
-      
-      img.src = URL.createObjectURL(blob)
-    } catch (error) {
-      resolve(null)
-    }
-  })
-}
-
-// Fonction pour forcer la conversion Canvas depuis l'interface
-const forceCanvasConversion = async (fichierId: number) => {
-  try {
-    // Obtenir d'abord le blob original
-    const response = await fetch(`${config.public.apiBase}/files/${fichierId}?inline=1`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'image/*,*/*'
       }
     })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    
-    const blob = await response.blob()
-    
-    // Essayer d'abord la réparation
-    const repairedBlob = await attemptImageRepair(fichierId, blob)
-    const sourceBlob = repairedBlob || blob
-    
-    // Puis conversion Canvas
-    const canvasBlob = await convertImageViaCanvas(fichierId, sourceBlob)
-    
-    if (canvasBlob) {
-      // Nettoyer l'ancienne URL
-      if (imageDataUrls.value[fichierId]) {
-        URL.revokeObjectURL(imageDataUrls.value[fichierId])
-      }
-      
-      const dataUrl = URL.createObjectURL(canvasBlob)
-      imageDataUrls.value[fichierId] = dataUrl
-      imageErrors.value[fichierId] = false
-    } else {
-      throw new Error('La conversion Canvas a échoué')
-    }
-  } catch (error) {
-    imageErrors.value[fichierId] = true
   }
-}
 
-// Fonction appelée quand une image se charge avec succès
-const onImageLoad = (fichierId: number) => {
-  // Image chargée avec succès
-}
-
-// Fonction appelée en cas d'erreur de chargement d'image
-const onImageError = (fichierId: number) => {
-  imageErrors.value[fichierId] = true
-  // Nettoyer l'URL si elle existe
-  if (imageDataUrls.value[fichierId]) {
-    URL.revokeObjectURL(imageDataUrls.value[fichierId])
-    delete imageDataUrls.value[fichierId]
-  }
-}
-
-// Fonction pour ouvrir la modal d'image
-const openImageModal = (fichier: FichierMessage) => {
-  modalImage.value = fichier
-  showImageModal.value = true
-}
-
-// Fonctions de diagnostic des images
-const diagnoseBlobContent = async (fichierId: number, blob: Blob) => {
-  // Vérifier les premiers bytes du fichier pour détecter la corruption
-  try {
-    const arrayBuffer = await blob.slice(0, 32).arrayBuffer()
-    const bytes = new Uint8Array(arrayBuffer)
-    
-    // Vérifier les signatures de fichiers
-    if (blob.type === 'image/jpeg' && bytes.length >= 3) {
-      const isValidJpeg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF
-      if (!isValidJpeg) {
-        // Signature JPEG invalide détectée
-      }
-    } else if (blob.type === 'image/png' && bytes.length >= 8) {
-      const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
-      const isValidPng = pngSignature.every((byte, i) => bytes[i] === byte)
-      if (!isValidPng) {
-        // Signature PNG invalide détectée
-      }
-    }
-
-    // Test de lecture complète du blob pour détecter la corruption
+  // Fonction pour forcer la conversion Canvas depuis l'interface
+  const forceCanvasConversion = async (fichierId: number) => {
     try {
-      await blob.arrayBuffer()
-    } catch (readError) {
-      // Erreur de lecture
-    }
-  } catch (debugError) {
-    // Impossible de debugger le blob
-  }
-}
-
-// Fonction pour tenter de réparer une image corrompue
-const attemptImageRepair = async (fichierId: number, blob: Blob): Promise<Blob | null> => {
-  try {
-    // Lire les premiers 64 bytes pour analyser la corruption
-    const headerBuffer = await blob.slice(0, 64).arrayBuffer()
-    const headerBytes = new Uint8Array(headerBuffer)
-    
-    // Rechercher la vraie signature JPEG dans les premiers bytes
-    if (blob.type === 'image/jpeg') {
-      const jpegSignature = [0xFF, 0xD8, 0xFF]
+      // Obtenir d'abord le blob original
+      const response = await fetch(`${config.public.apiBase}/files/${fichierId}?inline=1`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'image/*,*/*'
+        }
+      })
       
-      // Chercher où commence réellement le JPEG
-      let jpegStart = -1
-      for (let i = 0; i <= headerBytes.length - 3; i++) {
-        if (headerBytes[i] === jpegSignature[0] && 
-            headerBytes[i + 1] === jpegSignature[1] && 
-            headerBytes[i + 2] === jpegSignature[2]) {
-          jpegStart = i
-          break
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const blob = await response.blob()
+      
+      // Essayer d'abord la réparation
+      const repairedBlob = await attemptImageRepair(fichierId, blob)
+      const sourceBlob = repairedBlob || blob
+      
+      // Puis conversion Canvas
+      const canvasBlob = await convertImageViaCanvas(fichierId, sourceBlob)
+      
+      if (canvasBlob) {
+        // Nettoyer l'ancienne URL
+        if (imageDataUrls.value[fichierId]) {
+          URL.revokeObjectURL(imageDataUrls.value[fichierId])
+        }
+        
+        const dataUrl = URL.createObjectURL(canvasBlob)
+        imageDataUrls.value[fichierId] = dataUrl
+        imageErrors.value[fichierId] = false
+      } else {
+        throw new Error('La conversion Canvas a échoué')
+      }
+    } catch (error) {
+      imageErrors.value[fichierId] = true
+    }
+  }
+
+  // Fonction appelée quand une image se charge avec succès
+  const onImageLoad = (fichierId: number) => {
+    // Image chargée avec succès
+  }
+
+  // Fonction appelée en cas d'erreur de chargement d'image
+  const onImageError = (fichierId: number) => {
+    imageErrors.value[fichierId] = true
+    // Nettoyer l'URL si elle existe
+    if (imageDataUrls.value[fichierId]) {
+      URL.revokeObjectURL(imageDataUrls.value[fichierId])
+      delete imageDataUrls.value[fichierId]
+    }
+  }
+
+  // Fonction pour ouvrir la modal d'image
+  const openImageModal = (fichier: FichierMessage) => {
+    modalImage.value = fichier
+    showImageModal.value = true
+  }
+
+  // Fonctions de diagnostic des images
+  const diagnoseBlobContent = async (fichierId: number, blob: Blob) => {
+    // Vérifier les premiers bytes du fichier pour détecter la corruption
+    try {
+      const arrayBuffer = await blob.slice(0, 32).arrayBuffer()
+      const bytes = new Uint8Array(arrayBuffer)
+      
+      // Vérifier les signatures de fichiers
+      if (blob.type === 'image/jpeg' && bytes.length >= 3) {
+        const isValidJpeg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF
+        if (!isValidJpeg) {
+          // Signature JPEG invalide détectée
+        }
+      } else if (blob.type === 'image/png' && bytes.length >= 8) {
+        const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+        const isValidPng = pngSignature.every((byte, i) => bytes[i] === byte)
+        if (!isValidPng) {
+          // Signature PNG invalide détectée
+        }
+      }
+
+      // Test de lecture complète du blob pour détecter la corruption
+      try {
+        await blob.arrayBuffer()
+      } catch (readError) {
+        // Erreur de lecture
+      }
+    } catch (debugError) {
+      // Impossible de debugger le blob
+    }
+  }
+
+  // Fonction pour tenter de réparer une image corrompue
+  const attemptImageRepair = async (fichierId: number, blob: Blob): Promise<Blob | null> => {
+    try {
+      // Lire les premiers 64 bytes pour analyser la corruption
+      const headerBuffer = await blob.slice(0, 64).arrayBuffer()
+      const headerBytes = new Uint8Array(headerBuffer)
+      
+      // Rechercher la vraie signature JPEG dans les premiers bytes
+      if (blob.type === 'image/jpeg') {
+        const jpegSignature = [0xFF, 0xD8, 0xFF]
+        
+        // Chercher où commence réellement le JPEG
+        let jpegStart = -1
+        for (let i = 0; i <= headerBytes.length - 3; i++) {
+          if (headerBytes[i] === jpegSignature[0] && 
+              headerBytes[i + 1] === jpegSignature[1] && 
+              headerBytes[i + 2] === jpegSignature[2]) {
+            jpegStart = i
+            break
+          }
+        }
+        
+        if (jpegStart > 0) {
+          // Créer un nouveau blob sans les bytes corrompus au début
+          const repairedBlob = blob.slice(jpegStart)
+          
+          // Vérifier que la réparation a fonctionné
+          const testBuffer = await repairedBlob.slice(0, 16).arrayBuffer()
+          const testBytes = new Uint8Array(testBuffer)
+          const isValidAfterRepair = testBytes[0] === 0xFF && testBytes[1] === 0xD8 && testBytes[2] === 0xFF
+          
+          if (isValidAfterRepair) {
+            return repairedBlob
+          }
         }
       }
       
-      if (jpegStart > 0) {
-        // Créer un nouveau blob sans les bytes corrompus au début
-        const repairedBlob = blob.slice(jpegStart)
+      // Tentative de réparation pour PNG
+      else if (blob.type === 'image/png') {
+        const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
         
-        // Vérifier que la réparation a fonctionné
-        const testBuffer = await repairedBlob.slice(0, 16).arrayBuffer()
-        const testBytes = new Uint8Array(testBuffer)
-        const isValidAfterRepair = testBytes[0] === 0xFF && testBytes[1] === 0xD8 && testBytes[2] === 0xFF
+        // Chercher où commence réellement le PNG
+        let pngStart = -1
+        for (let i = 0; i <= headerBytes.length - 8; i++) {
+          let matches = 0
+          for (let j = 0; j < 8; j++) {
+            if (headerBytes[i + j] === pngSignature[j]) {
+              matches++
+            }
+          }
+          if (matches === 8) {
+            pngStart = i
+            break
+          }
+        }
         
-        if (isValidAfterRepair) {
+        if (pngStart > 0) {
+          const repairedBlob = blob.slice(pngStart)
           return repairedBlob
         }
       }
-    }
-    
-    // Tentative de réparation pour PNG
-    else if (blob.type === 'image/png') {
-      const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
       
-      // Chercher où commence réellement le PNG
-      let pngStart = -1
-      for (let i = 0; i <= headerBytes.length - 8; i++) {
-        let matches = 0
-        for (let j = 0; j < 8; j++) {
-          if (headerBytes[i + j] === pngSignature[j]) {
-            matches++
-          }
-        }
-        if (matches === 8) {
-          pngStart = i
-          break
-        }
+      return null // Aucune réparation possible
+    } catch (error) {
+      return null
+    }
+  }
+
+  const testImageValidity = async (fichierId: number, dataUrl: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const testImg = new Image()
+      
+      testImg.onload = () => {
+        resolve(true)
       }
       
-      if (pngStart > 0) {
-        const repairedBlob = blob.slice(pngStart)
-        return repairedBlob
+      testImg.onerror = (error) => {
+        resolve(false)
       }
-    }
-    
-    return null // Aucune réparation possible
-  } catch (error) {
-    return null
+      
+      // Timeout pour éviter les blocages
+      setTimeout(() => {
+        resolve(false)
+      }, 5000)
+      
+      testImg.src = dataUrl
+    })
   }
-}
 
-const testImageValidity = async (fichierId: number, dataUrl: string): Promise<boolean> => {
-  return new Promise((resolve) => {
-    const testImg = new Image()
-    
-    testImg.onload = () => {
-      resolve(true)
-    }
-    
-    testImg.onerror = (error) => {
-      resolve(false)
-    }
-    
-    // Timeout pour éviter les blocages
-    setTimeout(() => {
-      resolve(false)
-    }, 5000)
-    
-    testImg.src = dataUrl
-  })
-}
-
-// Fonctions utilitaires pour déterminer le type de fichier
-const isImage = (fichier: FichierMessage) => {
-  return fichier.type_fichier?.startsWith('image/') || 
-         fichier.nom_original?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-}
-
-const isPDF = (fichier: FichierMessage) => {
-  return fichier.type_fichier === 'application/pdf' || 
-         fichier.nom_original?.endsWith('.pdf')
-}
-
-const isOfficeDoc = (fichier: FichierMessage) => {
-  const officeTypes = [
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-  ]
-  
-  return officeTypes.includes(fichier.type_fichier) ||
-         fichier.nom_original?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
-}
-
-const isArchive = (fichier: FichierMessage) => {
-  const archiveTypes = [
-    'application/zip',
-    'application/x-rar-compressed',
-    'application/x-7z-compressed',
-    'application/gzip'
-  ]
-  
-  return archiveTypes.includes(fichier.type_fichier) ||
-         fichier.nom_original?.match(/\.(zip|rar|7z|gz|tar)$/i)
-}
-
-const getFileTypeLabel = (fichier: FichierMessage) => {
-  if (fichier.nom_original?.match(/\.(doc|docx)$/i)) return 'Word'
-  if (fichier.nom_original?.match(/\.(xls|xlsx)$/i)) return 'Excel'
-  if (fichier.nom_original?.match(/\.(ppt|pptx)$/i)) return 'PowerPoint'
-  if (fichier.type_fichier?.includes('text')) return 'Texte'
-  return 'Document'
-}
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-// Surveiller les fichiers
-watch(() => props.fichiers, (newFichiers) => {
-  // Charger les images automatiquement
-  newFichiers.forEach(fichier => {
-    if (isImage(fichier)) {
-      loadImageWithAuth(fichier.id_fichier)
-    }
-  })
-}, { immediate: true })
-
-// Gestion de la touche Échap pour fermer la modal
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && showImageModal.value) {
-    showImageModal.value = false
+  // Fonctions utilitaires pour déterminer le type de fichier
+  const isImage = (fichier: FichierMessage) => {
+    return fichier.type_fichier?.startsWith('image/') || 
+          fichier.nom_original?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
   }
-}
 
-// Charger les images au montage du composant
-onMounted(() => {
-  props.fichiers.forEach(fichier => {
-    if (isImage(fichier)) {
-      loadImageWithAuth(fichier.id_fichier)
-    }
-  })
-  
-  // Ajouter l'écouteur d'événement pour la touche Échap
-  document.addEventListener('keydown', handleKeyDown)
-})
+  const isPDF = (fichier: FichierMessage) => {
+    return fichier.type_fichier === 'application/pdf' || 
+          fichier.nom_original?.endsWith('.pdf')
+  }
 
-// Nettoyage des URLs d'objets pour éviter les fuites mémoire
-onUnmounted(() => {
-  Object.values(imageDataUrls.value).forEach(url => {
-    if (url.startsWith('blob:')) {
-      URL.revokeObjectURL(url)
+  const isOfficeDoc = (fichier: FichierMessage) => {
+    const officeTypes = [
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ]
+    
+    return officeTypes.includes(fichier.type_fichier) ||
+          fichier.nom_original?.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
+  }
+
+  const isArchive = (fichier: FichierMessage) => {
+    const archiveTypes = [
+      'application/zip',
+      'application/x-rar-compressed',
+      'application/x-7z-compressed',
+      'application/gzip'
+    ]
+    
+    return archiveTypes.includes(fichier.type_fichier) ||
+          fichier.nom_original?.match(/\.(zip|rar|7z|gz|tar)$/i)
+  }
+
+  const getFileTypeLabel = (fichier: FichierMessage) => {
+    if (fichier.nom_original?.match(/\.(doc|docx)$/i)) return 'Word'
+    if (fichier.nom_original?.match(/\.(xls|xlsx)$/i)) return 'Excel'
+    if (fichier.nom_original?.match(/\.(ppt|pptx)$/i)) return 'PowerPoint'
+    if (fichier.type_fichier?.includes('text')) return 'Texte'
+    return 'Document'
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+  }
+
+  // Surveiller les fichiers
+  watch(() => props.fichiers, (newFichiers) => {
+    // Charger les images automatiquement
+    newFichiers.forEach(fichier => {
+      if (isImage(fichier)) {
+        loadImageWithAuth(fichier.id_fichier)
+      }
+    })
+  }, { immediate: true })
+
+  // Gestion de la touche Échap pour fermer la modal
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && showImageModal.value) {
+      showImageModal.value = false
     }
+  }
+
+  // Charger les images au montage du composant
+  onMounted(() => {
+    props.fichiers.forEach(fichier => {
+      if (isImage(fichier)) {
+        loadImageWithAuth(fichier.id_fichier)
+      }
+    })
+    
+    // Ajouter l'écouteur d'événement pour la touche Échap
+    document.addEventListener('keydown', handleKeyDown)
   })
-  
-  // Retirer l'écouteur d'événement
-  document.removeEventListener('keydown', handleKeyDown)
-})
+
+  // Nettoyage des URLs d'objets pour éviter les fuites mémoire
+  onUnmounted(() => {
+    Object.values(imageDataUrls.value).forEach(url => {
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url)
+      }
+    })
+    
+    // Retirer l'écouteur d'événement
+    document.removeEventListener('keydown', handleKeyDown)
+  })
 </script>
 
 <style scoped>
-/* Transitions pour la modal */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-/* Animation pour l'overlay au hover */
-.group:hover .group-hover\:opacity-100 {
-  opacity: 1 !important;
-}
-
-.group:hover .group-hover\:scale-100 {
-  transform: scale(1) !important;
-}
-
-/* Amélioration du scrollbar pour la modal si nécessaire */
-.modal-content {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-}
-
-.modal-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Effet de focus pour l'accessibilité */
-.image-container:focus-within {
-  outline: 2px solid #0097b2;
-  outline-offset: 2px;
-}
-
-/* Animation pour le loading spinner */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+  /* Transitions pour la modal */
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
   }
-  to {
-    transform: rotate(360deg);
+
+  .fade-enter-from, .fade-leave-to {
+    opacity: 0;
   }
-}
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+  /* Animation pour l'overlay au hover */
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
 
-/* Transition fluide pour le scale au hover */
-.transition-transform {
-  transition: transform 0.2s ease-in-out;
-}
+  .group:hover .group-hover\:scale-100 {
+    transform: scale(1) !important;
+  }
 
-/* Ombre portée progressive pour les images */
-.image-shadow {
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
-  transition: box-shadow 0.3s ease;
-}
+  /* Amélioration du scrollbar pour la modal si nécessaire */
+  .modal-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
 
-.image-shadow:hover {
-  box-shadow: 
-    0 4px 6px rgba(0, 0, 0, 0.12),
-    0 2px 4px rgba(0, 0, 0, 0.06),
-    0 8px 25px rgba(0, 0, 0, 0.12);
-}
+  .modal-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Effet de focus pour l'accessibilité */
+  .image-container:focus-within {
+    outline: 2px solid #0097b2;
+    outline-offset: 2px;
+  }
+
+  /* Animation pour le loading spinner */
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Transition fluide pour le scale au hover */
+  .transition-transform {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  /* Ombre portée progressive pour les images */
+  .image-shadow {
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .image-shadow:hover {
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.12),
+      0 2px 4px rgba(0, 0, 0, 0.06),
+      0 8px 25px rgba(0, 0, 0, 0.12);
+  }
 </style>
+
+

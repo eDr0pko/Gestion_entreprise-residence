@@ -25,23 +25,24 @@
     </main>
   </div>
 </template>
+
 <style>
-/* Menu latéral sticky pour le dashboard admin */
-aside {
-  position: fixed;
-  top: 4rem; /* hauteur de la navbar */
-  left: 0;
-  height: calc(100vh - 4rem);
-  width: 16rem;
-  z-index: 30;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  display: flex;
-  flex-direction: column;
-}
-main {
-  margin-left: 16rem;
-}
+  /* Menu latéral sticky pour le dashboard admin */
+  aside {
+    position: fixed;
+    top: 4rem; /* hauteur de la navbar */
+    left: 0;
+    height: calc(100vh - 4rem);
+    width: 16rem;
+    z-index: 30;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    margin-left: 16rem;
+  }
 </style>
 
 <script setup lang="ts">

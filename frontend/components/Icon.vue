@@ -19,21 +19,23 @@
 </template>
 
 <script setup>
-defineProps({
-  name: {
-    type: String,
-    required: true
-  },
-  className: {
-    type: String,
-    default: ''
-  }
-})
+  defineProps({
+    name: {
+      type: String,
+      required: true
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  })
 </script>
 
 <style scoped>
-span {
-  display: inline-block;
-  line-height: 1;
-}
+  span {
+    display: inline-block;
+    line-height: 1;
+  }
 </style>
+
+

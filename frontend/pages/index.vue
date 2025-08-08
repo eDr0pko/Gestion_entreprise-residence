@@ -186,23 +186,25 @@ s<template>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+  import { useI18n } from 'vue-i18n'
 
-definePageMeta({
-  layout: false
-})
+  definePageMeta({
+    layout: false
+  })
 
-useHead({
-  title: 'Accueil - Gestion Entreprise de Résidence'
-})
+  useHead({
+    title: 'Accueil - Gestion Entreprise de Résidence'
+  })
 
-const { t } = useI18n()
-const authStore = useAuthStore()
+  const { t } = useI18n()
+  const authStore = useAuthStore()
 
-// Vérifier si l'utilisateur est déjà connecté au montage
-onMounted(async () => {
-  authStore.initAuth()
-  
-  // Laisser l'utilisateur voir les options d'accès même s'il est connecté
-})
+  // Vérifier si l'utilisateur est déjà connecté au montage
+  onMounted(async () => {
+    authStore.initAuth()
+    
+    // Laisser l'utilisateur voir les options d'accès même s'il est connecté
+  })
 </script>
+
+

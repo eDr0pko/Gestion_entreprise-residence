@@ -180,274 +180,276 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAuthStore } from '@/stores/auth'
 
-const { t } = useI18n()
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
+  const { t } = useI18n()
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-const props = defineProps({
-  visite: Object
-})
+  const props = defineProps({
+    visite: Object
+  })
 
-const emit = defineEmits(['close', 'statusChanged'])
+  const emit = defineEmits(['close', 'statusChanged'])
 
-// Status modification state
-const changingStatus = ref(false)
-const statusError = ref('')
+  // Status modification state
+  const changingStatus = ref(false)
+  const statusError = ref('')
 
-// Check if user can modify status (admin or gardien)
-const canModifyStatus = computed(() => {
-  const user = authStore.user
-  if (!user) return false
-  
-  // Check if user is admin or gardien
-  const isAdmin = user.role === 'admin' || user.niveau_acces === 'super_admin' || user.niveau_acces === 'admin_standard'
-  const isGardien = user.role === 'gardien'
-  
-  return isAdmin || isGardien
-})
+  // Check if user can modify status (admin or gardien)
+  const canModifyStatus = computed(() => {
+    const user = authStore.user
+    if (!user) return false
+    
+    // Check if user is admin or gardien
+    const isAdmin = user.role === 'admin' || user.niveau_acces === 'super_admin' || user.niveau_acces === 'admin_standard'
+    const isGardien = user.role === 'gardien'
+    
+    return isAdmin || isGardien
+  })
 
-// Available status options
-const availableStatuses = computed(() => [
-  {
-    value: 'programmee',
-    label: t('planning.status.scheduled', 'Programmée'),
-    colorClass: 'border-blue-200 hover:border-blue-300 text-blue-700',
-    dotClass: 'bg-blue-500'
-  },
-  {
-    value: 'en_cours',
-    label: t('planning.status.inProgress', 'En cours'),
-    colorClass: 'border-green-200 hover:border-green-300 text-green-700',
-    dotClass: 'bg-green-500'
-  },
-  {
-    value: 'terminee',
-    label: t('planning.status.completed', 'Terminée'),
-    colorClass: 'border-gray-200 hover:border-gray-300 text-gray-700',
-    dotClass: 'bg-gray-500'
-  },
-  {
-    value: 'annulee',
-    label: t('planning.status.cancelled', 'Annulée'),
-    colorClass: 'border-red-200 hover:border-red-300 text-red-700',
-    dotClass: 'bg-red-500'
+  // Available status options
+  const availableStatuses = computed(() => [
+    {
+      value: 'programmee',
+      label: t('planning.status.scheduled', 'Programmée'),
+      colorClass: 'border-blue-200 hover:border-blue-300 text-blue-700',
+      dotClass: 'bg-blue-500'
+    },
+    {
+      value: 'en_cours',
+      label: t('planning.status.inProgress', 'En cours'),
+      colorClass: 'border-green-200 hover:border-green-300 text-green-700',
+      dotClass: 'bg-green-500'
+    },
+    {
+      value: 'terminee',
+      label: t('planning.status.completed', 'Terminée'),
+      colorClass: 'border-gray-200 hover:border-gray-300 text-gray-700',
+      dotClass: 'bg-gray-500'
+    },
+    {
+      value: 'annulee',
+      label: t('planning.status.cancelled', 'Annulée'),
+      colorClass: 'border-red-200 hover:border-red-300 text-red-700',
+      dotClass: 'bg-red-500'
+    }
+  ])
+
+  // Change visit status
+  async function changeStatus(newStatus) {
+    if (!props.visite.id_visite || changingStatus.value) return
+    
+    try {
+      changingStatus.value = true
+      statusError.value = ''
+      
+      const response = await fetch(`${config.public.apiBase}/visites/${props.visite.id_visite}/statut`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ statut: newStatus })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || t('planning.visitDetails.statusUpdateError', 'Erreur lors de la mise à jour du statut'))
+      }
+      
+      // Update local visite object
+      props.visite.statut_visite = newStatus
+      
+      // Emit event to parent component
+      emit('statusChanged', { visitId: props.visite.id_visite, newStatus })
+      
+    } catch (error) {
+      console.error('Error updating visit status:', error)
+      statusError.value = error.message || t('planning.visitDetails.statusUpdateError', 'Erreur lors de la mise à jour du statut')
+    } finally {
+      changingStatus.value = false
+    }
   }
-])
 
-// Change visit status
-async function changeStatus(newStatus) {
-  if (!props.visite.id_visite || changingStatus.value) return
-  
-  try {
-    changingStatus.value = true
-    statusError.value = ''
-    
-    const response = await fetch(`${config.public.apiBase}/visites/${props.visite.id_visite}/statut`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ statut: newStatus })
+  function formatDate(str) {
+    if (!str) return '—'
+    const d = new Date(str)
+    return d.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
+  }
+
+  function getDuree(start, end) {
+    if (!start || !end) return '—'
+    const s = new Date(start)
+    const e = new Date(end)
+    const min = Math.round((e - s) / 60000)
+    if (min < 60) return min + ' min'
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    return h + 'h' + (m > 0 ? ' ' + m + 'min' : '')
+  }
+
+  function getStatutLabel(statut) {
+    const labels = {
+      'programmee': t('planning.status.scheduled', 'Programmée'),
+      'en_cours': t('planning.status.inProgress', 'En cours'),
+      'terminee': t('planning.status.completed', 'Terminée'),
+      'en_attente': t('planning.status.pending', 'En attente'),
+      'annule': t('planning.status.cancelled', 'Annulée'),
+      'annulee': t('planning.status.cancelled', 'Annulée')
+    }
+    return labels[statut] || statut || '—'
+  }
+
+  function getStatusBadgeClass(statut) {
+    const classes = {
+      'programmee': 'bg-blue-100 text-blue-800 border border-blue-200',
+      'en_cours': 'bg-green-100 text-green-800 border border-green-200',
+      'terminee': 'bg-gray-100 text-gray-800 border border-gray-200',
+      'en_attente': 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+      'annule': 'bg-red-100 text-red-800 border border-red-200',
+      'annulee': 'bg-red-100 text-red-800 border border-red-200'
+    }
+    return classes[statut] || 'bg-gray-100 text-gray-800 border border-gray-200'
+  }
+
+  function getStatusDotClass(statut) {
+    const classes = {
+      'programmee': 'bg-blue-500',
+      'en_cours': 'bg-green-500',
+      'terminee': 'bg-gray-500',
+      'en_attente': 'bg-yellow-500',
+      'annule': 'bg-red-500',
+      'annulee': 'bg-red-500'
+    }
+    return classes[statut] || 'bg-gray-500'
+  }
+
+  function getVisitorName(visite) {
+    if (!visite) return '—'
     
-    const data = await response.json()
-    
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || t('planning.visitDetails.statusUpdateError', 'Erreur lors de la mise à jour du statut'))
+    // Priorité aux noms/prénoms si disponibles
+    if (visite.nom_visiteur && visite.prenom_visiteur) {
+      return `${visite.prenom_visiteur} ${visite.nom_visiteur}`
     }
     
-    // Update local visite object
-    props.visite.statut_visite = newStatus
+    // Sinon afficher l'email comme fallback
+    return visite.email_visiteur || '—'
+  }
+
+  function getResidentName(visite) {
+    if (!visite) return '—'
     
-    // Emit event to parent component
-    emit('statusChanged', { visitId: props.visite.id_visite, newStatus })
+    // Afficher nom et prénom de l'invité (résident)
+    if (visite.nom_invite && visite.prenom_invite) {
+      return `${visite.prenom_invite} ${visite.nom_invite}`
+    }
     
-  } catch (error) {
-    console.error('Error updating visit status:', error)
-    statusError.value = error.message || t('planning.visitDetails.statusUpdateError', 'Erreur lors de la mise à jour du statut')
-  } finally {
-    changingStatus.value = false
+    // Fallback vers l'ID si les noms ne sont pas disponibles
+    return visite.id_invite ? `ID: ${visite.id_invite}` : '—'
   }
-}
-
-function formatDate(str) {
-  if (!str) return '—'
-  const d = new Date(str)
-  return d.toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-function getDuree(start, end) {
-  if (!start || !end) return '—'
-  const s = new Date(start)
-  const e = new Date(end)
-  const min = Math.round((e - s) / 60000)
-  if (min < 60) return min + ' min'
-  const h = Math.floor(min / 60)
-  const m = min % 60
-  return h + 'h' + (m > 0 ? ' ' + m + 'min' : '')
-}
-
-function getStatutLabel(statut) {
-  const labels = {
-    'programmee': t('planning.status.scheduled', 'Programmée'),
-    'en_cours': t('planning.status.inProgress', 'En cours'),
-    'terminee': t('planning.status.completed', 'Terminée'),
-    'en_attente': t('planning.status.pending', 'En attente'),
-    'annule': t('planning.status.cancelled', 'Annulée'),
-    'annulee': t('planning.status.cancelled', 'Annulée')
-  }
-  return labels[statut] || statut || '—'
-}
-
-function getStatusBadgeClass(statut) {
-  const classes = {
-    'programmee': 'bg-blue-100 text-blue-800 border border-blue-200',
-    'en_cours': 'bg-green-100 text-green-800 border border-green-200',
-    'terminee': 'bg-gray-100 text-gray-800 border border-gray-200',
-    'en_attente': 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-    'annule': 'bg-red-100 text-red-800 border border-red-200',
-    'annulee': 'bg-red-100 text-red-800 border border-red-200'
-  }
-  return classes[statut] || 'bg-gray-100 text-gray-800 border border-gray-200'
-}
-
-function getStatusDotClass(statut) {
-  const classes = {
-    'programmee': 'bg-blue-500',
-    'en_cours': 'bg-green-500',
-    'terminee': 'bg-gray-500',
-    'en_attente': 'bg-yellow-500',
-    'annule': 'bg-red-500',
-    'annulee': 'bg-red-500'
-  }
-  return classes[statut] || 'bg-gray-500'
-}
-
-function getVisitorName(visite) {
-  if (!visite) return '—'
-  
-  // Priorité aux noms/prénoms si disponibles
-  if (visite.nom_visiteur && visite.prenom_visiteur) {
-    return `${visite.prenom_visiteur} ${visite.nom_visiteur}`
-  }
-  
-  // Sinon afficher l'email comme fallback
-  return visite.email_visiteur || '—'
-}
-
-function getResidentName(visite) {
-  if (!visite) return '—'
-  
-  // Afficher nom et prénom de l'invité (résident)
-  if (visite.nom_invite && visite.prenom_invite) {
-    return `${visite.prenom_invite} ${visite.nom_invite}`
-  }
-  
-  // Fallback vers l'ID si les noms ne sont pas disponibles
-  return visite.id_invite ? `ID: ${visite.id_invite}` : '—'
-}
 </script>
 
 <style scoped>
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
-}
 
-/* Custom scrollbar for webkit browsers */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: rgba(243, 244, 246, 0.5);
-  border-radius: 3px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.6);
-  border-radius: 3px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.8);
-}
-
-/* Firefox scrollbar styling */
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.6) rgba(243, 244, 246, 0.5);
-}
-
-/* Better mobile touch targets */
-@media (max-width: 640px) {
-  button {
-    min-height: 44px;
-    min-width: 44px;
+  /* Custom scrollbar for webkit browsers */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
   }
-}
 
-/* Enhanced hover effects on larger screens */
-@media (hover: hover) and (pointer: fine) {
-  button:hover {
-    transform: translateY(-1px);
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(243, 244, 246, 0.5);
+    border-radius: 3px;
   }
-}
 
-/* Ensure proper text handling on small screens */
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.break-words {
-  word-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-}
-
-/* Smooth transitions for all interactive elements */
-button, .transition-all {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Focus states for accessibility */
-button:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Loading animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.6);
+    border-radius: 3px;
   }
-}
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
+  }
+
+  /* Firefox scrollbar styling */
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.6) rgba(243, 244, 246, 0.5);
+  }
+
+  /* Better mobile touch targets */
+  @media (max-width: 640px) {
+    button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Enhanced hover effects on larger screens */
+  @media (hover: hover) and (pointer: fine) {
+    button:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Ensure proper text handling on small screens */
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .break-words {
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  button, .transition-all {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Focus states for accessibility */
+  button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Loading animation */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
 </style>
+
+

@@ -169,143 +169,145 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ref, computed, watch } from 'vue'
-const { t } = useI18n()
+  import { useI18n } from 'vue-i18n'
+  import { ref, computed, watch } from 'vue'
+  const { t } = useI18n()
 
-interface User {
-  email: string
-  nom_complet: string
-  nom: string
-  prenom: string
-  role: string
-}
-
-interface Props {
-  show: boolean
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  close: []
-  created: [conversation: any]
-}>()
-
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
-
-const nomGroupe = ref('')
-const searchQuery = ref('')
-const selectedUsers = ref<User[]>([])
-const users = ref<User[]>([])
-const loadingUsers = ref(false)
-const creating = ref(false)
-const error = ref('')
-
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value
-  const query = searchQuery.value.toLowerCase()
-  return users.value.filter(user => 
-    user.nom_complet.toLowerCase().includes(query) ||
-    user.email.toLowerCase().includes(query) ||
-    user.role.toLowerCase().includes(query)
-  )
-})
-
-const isSelected = (user: User) => {
-  return selectedUsers.value.some(selected => selected.email === user.email)
-}
-
-const toggleUser = (user: User) => {
-  if (isSelected(user)) {
-    removeUser(user)
-  } else {
-    selectedUsers.value.push(user)
+  interface User {
+    email: string
+    nom_complet: string
+    nom: string
+    prenom: string
+    role: string
   }
-}
 
-const removeUser = (user: User) => {
-  const index = selectedUsers.value.findIndex(selected => selected.email === user.email)
-  if (index !== -1) {
-    selectedUsers.value.splice(index, 1)
+  interface Props {
+    show: boolean
   }
-}
 
-const loadUsers = async () => {
-  try {
-    loadingUsers.value = true
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    close: []
+    created: [conversation: any]
+  }>()
+
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
+
+  const nomGroupe = ref('')
+  const searchQuery = ref('')
+  const selectedUsers = ref<User[]>([])
+  const users = ref<User[]>([])
+  const loadingUsers = ref(false)
+  const creating = ref(false)
+  const error = ref('')
+
+  const filteredUsers = computed(() => {
+    if (!searchQuery.value) return users.value
+    const query = searchQuery.value.toLowerCase()
+    return users.value.filter(user => 
+      user.nom_complet.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.role.toLowerCase().includes(query)
+    )
+  })
+
+  const isSelected = (user: User) => {
+    return selectedUsers.value.some(selected => selected.email === user.email)
+  }
+
+  const toggleUser = (user: User) => {
+    if (isSelected(user)) {
+      removeUser(user)
+    } else {
+      selectedUsers.value.push(user)
+    }
+  }
+
+  const removeUser = (user: User) => {
+    const index = selectedUsers.value.findIndex(selected => selected.email === user.email)
+    if (index !== -1) {
+      selectedUsers.value.splice(index, 1)
+    }
+  }
+
+  const loadUsers = async () => {
+    try {
+      loadingUsers.value = true
+      error.value = ''
+      const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+      if (response.success && response.users) {
+        users.value = response.users
+      } else {
+        throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+      }
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des utilisateurs:', err)
+      error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
+    } finally {
+      loadingUsers.value = false
+    }
+  }
+
+  const createConversation = async () => {
+    try {
+      creating.value = true
+      const response = await $fetch<{success: boolean, conversation: any, error?: string}>(`${config.public.apiBase}/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: {
+          nom_groupe: nomGroupe.value.trim(),
+          participants: selectedUsers.value.map(user => user.email)
+        }
+      })
+      if (response.success && response.conversation) {
+        emit('created', response.conversation)
+        closeModal()
+      } else {
+        throw new Error(response.error || 'Erreur lors de la création de la conversation')
+      }
+    } catch (err: any) {
+      console.error('Erreur lors de la création de la conversation:', err)
+      error.value = err.data?.message || err.message || 'Impossible de créer la conversation'
+    } finally {
+      creating.value = false
+    }
+  }
+
+  const closeModal = () => {
+    nomGroupe.value = ''
+    searchQuery.value = ''
+    selectedUsers.value = []
     error.value = ''
-    const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
-    })
-    if (response.success && response.users) {
-      users.value = response.users
-    } else {
-      throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+    emit('close')
+  }
+
+  watch(() => props.show, (newShow) => {
+    if (newShow) {
+      loadUsers()
     }
-  } catch (err: any) {
-    console.error('Erreur lors du chargement des utilisateurs:', err)
-    error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
-  } finally {
-    loadingUsers.value = false
-  }
-}
-
-const createConversation = async () => {
-  try {
-    creating.value = true
-    const response = await $fetch<{success: boolean, conversation: any, error?: string}>(`${config.public.apiBase}/conversations`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: {
-        nom_groupe: nomGroupe.value.trim(),
-        participants: selectedUsers.value.map(user => user.email)
-      }
-    })
-    if (response.success && response.conversation) {
-      emit('created', response.conversation)
-      closeModal()
-    } else {
-      throw new Error(response.error || 'Erreur lors de la création de la conversation')
-    }
-  } catch (err: any) {
-    console.error('Erreur lors de la création de la conversation:', err)
-    error.value = err.data?.message || err.message || 'Impossible de créer la conversation'
-  } finally {
-    creating.value = false
-  }
-}
-
-const closeModal = () => {
-  nomGroupe.value = ''
-  searchQuery.value = ''
-  selectedUsers.value = []
-  error.value = ''
-  emit('close')
-}
-
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    loadUsers()
-  }
-})
+  })
 </script>
 
 <style scoped>
-.modal-enter-active, .modal-leave-active {
-  transition: all 0.3s ease;
-}
+  .modal-enter-active, .modal-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.modal-enter-from, .modal-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
+  .modal-enter-from, .modal-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 </style>
+
+

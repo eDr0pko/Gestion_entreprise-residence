@@ -149,654 +149,654 @@
 </template>
 
 <script setup lang="ts">
-// Middleware pour vérifier l'authentification
-definePageMeta({
-  middleware: 'auth'
-})
+  // Middleware pour vérifier l'authentification
+  definePageMeta({
+    middleware: 'auth'
+  })
 
-const { t } = useI18n()
+  const { t } = useI18n()
 
-useHead({
-  title: computed(() => t('messages.pageTitle'))
-})
+  useHead({
+    title: computed(() => t('messages.pageTitle'))
+  })
 
-// Import des composables
-import type { Conversation, Message, FichierMessage, ApiResponse } from '~/types'
-import { useI18n } from 'vue-i18n'
+  // Import des composables
+  import type { Conversation, Message, FichierMessage, ApiResponse } from '~/types'
+  import { useI18n } from 'vue-i18n'
 
-// Configuration et composables
-const config = useRuntimeConfig()
-const authStore = useAuthStore()
+  // Configuration et composables
+  const config = useRuntimeConfig()
+  const authStore = useAuthStore()
 
-// Device detection
-const isMobile = computed(() => {
-  if (process.client) {
-    return window.innerWidth < 1024
+  // Device detection
+  const isMobile = computed(() => {
+    if (process.client) {
+      return window.innerWidth < 1024
+    }
+    return false
+  })
+
+  // État de l'utilisateur connecté
+  const currentUser = computed(() => authStore.user)
+
+  // Headers d'authentification
+  const getAuthHeaders = () => {
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+    
+    if (authStore.token) {
+      headers['Authorization'] = `Bearer ${authStore.token}`
+    }
+    
+    return headers
   }
-  return false
-})
 
-// État de l'utilisateur connecté
-const currentUser = computed(() => authStore.user)
+  // État réactif
+  const searchQuery = ref('')
+  const selectedConversation = ref<Conversation | null>(null)
+  const newMessage = ref('')
+  const error = ref('')
 
-// Headers d'authentification
-const getAuthHeaders = () => {
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-  
-  if (authStore.token) {
-    headers['Authorization'] = `Bearer ${authStore.token}`
-  }
-  
-  return headers
-}
-
-// État réactif
-const searchQuery = ref('')
-const selectedConversation = ref<Conversation | null>(null)
-const newMessage = ref('')
-const error = ref('')
-
-// Fonction pour effacer l'erreur
-const clearError = () => {
-  error.value = ''
-}
-
-// États de chargement
-const loadingConversations = ref(true)
-const loadingMessages = ref(false)
-const sendingMessage = ref(false)
-
-// Données
-const conversations = ref<Conversation[]>([])
-const messages = ref<Message[]>([])
-const selectedFiles = ref<File[]>([])
-
-// Référence au composant MessagesArea
-const messagesAreaRef = ref()
-
-// Référence au composant MessageComposer
-const messageComposerRef = ref()
-
-// État du défilement
-const isAtBottom = ref(true)
-
-// Modales
-const showCreateModal = ref(false)
-const showMembersModal = ref(false)
-
-// Computed
-const filteredConversations = computed(() => {
-  if (!searchQuery.value.trim()) return conversations.value
-  return conversations.value.filter(conv => 
-    conv.nom_groupe?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
-
-const totalMessagesNonLus = computed(() => {
-  return conversations.value.reduce((total, conv) => total + conv.messages_non_lus, 0)
-})
-
-// Navigation mobile
-const goBackToConversations = () => {
-  selectedConversation.value = null
-}
-
-const toggleMobileMenu = () => {
-  // Pour la compatibilité avec AppHeader
-}
-
-
-// Charger les conversations
-const loadConversations = async () => {
-  try {
+  // Fonction pour effacer l'erreur
+  const clearError = () => {
     error.value = ''
-    loadingConversations.value = true
-    
-    const response = await fetch(`${config.public.apiBase}/conversations`, {
-      headers: getAuthHeaders(),
-    })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
-    
-    const data = await response.json() as ApiResponse
-    
-    if (data.success && Array.isArray(data.conversations)) {
-      conversations.value = data.conversations
-    } else {
-      throw new Error(data.error || 'Réponse API invalide')
-    }
-    
-  } catch (err: any) {
-    console.error('Erreur lors du chargement des conversations:', err)
-    
-    if (err.status === 401) {
-      if (authStore.isAuthenticated) {
-        authStore.clearAuth()
-      }
-      await navigateTo('/')
-      return
-    }
-    
-    error.value = 'messages.errors.loadConversations'
-    conversations.value = []
-  } finally {
-    loadingConversations.value = false
   }
-}
 
-// Rafraîchir manuellement les conversations
-const refreshConversations = async () => {
-  await loadConversations()
-}
+  // États de chargement
+  const loadingConversations = ref(true)
+  const loadingMessages = ref(false)
+  const sendingMessage = ref(false)
 
-// Charger les messages d'un groupe
-const loadMessages = async (groupId: number) => {
-  try {
-    loadingMessages.value = true
-    
-    const response = await fetch(`${config.public.apiBase}/messages/${groupId}`, {
-      headers: getAuthHeaders()
-    })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
-    
-    const data = await response.json() as ApiResponse
-    
-    if (data.success && data.messages) {
-      messages.value = data.messages
+  // Données
+  const conversations = ref<Conversation[]>([])
+  const messages = ref<Message[]>([])
+  const selectedFiles = ref<File[]>([])
+
+  // Référence au composant MessagesArea
+  const messagesAreaRef = ref()
+
+  // Référence au composant MessageComposer
+  const messageComposerRef = ref()
+
+  // État du défilement
+  const isAtBottom = ref(true)
+
+  // Modales
+  const showCreateModal = ref(false)
+  const showMembersModal = ref(false)
+
+  // Computed
+  const filteredConversations = computed(() => {
+    if (!searchQuery.value.trim()) return conversations.value
+    return conversations.value.filter(conv => 
+      conv.nom_groupe?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  })
+
+  const totalMessagesNonLus = computed(() => {
+    return conversations.value.reduce((total, conv) => total + conv.messages_non_lus, 0)
+  })
+
+  // Navigation mobile
+  const goBackToConversations = () => {
+    selectedConversation.value = null
+  }
+
+  const toggleMobileMenu = () => {
+    // Pour la compatibilité avec AppHeader
+  }
+
+
+  // Charger les conversations
+  const loadConversations = async () => {
+    try {
+      error.value = ''
+      loadingConversations.value = true
       
-      // Scroll vers le bas après chargement
-      await nextTick()
-      setTimeout(() => {
-        scrollToBottom(false)
-        isAtBottom.value = true
-      }, 50)
-    } else {
-      throw new Error(data.error || 'Erreur lors du chargement des messages')
-    }
-    
-  } catch (err: any) {
-    console.error('Erreur lors du chargement des messages:', err)
-    
-    if (err.status === 401) {
-      if (authStore.isAuthenticated) {
-        authStore.clearAuth()
-      }
-      await navigateTo('/')
-      return
-    }
-    
-    error.value = 'messages.errors.loadMessages'
-    messages.value = []
-  } finally {
-    loadingMessages.value = false
-  }
-}
-
-// Sélectionner une conversation
-const selectConversation = async (conversation: Conversation) => {
-  selectedConversation.value = conversation
-  
-  // Charger les messages
-  await loadMessages(conversation.id_groupe_message)
-  
-  // Mettre à jour localement le compteur de messages non lus
-  const index = conversations.value.findIndex(c => c.id_groupe_message === conversation.id_groupe_message)
-  if (index !== -1) {
-    conversations.value[index].messages_non_lus = 0
-  }
-}
-
-// Envoyer un message
-const sendMessage = async () => {
-  if ((!newMessage.value.trim() && selectedFiles.value.length === 0) || !selectedConversation.value || sendingMessage.value) return
-  
-  // Vérification des prérequis
-  if (!authStore.token) {
-    error.value = 'messages.errors.missingToken'
-    return
-  }
-  
-  if (!selectedConversation.value?.id_groupe_message) {
-    error.value = 'messages.errors.noConversationSelected'
-    return
-  }
-  
-  try {
-    sendingMessage.value = true
-    
-    // Créer un message temporaire pour l'affichage immédiat
-    const tempMessage: Message = {
-      id_message: Date.now(), // ID temporaire
-      contenu_message: newMessage.value.trim(),
-      date_envoi: new Date().toISOString(),
-      email_auteur: (currentUser.value as any)?.email || '',
-      auteur_nom: (currentUser.value as any)?.nom || 'Vous',
-      is_current_user: true,
-      statut_lecture: 'sending', // Statut temporaire pour indiquer l'envoi
-      fichiers: selectedFiles.value.map((file, index) => ({
-        id_fichier: -(index + 1), // ID négatif temporaire
-        nom_original: file.name,
-        type_fichier: file.type,
-        taille_fichier: file.size
-      })),
-      reactions: {}
-    }
-    
-    // Sauvegarder les valeurs actuelles
-    const currentMessage = newMessage.value.trim()
-    const currentFiles = [...selectedFiles.value]
-    
-    // Ajouter immédiatement le message à la liste pour un affichage fluide
-    messages.value.push(tempMessage)
-    
-    // Vider les champs immédiatement
-    newMessage.value = ''
-    selectedFiles.value = []
-    
-    // Scroll vers le bas immédiatement
-    await nextTick()
-    setTimeout(() => scrollToBottom(true), 50)
-    
-    const formData = new FormData()
-    formData.append('contenu', currentMessage)
-    
-    // Ajouter les fichiers
-    currentFiles.forEach((file) => {
-      formData.append('fichiers[]', file)
-    })
-    
-    const response = await fetch(`${config.public.apiBase}/messages/${selectedConversation.value.id_groupe_message}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      },
-      body: formData
-    })
-    
-    if (!response.ok) {
-      let errorText = ''
-      let errorData = null
-      
-      try {
-        errorText = await response.text()
-        // Essayer de parser en JSON pour obtenir plus de détails
-        try {
-          errorData = JSON.parse(errorText)
-        } catch {
-          // Si ce n'est pas du JSON, garder le texte brut
-        }
-      } catch (textErr) {
-        errorText = 'Impossible de lire la réponse d\'erreur'
-      }
-      
-      console.error('Erreur HTTP:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-        parsedData: errorData
+      const response = await fetch(`${config.public.apiBase}/conversations`, {
+        headers: getAuthHeaders(),
       })
       
-      // Utiliser le message d'erreur du serveur s'il est disponible
-      const errorMessage = errorData?.message || errorData?.error || errorText || response.statusText
-      throw new Error(`HTTP ${response.status}: ${errorMessage}`)
-    }
-    
-    let data: ApiResponse
-    try {
-      data = await response.json() as ApiResponse
-    } catch (jsonErr) {
-      console.error('Erreur lors du parsing JSON:', jsonErr)
-      throw new Error('Réponse du serveur invalide (JSON malformé)')
-    }
-    
-    if (data.success) {
-      let newMessage: Message | null = null
-      
-      // Le backend peut retourner soit 'message' (envoi) soit 'messages' (rechargement)
-      if (data.message && typeof data.message === 'object' && data.message !== null) {
-        newMessage = data.message as Message
-      } else if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
-        newMessage = data.messages[data.messages.length - 1] as Message
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       
-      if (newMessage && newMessage.id_message) {
-        // Remplacer le message temporaire par la vraie réponse du serveur
-        const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
-        if (tempMessageIndex !== -1) {
-          // Conserver la position de scroll
-          const wasAtBottom = isAtBottom.value
-          messages.value[tempMessageIndex] = newMessage
-          
-          // Si on était en bas, rester en bas après la mise à jour
-          if (wasAtBottom) {
+      const data = await response.json() as ApiResponse
+      
+      if (data.success && Array.isArray(data.conversations)) {
+        conversations.value = data.conversations
+      } else {
+        throw new Error(data.error || 'Réponse API invalide')
+      }
+      
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des conversations:', err)
+      
+      if (err.status === 401) {
+        if (authStore.isAuthenticated) {
+          authStore.clearAuth()
+        }
+        await navigateTo('/')
+        return
+      }
+      
+      error.value = 'messages.errors.loadConversations'
+      conversations.value = []
+    } finally {
+      loadingConversations.value = false
+    }
+  }
+
+  // Rafraîchir manuellement les conversations
+  const refreshConversations = async () => {
+    await loadConversations()
+  }
+
+  // Charger les messages d'un groupe
+  const loadMessages = async (groupId: number) => {
+    try {
+      loadingMessages.value = true
+      
+      const response = await fetch(`${config.public.apiBase}/messages/${groupId}`, {
+        headers: getAuthHeaders()
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json() as ApiResponse
+      
+      if (data.success && data.messages) {
+        messages.value = data.messages
+        
+        // Scroll vers le bas après chargement
+        await nextTick()
+        setTimeout(() => {
+          scrollToBottom(false)
+          isAtBottom.value = true
+        }, 50)
+      } else {
+        throw new Error(data.error || 'Erreur lors du chargement des messages')
+      }
+      
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des messages:', err)
+      
+      if (err.status === 401) {
+        if (authStore.isAuthenticated) {
+          authStore.clearAuth()
+        }
+        await navigateTo('/')
+        return
+      }
+      
+      error.value = 'messages.errors.loadMessages'
+      messages.value = []
+    } finally {
+      loadingMessages.value = false
+    }
+  }
+
+  // Sélectionner une conversation
+  const selectConversation = async (conversation: Conversation) => {
+    selectedConversation.value = conversation
+    
+    // Charger les messages
+    await loadMessages(conversation.id_groupe_message)
+    
+    // Mettre à jour localement le compteur de messages non lus
+    const index = conversations.value.findIndex(c => c.id_groupe_message === conversation.id_groupe_message)
+    if (index !== -1) {
+      conversations.value[index].messages_non_lus = 0
+    }
+  }
+
+  // Envoyer un message
+  const sendMessage = async () => {
+    if ((!newMessage.value.trim() && selectedFiles.value.length === 0) || !selectedConversation.value || sendingMessage.value) return
+    
+    // Vérification des prérequis
+    if (!authStore.token) {
+      error.value = 'messages.errors.missingToken'
+      return
+    }
+    
+    if (!selectedConversation.value?.id_groupe_message) {
+      error.value = 'messages.errors.noConversationSelected'
+      return
+    }
+    
+    try {
+      sendingMessage.value = true
+      
+      // Créer un message temporaire pour l'affichage immédiat
+      const tempMessage: Message = {
+        id_message: Date.now(), // ID temporaire
+        contenu_message: newMessage.value.trim(),
+        date_envoi: new Date().toISOString(),
+        email_auteur: (currentUser.value as any)?.email || '',
+        auteur_nom: (currentUser.value as any)?.nom || 'Vous',
+        is_current_user: true,
+        statut_lecture: 'sending', // Statut temporaire pour indiquer l'envoi
+        fichiers: selectedFiles.value.map((file, index) => ({
+          id_fichier: -(index + 1), // ID négatif temporaire
+          nom_original: file.name,
+          type_fichier: file.type,
+          taille_fichier: file.size
+        })),
+        reactions: {}
+      }
+      
+      // Sauvegarder les valeurs actuelles
+      const currentMessage = newMessage.value.trim()
+      const currentFiles = [...selectedFiles.value]
+      
+      // Ajouter immédiatement le message à la liste pour un affichage fluide
+      messages.value.push(tempMessage)
+      
+      // Vider les champs immédiatement
+      newMessage.value = ''
+      selectedFiles.value = []
+      
+      // Scroll vers le bas immédiatement
+      await nextTick()
+      setTimeout(() => scrollToBottom(true), 50)
+      
+      const formData = new FormData()
+      formData.append('contenu', currentMessage)
+      
+      // Ajouter les fichiers
+      currentFiles.forEach((file) => {
+        formData.append('fichiers[]', file)
+      })
+      
+      const response = await fetch(`${config.public.apiBase}/messages/${selectedConversation.value.id_groupe_message}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`
+        },
+        body: formData
+      })
+      
+      if (!response.ok) {
+        let errorText = ''
+        let errorData = null
+        
+        try {
+          errorText = await response.text()
+          // Essayer de parser en JSON pour obtenir plus de détails
+          try {
+            errorData = JSON.parse(errorText)
+          } catch {
+            // Si ce n'est pas du JSON, garder le texte brut
+          }
+        } catch (textErr) {
+          errorText = 'Impossible de lire la réponse d\'erreur'
+        }
+        
+        console.error('Erreur HTTP:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          parsedData: errorData
+        })
+        
+        // Utiliser le message d'erreur du serveur s'il est disponible
+        const errorMessage = errorData?.message || errorData?.error || errorText || response.statusText
+        throw new Error(`HTTP ${response.status}: ${errorMessage}`)
+      }
+      
+      let data: ApiResponse
+      try {
+        data = await response.json() as ApiResponse
+      } catch (jsonErr) {
+        console.error('Erreur lors du parsing JSON:', jsonErr)
+        throw new Error('Réponse du serveur invalide (JSON malformé)')
+      }
+      
+      if (data.success) {
+        let newMessage: Message | null = null
+        
+        // Le backend peut retourner soit 'message' (envoi) soit 'messages' (rechargement)
+        if (data.message && typeof data.message === 'object' && data.message !== null) {
+          newMessage = data.message as Message
+        } else if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+          newMessage = data.messages[data.messages.length - 1] as Message
+        }
+        
+        if (newMessage && newMessage.id_message) {
+          // Remplacer le message temporaire par la vraie réponse du serveur
+          const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
+          if (tempMessageIndex !== -1) {
+            // Conserver la position de scroll
+            const wasAtBottom = isAtBottom.value
+            messages.value[tempMessageIndex] = newMessage
+            
+            // Si on était en bas, rester en bas après la mise à jour
+            if (wasAtBottom) {
+              await nextTick()
+              setTimeout(() => scrollToBottom(false), 10)
+            }
+          } else {
+            messages.value.push(newMessage)
             await nextTick()
             setTimeout(() => scrollToBottom(false), 10)
           }
+          
+          // Mettre à jour la conversation dans la liste pour refléter le nouveau dernier message
+          const conversationIndex = conversations.value.findIndex(c => c.id_groupe_message === selectedConversation.value?.id_groupe_message)
+          if (conversationIndex !== -1) {
+            const updatedConversation = { ...conversations.value[conversationIndex] }
+            updatedConversation.dernier_contenu = newMessage.contenu_message || 'Fichier envoyé'
+            updatedConversation.dernier_auteur = newMessage.auteur_nom
+            updatedConversation.derniere_activite = newMessage.date_envoi
+            
+            // Déplacer la conversation en haut de la liste
+            conversations.value.splice(conversationIndex, 1)
+            conversations.value.unshift(updatedConversation)
+            
+            // Mettre à jour la référence de la conversation sélectionnée
+            selectedConversation.value = updatedConversation
+          }
+          
+          // Fermer le panel de sélection de fichiers s'il y en avait
+          if (currentFiles.length > 0 && messageComposerRef.value?.clearFiles) {
+            messageComposerRef.value.clearFiles()
+          }
         } else {
-          messages.value.push(newMessage)
-          await nextTick()
-          setTimeout(() => scrollToBottom(false), 10)
-        }
-        
-        // Mettre à jour la conversation dans la liste pour refléter le nouveau dernier message
-        const conversationIndex = conversations.value.findIndex(c => c.id_groupe_message === selectedConversation.value?.id_groupe_message)
-        if (conversationIndex !== -1) {
-          const updatedConversation = { ...conversations.value[conversationIndex] }
-          updatedConversation.dernier_contenu = newMessage.contenu_message || 'Fichier envoyé'
-          updatedConversation.dernier_auteur = newMessage.auteur_nom
-          updatedConversation.derniere_activite = newMessage.date_envoi
-          
-          // Déplacer la conversation en haut de la liste
-          conversations.value.splice(conversationIndex, 1)
-          conversations.value.unshift(updatedConversation)
-          
-          // Mettre à jour la référence de la conversation sélectionnée
-          selectedConversation.value = updatedConversation
-        }
-        
-        // Fermer le panel de sélection de fichiers s'il y en avait
-        if (currentFiles.length > 0 && messageComposerRef.value?.clearFiles) {
-          messageComposerRef.value.clearFiles()
+          // En cas d'absence de message dans la réponse, retirer le message temporaire
+          const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
+          if (tempMessageIndex !== -1) {
+            messages.value.splice(tempMessageIndex, 1)
+          }
+          throw new Error('Le serveur n\'a pas retourné de message valide')
         }
       } else {
-        // En cas d'absence de message dans la réponse, retirer le message temporaire
-        const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
-        if (tempMessageIndex !== -1) {
-          messages.value.splice(tempMessageIndex, 1)
-        }
-        throw new Error('Le serveur n\'a pas retourné de message valide')
+        throw new Error(data.error || (typeof data.message === 'string' ? data.message : '') || 'Erreur lors de l\'envoi du message')
       }
-    } else {
-      throw new Error(data.error || (typeof data.message === 'string' ? data.message : '') || 'Erreur lors de l\'envoi du message')
-    }
-    
-  } catch (err: any) {
-    console.error('Erreur lors de l\'envoi du message:', err)
-    
-    // En cas d'erreur, retirer le message temporaire et restaurer les champs
-    const tempMessageIndex = messages.value.findIndex(msg => msg.statut_lecture === 'sending')
-    if (tempMessageIndex !== -1) {
-      const failedMessage = messages.value[tempMessageIndex]
-      messages.value.splice(tempMessageIndex, 1)
       
-      // Restaurer le contenu en cas d'échec
-      newMessage.value = failedMessage.contenu_message || ''
-      // Note: Les fichiers ne peuvent pas être restaurés pour des raisons de sécurité
-    }
-    
-    error.value = 'messages.errors.sendMessage'
-  } finally {
-    sendingMessage.value = false
-  }
-}
-
-// Scroll vers le bas
-const scrollToBottom = (smooth: boolean = true) => {
-  if (messagesAreaRef.value?.messagesContainer) {
-    const container = messagesAreaRef.value.messagesContainer
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: smooth ? 'smooth' : 'auto'
-    })
-  }
-}
-
-// Gestion du défilement pour déterminer si on est en bas
-const handleMessagesScroll = () => {
-  if (messagesAreaRef.value?.messagesContainer) {
-    const container = messagesAreaRef.value.messagesContainer
-    const scrollTop = container.scrollTop
-    const scrollHeight = container.scrollHeight
-    const clientHeight = container.clientHeight
-    
-    // Considérer qu'on est en bas si on est à moins de 100px du bas
-    isAtBottom.value = scrollHeight - scrollTop - clientHeight < 100
-  }
-}
-
-// Gestion des réactions
-const handleReactionToggled = async (messageId: number, emoji: string) => {
-  try {
-    const messageIndex = messages.value.findIndex(msg => msg.id_message === messageId)
-    if (messageIndex === -1) return
-    
-    const message = messages.value[messageIndex]
-    const currentUserEmail = (currentUser.value as any)?.email
-    const currentUserNom = (currentUser.value as any)?.nom || 'Vous'
-    
-    if (!currentUserEmail) return
-    
-    // Mise à jour optimiste locale
-    const originalReactions = JSON.parse(JSON.stringify(message.reactions || {}))
-    
-    if (!message.reactions) {
-      message.reactions = {}
-    }
-    
-    if (!message.reactions[emoji]) {
-      message.reactions[emoji] = { count: 0, users: [] }
-    }
-    
-    const userAlreadyReacted = message.reactions[emoji].users.some(user => user.email === currentUserEmail)
-    
-    if (userAlreadyReacted) {
-      // Retirer la réaction
-      message.reactions[emoji].users = message.reactions[emoji].users.filter(user => user.email !== currentUserEmail)
-      message.reactions[emoji].count = message.reactions[emoji].users.length
+    } catch (err: any) {
+      console.error('Erreur lors de l\'envoi du message:', err)
       
-      // Supprimer l'emoji s'il n'y a plus d'utilisateurs
-      if (message.reactions[emoji].count === 0) {
-        delete message.reactions[emoji]
+      // En cas d'erreur, retirer le message temporaire et restaurer les champs
+      const tempMessageIndex = messages.value.findIndex(msg => msg.statut_lecture === 'sending')
+      if (tempMessageIndex !== -1) {
+        const failedMessage = messages.value[tempMessageIndex]
+        messages.value.splice(tempMessageIndex, 1)
+        
+        // Restaurer le contenu en cas d'échec
+        newMessage.value = failedMessage.contenu_message || ''
+        // Note: Les fichiers ne peuvent pas être restaurés pour des raisons de sécurité
       }
-    } else {
-      // Ajouter la réaction
-      message.reactions[emoji].users.push({
-        email: currentUserEmail,
-        nom: currentUserNom
+      
+      error.value = 'messages.errors.sendMessage'
+    } finally {
+      sendingMessage.value = false
+    }
+  }
+
+  // Scroll vers le bas
+  const scrollToBottom = (smooth: boolean = true) => {
+    if (messagesAreaRef.value?.messagesContainer) {
+      const container = messagesAreaRef.value.messagesContainer
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
       })
-      message.reactions[emoji].count = message.reactions[emoji].users.length
     }
-    
-    // Déclencher la réactivité
-    messages.value[messageIndex] = { ...message }
-    
-    const response = await fetch(`${config.public.apiBase}/messages/${messageId}/reactions`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.token}`
-      },
-      body: JSON.stringify({ emoji })
-    })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  // Gestion du défilement pour déterminer si on est en bas
+  const handleMessagesScroll = () => {
+    if (messagesAreaRef.value?.messagesContainer) {
+      const container = messagesAreaRef.value.messagesContainer
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      
+      // Considérer qu'on est en bas si on est à moins de 100px du bas
+      isAtBottom.value = scrollHeight - scrollTop - clientHeight < 100
     }
-    
-    const data = await response.json()
-    
-    if (!data.success) {
-      // En cas d'erreur du serveur, restaurer l'état original
-      messages.value[messageIndex].reactions = originalReactions
-      throw new Error(data.message || 'Erreur lors de la gestion de la réaction')
+  }
+
+  // Gestion des réactions
+  const handleReactionToggled = async (messageId: number, emoji: string) => {
+    try {
+      const messageIndex = messages.value.findIndex(msg => msg.id_message === messageId)
+      if (messageIndex === -1) return
+      
+      const message = messages.value[messageIndex]
+      const currentUserEmail = (currentUser.value as any)?.email
+      const currentUserNom = (currentUser.value as any)?.nom || 'Vous'
+      
+      if (!currentUserEmail) return
+      
+      // Mise à jour optimiste locale
+      const originalReactions = JSON.parse(JSON.stringify(message.reactions || {}))
+      
+      if (!message.reactions) {
+        message.reactions = {}
+      }
+      
+      if (!message.reactions[emoji]) {
+        message.reactions[emoji] = { count: 0, users: [] }
+      }
+      
+      const userAlreadyReacted = message.reactions[emoji].users.some(user => user.email === currentUserEmail)
+      
+      if (userAlreadyReacted) {
+        // Retirer la réaction
+        message.reactions[emoji].users = message.reactions[emoji].users.filter(user => user.email !== currentUserEmail)
+        message.reactions[emoji].count = message.reactions[emoji].users.length
+        
+        // Supprimer l'emoji s'il n'y a plus d'utilisateurs
+        if (message.reactions[emoji].count === 0) {
+          delete message.reactions[emoji]
+        }
+      } else {
+        // Ajouter la réaction
+        message.reactions[emoji].users.push({
+          email: currentUserEmail,
+          nom: currentUserNom
+        })
+        message.reactions[emoji].count = message.reactions[emoji].users.length
+      }
+      
+      // Déclencher la réactivité
+      messages.value[messageIndex] = { ...message }
+      
+      const response = await fetch(`${config.public.apiBase}/messages/${messageId}/reactions`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authStore.token}`
+        },
+        body: JSON.stringify({ emoji })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.success) {
+        // En cas d'erreur du serveur, restaurer l'état original
+        messages.value[messageIndex].reactions = originalReactions
+        throw new Error(data.message || 'Erreur lors de la gestion de la réaction')
+      }
+      
+      // Optionnel: Mettre à jour avec la réponse du serveur pour s'assurer de la cohérence
+      if (data.reactions) {
+        messages.value[messageIndex].reactions = data.reactions
+      }
+      
+    } catch (err: any) {
+      console.error('Erreur lors de la gestion de la réaction:', err)
+      error.value = 'messages.errors.reaction'
+      
+      // En cas d'erreur réseau, recharger les messages pour récupérer l'état correct
+      if (selectedConversation.value) {
+        await loadMessages(selectedConversation.value.id_groupe_message)
+      }
     }
-    
-    // Optionnel: Mettre à jour avec la réponse du serveur pour s'assurer de la cohérence
-    if (data.reactions) {
-      messages.value[messageIndex].reactions = data.reactions
+  }
+
+  // Téléchargement de fichier
+  const downloadFile = async (fichierId: number) => {
+    try {
+      const response = await fetch(`${config.public.apiBase}/files/${fichierId}`, {
+        headers: getAuthHeaders()
+      })
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `file_${fichierId}`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      }
+    } catch (err) {
+      console.error('Erreur lors du téléchargement:', err)
+      error.value = 'messages.errors.downloadFile'
     }
-    
-  } catch (err: any) {
-    console.error('Erreur lors de la gestion de la réaction:', err)
-    error.value = 'messages.errors.reaction'
-    
-    // En cas d'erreur réseau, recharger les messages pour récupérer l'état correct
+  }
+
+  // Événements des modales
+  const onConversationCreated = (conversation: Conversation) => {
+    conversations.value.unshift(conversation)
+    selectConversation(conversation)
+  }
+
+  const onMembersUpdated = () => {
+    // Recharger les informations de la conversation
     if (selectedConversation.value) {
-      await loadMessages(selectedConversation.value.id_groupe_message)
+      loadConversations()
     }
   }
-}
 
-// Téléchargement de fichier
-const downloadFile = async (fichierId: number) => {
-  try {
-    const response = await fetch(`${config.public.apiBase}/files/${fichierId}`, {
-      headers: getAuthHeaders()
-    })
-    
-    if (response.ok) {
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `file_${fichierId}`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    }
-  } catch (err) {
-    console.error('Erreur lors du téléchargement:', err)
-    error.value = 'messages.errors.downloadFile'
-  }
-}
-
-// Événements des modales
-const onConversationCreated = (conversation: Conversation) => {
-  conversations.value.unshift(conversation)
-  selectConversation(conversation)
-}
-
-const onMembersUpdated = () => {
-  // Recharger les informations de la conversation
-  if (selectedConversation.value) {
-    loadConversations()
-  }
-}
-
-// Fonction utilitaire pour tester la connexion au backend
-const testBackendConnection = async () => {
-  try {
-    const response = await fetch(`${config.public.apiBase}/conversations`, {
-      headers: getAuthHeaders(),
-    })
-    
-    if (response.status === 401) {
+  // Fonction utilitaire pour tester la connexion au backend
+  const testBackendConnection = async () => {
+    try {
+      const response = await fetch(`${config.public.apiBase}/conversations`, {
+        headers: getAuthHeaders(),
+      })
+      
+      if (response.status === 401) {
+        return false
+      }
+      
+      return response.ok
+    } catch (err) {
       return false
     }
+  }
+
+  // Debug de l'authentification
+  const debugAuth = async () => {
+    console.log('=== DEBUG AUTHENTIFICATION ===')
+    console.log('Store auth:', authStore)
+    console.log('Utilisateur:', authStore.user)
+    console.log('Token:', authStore.token)
+    console.log('Is authenticated:', authStore.isAuthenticated)
+    console.log('API Base:', config.public.apiBase)
+    console.log('Headers:', getAuthHeaders())
     
-    return response.ok
-  } catch (err) {
-    return false
+    // Test de connexion au backend
+    const backendOk = await testBackendConnection()
+    console.log('Backend accessible:', backendOk)
+    
+    alert('Logs de debug affichés dans la console du navigateur (F12)')
   }
-}
 
-// Debug de l'authentification
-const debugAuth = async () => {
-  console.log('=== DEBUG AUTHENTIFICATION ===')
-  console.log('Store auth:', authStore)
-  console.log('Utilisateur:', authStore.user)
-  console.log('Token:', authStore.token)
-  console.log('Is authenticated:', authStore.isAuthenticated)
-  console.log('API Base:', config.public.apiBase)
-  console.log('Headers:', getAuthHeaders())
-  
-  // Test de connexion au backend
-  const backendOk = await testBackendConnection()
-  console.log('Backend accessible:', backendOk)
-  
-  alert('Logs de debug affichés dans la console du navigateur (F12)')
-}
-
-// Formatage du temps et taille de fichier
-const formatTime = (dateString: string) => {
-  // Fonction utilitaire pour formater l'heure
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-  
-  if (diffInHours < 1) {
-    return 'À l\'instant'
-  } else if (diffInHours < 24) {
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-  } else if (diffInHours < 48) {
-    return 'Hier'
-  } else {
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+  // Formatage du temps et taille de fichier
+  const formatTime = (dateString: string) => {
+    // Fonction utilitaire pour formater l'heure
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    
+    if (diffInHours < 1) {
+      return 'À l\'instant'
+    } else if (diffInHours < 24) {
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    } else if (diffInHours < 48) {
+      return 'Hier'
+    } else {
+      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+    }
   }
-}
 
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-// Fonction utilitaire pour gérer les erreurs de réseau
-const handleNetworkError = (err: any, fallbackMessage: string) => {
-  if (err.name === 'AbortError') {
-    return 'Opération annulée'
-  } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('fetch') || err.message?.includes('NetworkError')) {
-    return 'Erreur de connexion au serveur. Vérifiez votre connexion internet.'
-  } else if (err.status === 429) {
-    return 'Trop de tentatives. Veuillez patienter quelques instants.'
-  } else if (err.status === 413) {
-    return 'Fichier trop volumineux. Veuillez réduire la taille du fichier.'
-  } else {
-    return err.data?.message || err.message || fallbackMessage
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
-}
 
-// Lifecycle
-onMounted(async () => {
-  await loadConversations()
-})
-
-onUnmounted(() => {
-  // Cleanup si nécessaire
-})
-
-// Watcher pour scroller automatiquement quand de nouveaux messages arrivent
-watch(messages, async (newMessages, oldMessages) => {
-  // Si on a de nouveaux messages et qu'on était déjà en bas, scroller automatiquement
-  if (newMessages.length > oldMessages.length && isAtBottom.value) {
-    await nextTick()
-    setTimeout(() => scrollToBottom(true), 50)
+  // Fonction utilitaire pour gérer les erreurs de réseau
+  const handleNetworkError = (err: any, fallbackMessage: string) => {
+    if (err.name === 'AbortError') {
+      return 'Opération annulée'
+    } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('fetch') || err.message?.includes('NetworkError')) {
+      return 'Erreur de connexion au serveur. Vérifiez votre connexion internet.'
+    } else if (err.status === 429) {
+      return 'Trop de tentatives. Veuillez patienter quelques instants.'
+    } else if (err.status === 413) {
+      return 'Fichier trop volumineux. Veuillez réduire la taille du fichier.'
+    } else {
+      return err.data?.message || err.message || fallbackMessage
+    }
   }
-}, { flush: 'post' })
+
+  // Lifecycle
+  onMounted(async () => {
+    await loadConversations()
+  })
+
+  onUnmounted(() => {
+    // Cleanup si nécessaire
+  })
+
+  // Watcher pour scroller automatiquement quand de nouveaux messages arrivent
+  watch(messages, async (newMessages, oldMessages) => {
+    // Si on a de nouveaux messages et qu'on était déjà en bas, scroller automatiquement
+    if (newMessages.length > oldMessages.length && isAtBottom.value) {
+      await nextTick()
+      setTimeout(() => scrollToBottom(true), 50)
+    }
+  }, { flush: 'post' })
 </script>
 
 <style scoped>
-/* Animation pour les notifications */
-.slide-down-enter-active, .slide-down-leave-active {
-  transition: all 0.3s ease;
-}
+  /* Animation pour les notifications */
+  .slide-down-enter-active, .slide-down-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-20px);
-}
+  .slide-down-enter-from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
 
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-20px);
-}
+  .slide-down-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
 
-/* Effet de transition fluide pour le changement de vue mobile */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
+  /* Effet de transition fluide pour le changement de vue mobile */
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 </style>
 

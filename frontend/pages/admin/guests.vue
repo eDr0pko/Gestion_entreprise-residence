@@ -150,107 +150,109 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '~/stores/auth'
-import { useRuntimeConfig } from '#app'
+  import { ref, computed, onMounted } from 'vue'
+  import { useAuthStore } from '~/stores/auth'
+  import { useRuntimeConfig } from '#app'
 
-// Protection de page admin
-definePageMeta({
-  middleware: ['auth']
-})
+  // Protection de page admin
+  definePageMeta({
+    middleware: ['auth']
+  })
 
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-// État
-const guests = ref([])
-const loading = ref(false)
-const processing = ref(false)
-const error = ref(null)
+  // État
+  const guests = ref([])
+  const loading = ref(false)
+  const processing = ref(false)
+  const error = ref(null)
 
-// Invités actifs/inactifs
-const activeGuests = computed(() => guests.value.filter(guest => guest.invite?.actif))
-const inactiveGuests = computed(() => guests.value.filter(guest => !guest.invite?.actif))
+  // Invités actifs/inactifs
+  const activeGuests = computed(() => guests.value.filter(guest => guest.invite?.actif))
+  const inactiveGuests = computed(() => guests.value.filter(guest => !guest.invite?.actif))
 
-// Récupérer la liste des invités
-const fetchGuests = async () => {
-  try {
-    loading.value = true
-    error.value = null
-    
-    const response = await $fetch(`${config.public.apiBase}/guests`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json',
+  // Récupérer la liste des invités
+  const fetchGuests = async () => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const response = await $fetch(`${config.public.apiBase}/guests`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json',
+        }
+      })
+      
+      if (response.success) {
+        guests.value = response.data
+      } else {
+        throw new Error(response.message || 'Erreur lors du chargement des invités')
       }
-    })
-    
-    if (response.success) {
-      guests.value = response.data
-    } else {
-      throw new Error(response.message || 'Erreur lors du chargement des invités')
+    } catch (err) {
+      console.error('Erreur lors du chargement des invités:', err)
+      error.value = err.message || 'Erreur lors du chargement des invités'
+    } finally {
+      loading.value = false
     }
-  } catch (err) {
-    console.error('Erreur lors du chargement des invités:', err)
-    error.value = err.message || 'Erreur lors du chargement des invités'
-  } finally {
-    loading.value = false
   }
-}
 
-// Désactiver un invité
-const deactivateGuest = async (email) => {
-  if (!confirm('Êtes-vous sûr de vouloir désactiver cet invité ?')) {
-    return
-  }
-  
-  try {
-    processing.value = true
-    
-    const response = await $fetch(`${config.public.apiBase}/guests/${email}/deactivate`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json',
-      }
-    })
-    
-    if (response.success) {
-      // Mettre à jour la liste locale
-      const guestIndex = guests.value.findIndex(guest => guest.email === email)
-      if (guestIndex !== -1) {
-        guests.value[guestIndex].invite.actif = false
-      }
-    } else {
-      throw new Error(response.message || 'Erreur lors de la désactivation')
+  // Désactiver un invité
+  const deactivateGuest = async (email) => {
+    if (!confirm('Êtes-vous sûr de vouloir désactiver cet invité ?')) {
+      return
     }
-  } catch (err) {
-    console.error('Erreur lors de la désactivation:', err)
-    alert('Erreur lors de la désactivation: ' + (err.message || 'Erreur inconnue'))
-  } finally {
-    processing.value = false
+    
+    try {
+      processing.value = true
+      
+      const response = await $fetch(`${config.public.apiBase}/guests/${email}/deactivate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json',
+        }
+      })
+      
+      if (response.success) {
+        // Mettre à jour la liste locale
+        const guestIndex = guests.value.findIndex(guest => guest.email === email)
+        if (guestIndex !== -1) {
+          guests.value[guestIndex].invite.actif = false
+        }
+      } else {
+        throw new Error(response.message || 'Erreur lors de la désactivation')
+      }
+    } catch (err) {
+      console.error('Erreur lors de la désactivation:', err)
+      alert('Erreur lors de la désactivation: ' + (err.message || 'Erreur inconnue'))
+    } finally {
+      processing.value = false
+    }
   }
-}
 
-// Actualiser la liste
-const refreshGuests = () => {
-  fetchGuests()
-}
+  // Actualiser la liste
+  const refreshGuests = () => {
+    fetchGuests()
+  }
 
-// Vérifier que l'utilisateur est admin
-onMounted(async () => {
-  await authStore.checkAuth()
-  
-  if (!authStore.isAuthenticated) {
-    await navigateTo('/login')
-    return
-  }
-  
-  if (authStore.userRole !== 'admin') {
-    await navigateTo('/principale')
-    return
-  }
-  
-  fetchGuests()
-})
+  // Vérifier que l'utilisateur est admin
+  onMounted(async () => {
+    await authStore.checkAuth()
+    
+    if (!authStore.isAuthenticated) {
+      await navigateTo('/login')
+      return
+    }
+    
+    if (authStore.userRole !== 'admin') {
+      await navigateTo('/principale')
+      return
+    }
+    
+    fetchGuests()
+  })
 </script>
+
+

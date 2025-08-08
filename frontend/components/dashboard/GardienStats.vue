@@ -4,6 +4,9 @@
     <p>Vue des statistiques pour le gardien.</p>
   </div>
 </template>
+
 <script setup lang="ts">
-// Logique spécifique gardien stats ici
+  // Logique spécifique gardien stats ici
 </script>
+
+

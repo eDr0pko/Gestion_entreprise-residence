@@ -61,112 +61,114 @@
 </template>
 
 <script setup lang="ts">
-import type { ReactionData } from '~/types'
+  import type { ReactionData } from '~/types'
 
-interface Props {
-  messageId: number
-  reactions: Record<string, ReactionData>
-  currentUserEmail: string
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  reactionToggled: [emoji: string]
-}>()
-
-// Références DOM
-const emojiButton = ref<HTMLButtonElement>()
-const emojiPicker = ref<HTMLDivElement>()
-
-// État réactif
-const showReactionPicker = ref(false)
-const processing = ref(false)
-
-// Émojis de réaction rapide
-const quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉', '🔥', '💯', '✅', '❌']
-
-// Toggle du picker d'émojis
-const toggleEmojiPicker = () => {
-  console.log('Toggle emoji picker clicked, current state:', showReactionPicker.value)
-  showReactionPicker.value = !showReactionPicker.value
-  console.log('New state:', showReactionPicker.value)
-}
-
-// Vérifier si l'utilisateur actuel a réagi avec cet emoji
-const userHasReacted = (emoji: string): boolean => {
-  const reactionData = props.reactions[emoji]
-  if (!reactionData) return false
-  return reactionData.users.some(user => user.email === props.currentUserEmail)
-}
-
-// Générer le tooltip pour une réaction
-const getReactionTooltip = (reactionData: ReactionData): string => {
-  if (reactionData.count === 1) {
-    return reactionData.users[0].nom
-  } else if (reactionData.count <= 3) {
-    return reactionData.users.map(user => user.nom).join(', ')
-  } else {
-    return `${reactionData.users.slice(0, 2).map(user => user.nom).join(', ')} et ${reactionData.count - 2} autres`
+  interface Props {
+    messageId: number
+    reactions: Record<string, ReactionData>
+    currentUserEmail: string
   }
-}
 
-// Ajouter/retirer une réaction
-const toggleReaction = async (emoji: string) => {
-  if (processing.value) return
-  
-  processing.value = true
-  try {
-    console.log('Toggling reaction:', emoji, 'for message:', props.messageId)
-    emit('reactionToggled', emoji)
-  } finally {
-    processing.value = false
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    reactionToggled: [emoji: string]
+  }>()
+
+  // Références DOM
+  const emojiButton = ref<HTMLButtonElement>()
+  const emojiPicker = ref<HTMLDivElement>()
+
+  // État réactif
+  const showReactionPicker = ref(false)
+  const processing = ref(false)
+
+  // Émojis de réaction rapide
+  const quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉', '🔥', '💯', '✅', '❌']
+
+  // Toggle du picker d'émojis
+  const toggleEmojiPicker = () => {
+    console.log('Toggle emoji picker clicked, current state:', showReactionPicker.value)
+    showReactionPicker.value = !showReactionPicker.value
+    console.log('New state:', showReactionPicker.value)
   }
-}
 
-// Ajouter une nouvelle réaction
-const addReaction = async (emoji: string) => {
-  console.log('Adding reaction:', emoji)
-  closeReactionPicker()
-  await toggleReaction(emoji)
-}
+  // Vérifier si l'utilisateur actuel a réagi avec cet emoji
+  const userHasReacted = (emoji: string): boolean => {
+    const reactionData = props.reactions[emoji]
+    if (!reactionData) return false
+    return reactionData.users.some(user => user.email === props.currentUserEmail)
+  }
 
-// Fermer le picker
-const closeReactionPicker = () => {
-  console.log('Closing reaction picker')
-  showReactionPicker.value = false
-}
+  // Générer le tooltip pour une réaction
+  const getReactionTooltip = (reactionData: ReactionData): string => {
+    if (reactionData.count === 1) {
+      return reactionData.users[0].nom
+    } else if (reactionData.count <= 3) {
+      return reactionData.users.map(user => user.nom).join(', ')
+    } else {
+      return `${reactionData.users.slice(0, 2).map(user => user.nom).join(', ')} et ${reactionData.count - 2} autres`
+    }
+  }
 
-// Debug: Observer les changements d'état
-watch(showReactionPicker, (newValue) => {
-  console.log('showReactionPicker changed to:', newValue)
-})
+  // Ajouter/retirer une réaction
+  const toggleReaction = async (emoji: string) => {
+    if (processing.value) return
+    
+    processing.value = true
+    try {
+      console.log('Toggling reaction:', emoji, 'for message:', props.messageId)
+      emit('reactionToggled', emoji)
+    } finally {
+      processing.value = false
+    }
+  }
+
+  // Ajouter une nouvelle réaction
+  const addReaction = async (emoji: string) => {
+    console.log('Adding reaction:', emoji)
+    closeReactionPicker()
+    await toggleReaction(emoji)
+  }
+
+  // Fermer le picker
+  const closeReactionPicker = () => {
+    console.log('Closing reaction picker')
+    showReactionPicker.value = false
+  }
+
+  // Debug: Observer les changements d'état
+  watch(showReactionPicker, (newValue) => {
+    console.log('showReactionPicker changed to:', newValue)
+  })
 </script>
 
 <style scoped>
-.picker-enter-active, .picker-leave-active {
-  transition: all 0.2s ease;
-}
+  .picker-enter-active, .picker-leave-active {
+    transition: all 0.2s ease;
+  }
 
-.picker-enter-from, .picker-leave-to {
-  opacity: 0;
-  transform: translateY(10px) scale(0.95);
-}
+  .picker-enter-from, .picker-leave-to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
 
-.message-reactions {
-  margin-top: 0.25rem;
-  position: relative;
-}
+  .message-reactions {
+    margin-top: 0.25rem;
+    position: relative;
+  }
 
-/* S'assurer que le picker est au-dessus de tout */
-.message-reactions .relative {
-  z-index: 1;
-}
+  /* S'assurer que le picker est au-dessus de tout */
+  .message-reactions .relative {
+    z-index: 1;
+  }
 
-/* Améliorer la visibilité du picker */
-.absolute {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
-  background: white;
-}
+  /* Améliorer la visibilité du picker */
+  .absolute {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e5e7eb;
+    background: white;
+  }
 </style>
+
+

@@ -111,45 +111,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useNotifications } from '~/composables/useNotifications'
-import { useTheme } from '~/composables/useTheme'
+  import { ref, onMounted } from 'vue'
+  import { useNotifications } from '~/composables/useNotifications'
+  import { useTheme } from '~/composables/useTheme'
 
-const { setToastInstance } = useNotifications()
-const { isDark, toggleTheme, initTheme } = useTheme()
-const toastRef = ref(null)
+  const { setToastInstance } = useNotifications()
+  const { isDark, toggleTheme, initTheme } = useTheme()
+  const toastRef = ref(null)
 
-// Mobile menu
-const showMobileMenu = ref(false)
+  // Mobile menu
+  const showMobileMenu = ref(false)
 
-function toggleMobileMenu() {
-  showMobileMenu.value = !showMobileMenu.value
-}
-
-function closeMobileMenu() {
-  showMobileMenu.value = false
-}
-
-onMounted(() => {
-  initTheme()
-  
-  // Initialize notification system
-  if (toastRef.value) {
-    setToastInstance(toastRef.value)
+  function toggleMobileMenu() {
+    showMobileMenu.value = !showMobileMenu.value
   }
-})
+
+  function closeMobileMenu() {
+    showMobileMenu.value = false
+  }
+
+  onMounted(() => {
+    initTheme()
+    
+    // Initialize notification system
+    if (toastRef.value) {
+      setToastInstance(toastRef.value)
+    }
+  })
 </script>
 
 <style>
-/* Global dark mode styles */
-.dark {
-  color-scheme: dark;
-}
+  /* Global dark mode styles */
+  .dark {
+    color-scheme: dark;
+  }
 
-/* Smooth transitions for theme changes */
-* {
-  transition-property: background-color, border-color, color;
-  transition-duration: 200ms;
-  transition-timing-function: ease-in-out;
-}
+  /* Smooth transitions for theme changes */
+  * {
+    transition-property: background-color, border-color, color;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
+  }
 </style>
+
+

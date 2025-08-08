@@ -99,160 +99,162 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
-  maxFiles?: number
-  maxFileSize?: number // en MB
-  acceptedTypes?: string[]
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  maxFiles: 5,
-  maxFileSize: 10,
-  acceptedTypes: () => ['image/*', '.pdf', '.doc', '.docx', '.txt', '.zip', '.rar']
-})
-
-const emit = defineEmits<{
-  filesChanged: [files: File[]]
-}>()
-
-// État réactif
-const files = ref<File[]>([])
-const errors = ref<string[]>([])
-const isDragging = ref(false)
-const dropZone = ref<HTMLElement>()
-const fileInput = ref<HTMLInputElement>()
-
-// Méthodes utilitaires
-const isImage = (file: File) => file.type.startsWith('image/')
-const isPDF = (file: File) => file.type === 'application/pdf'
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-// Validation des fichiers
-const validateFile = (file: File): string | null => {
-  // Vérifier la taille
-  if (file.size > props.maxFileSize * 1024 * 1024) {
-    return `${file.name} dépasse la taille maximale de ${props.maxFileSize}MB`
+  interface Props {
+    maxFiles?: number
+    maxFileSize?: number // en MB
+    acceptedTypes?: string[]
   }
-  
-  // Vérifier le type (simplifié)
-  const isValidType = props.acceptedTypes.some(type => {
-    if (type.startsWith('.')) {
-      return file.name.toLowerCase().endsWith(type.toLowerCase())
-    } else if (type.includes('/*')) {
-      const mainType = type.split('/')[0]
-      return file.type.startsWith(mainType)
-    } else {
-      return file.type === type
-    }
+
+  const props = withDefaults(defineProps<Props>(), {
+    maxFiles: 5,
+    maxFileSize: 10,
+    acceptedTypes: () => ['image/*', '.pdf', '.doc', '.docx', '.txt', '.zip', '.rar']
   })
-  
-  if (!isValidType) {
-    return `${file.name} n'est pas un type de fichier autorisé`
-  }
-  
-  return null
-}
 
-// Ajouter des fichiers
-const addFiles = (newFiles: FileList | File[]) => {
-  errors.value = []
-  const filesToAdd: File[] = []
-  
-  Array.from(newFiles).forEach(file => {
-    // Vérifier si le fichier n'est pas déjà ajouté
-    if (files.value.some(f => f.name === file.name && f.size === file.size)) {
-      errors.value.push(`${file.name} est déjà sélectionné`)
+  const emit = defineEmits<{
+    filesChanged: [files: File[]]
+  }>()
+
+  // État réactif
+  const files = ref<File[]>([])
+  const errors = ref<string[]>([])
+  const isDragging = ref(false)
+  const dropZone = ref<HTMLElement>()
+  const fileInput = ref<HTMLInputElement>()
+
+  // Méthodes utilitaires
+  const isImage = (file: File) => file.type.startsWith('image/')
+  const isPDF = (file: File) => file.type === 'application/pdf'
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+  }
+
+  // Validation des fichiers
+  const validateFile = (file: File): string | null => {
+    // Vérifier la taille
+    if (file.size > props.maxFileSize * 1024 * 1024) {
+      return `${file.name} dépasse la taille maximale de ${props.maxFileSize}MB`
+    }
+    
+    // Vérifier le type (simplifié)
+    const isValidType = props.acceptedTypes.some(type => {
+      if (type.startsWith('.')) {
+        return file.name.toLowerCase().endsWith(type.toLowerCase())
+      } else if (type.includes('/*')) {
+        const mainType = type.split('/')[0]
+        return file.type.startsWith(mainType)
+      } else {
+        return file.type === type
+      }
+    })
+    
+    if (!isValidType) {
+      return `${file.name} n'est pas un type de fichier autorisé`
+    }
+    
+    return null
+  }
+
+  // Ajouter des fichiers
+  const addFiles = (newFiles: FileList | File[]) => {
+    errors.value = []
+    const filesToAdd: File[] = []
+    
+    Array.from(newFiles).forEach(file => {
+      // Vérifier si le fichier n'est pas déjà ajouté
+      if (files.value.some(f => f.name === file.name && f.size === file.size)) {
+        errors.value.push(`${file.name} est déjà sélectionné`)
+        return
+      }
+      
+      // Valider le fichier
+      const error = validateFile(file)
+      if (error) {
+        errors.value.push(error)
+        return
+      }
+      
+      filesToAdd.push(file)
+    })
+    
+    // Vérifier le nombre total de fichiers
+    if (files.value.length + filesToAdd.length > props.maxFiles) {
+      errors.value.push(`Maximum ${props.maxFiles} fichiers autorisés`)
       return
     }
     
-    // Valider le fichier
-    const error = validateFile(file)
-    if (error) {
-      errors.value.push(error)
-      return
+    // Ajouter les fichiers valides
+    files.value.push(...filesToAdd)
+    emit('filesChanged', files.value)
+  }
+
+  // Gestionnaires d'événements
+  const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.files) {
+      addFiles(target.files)
     }
-    
-    filesToAdd.push(file)
-  })
-  
-  // Vérifier le nombre total de fichiers
-  if (files.value.length + filesToAdd.length > props.maxFiles) {
-    errors.value.push(`Maximum ${props.maxFiles} fichiers autorisés`)
-    return
   }
-  
-  // Ajouter les fichiers valides
-  files.value.push(...filesToAdd)
-  emit('filesChanged', files.value)
-}
 
-// Gestionnaires d'événements
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files) {
-    addFiles(target.files)
-  }
-}
-
-const handleDrop = (event: DragEvent) => {
-  event.preventDefault()
-  isDragging.value = false
-  
-  if (event.dataTransfer?.files) {
-    addFiles(event.dataTransfer.files)
-  }
-}
-
-const handleDragOver = (event: DragEvent) => {
-  event.preventDefault()
-}
-
-const handleDragEnter = (event: DragEvent) => {
-  event.preventDefault()
-  isDragging.value = true
-}
-
-const handleDragLeave = (event: DragEvent) => {
-  event.preventDefault()
-  // Vérifier si on sort vraiment de la zone
-  if (!dropZone.value?.contains(event.relatedTarget as Node)) {
+  const handleDrop = (event: DragEvent) => {
+    event.preventDefault()
     isDragging.value = false
+    
+    if (event.dataTransfer?.files) {
+      addFiles(event.dataTransfer.files)
+    }
   }
-}
 
-const triggerFileInput = () => {
-  fileInput.value?.click()
-}
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault()
+  }
 
-const removeFile = (index: number) => {
-  files.value.splice(index, 1)
-  emit('filesChanged', files.value)
-}
+  const handleDragEnter = (event: DragEvent) => {
+    event.preventDefault()
+    isDragging.value = true
+  }
 
-const clearFiles = () => {
-  files.value = []
-  errors.value = []
-  emit('filesChanged', files.value)
-}
+  const handleDragLeave = (event: DragEvent) => {
+    event.preventDefault()
+    // Vérifier si on sort vraiment de la zone
+    if (!dropZone.value?.contains(event.relatedTarget as Node)) {
+      isDragging.value = false
+    }
+  }
 
-// Méthode publique pour obtenir les fichiers
-const getFiles = () => files.value
+  const triggerFileInput = () => {
+    fileInput.value?.click()
+  }
 
-defineExpose({
-  getFiles,
-  clearFiles
-})
+  const removeFile = (index: number) => {
+    files.value.splice(index, 1)
+    emit('filesChanged', files.value)
+  }
+
+  const clearFiles = () => {
+    files.value = []
+    errors.value = []
+    emit('filesChanged', files.value)
+  }
+
+  // Méthode publique pour obtenir les fichiers
+  const getFiles = () => files.value
+
+  defineExpose({
+    getFiles,
+    clearFiles
+  })
 </script>
 
 <style scoped>
-.file-upload-zone {
-  width: 100%;
-}
+  .file-upload-zone {
+    width: 100%;
+  }
 </style>
+
+

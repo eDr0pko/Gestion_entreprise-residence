@@ -44,105 +44,106 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '~/stores/auth'
+  import { ref } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAuthStore } from '~/stores/auth'
 
-const { t } = useI18n()
+  const { t } = useI18n()
 
-type User = {
-  email?: string
-  // ...other user fields as needed
-}
-
-const emit = defineEmits(['close'])
-const description = ref('')
-const status = ref('en_cours')
-const emailSignaleur = ref('')
-
-const loading = ref(false)
-const error = ref('')
-const success = ref(false)
-
-const files = ref<File[]>([])
-
-function handleFiles(e: Event) {
-  const target = e.target as HTMLInputElement
-  if (target.files) {
-    files.value = Array.from(target.files)
+  type User = {
+    email?: string
+    // ...other user fields as needed
   }
-}
 
-const authStore = useAuthStore()
-const user = authStore.user as unknown as User
-const apiBase = useRuntimeConfig().public.apiBase
+  const emit = defineEmits(['close'])
+  const description = ref('')
+  const status = ref('en_cours')
+  const emailSignaleur = ref('')
 
-async function submitIncident() {
-  error.value = ''
-  success.value = false
-  if (!description.value.trim()) {
-    error.value = 'components.reportIncidentModal.errorDescriptionRequired'
-    return
-  }
-  if (!user?.email && !emailSignaleur.value.trim()) {
-    error.value = 'components.reportIncidentModal.errorEmailRequired'
-    return
-  }
-  loading.value = true
-  try {
-    const formData = new FormData()
-    // Compose details JSON for backend
-    const details = {
-      datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      object: description.value,
-      statut: status.value,
-      email_signaleur: user.email || emailSignaleur.value,
-      pieces_jointes: [] as string[],
+  const loading = ref(false)
+  const error = ref('')
+  const success = ref(false)
+
+  const files = ref<File[]>([])
+
+  function handleFiles(e: Event) {
+    const target = e.target as HTMLInputElement
+    if (target.files) {
+      files.value = Array.from(target.files)
     }
-    // Upload files and collect their names (let backend handle storage)
-    files.value.forEach(f => formData.append('pieces_jointes[]', f))
-    // Add details as JSON string
-    formData.append('details', JSON.stringify(details))
-    const headers: Record<string, string> = {}
-    if (authStore.token) headers['Authorization'] = `Bearer ${authStore.token}`
-    await $fetch(`${apiBase}/admin/incidents`, {
-      method: 'POST',
-      body: formData,
-      headers,
-    })
-    success.value = true
-    description.value = ''
-    status.value = 'en_cours'
-    emailSignaleur.value = ''
-    files.value = []
-    // Reset file input (UX)
-    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]')
-    if (fileInput) fileInput.value = ''
-    window.dispatchEvent(new CustomEvent('incident-reported'))
-    setTimeout(() => {
-      emit('close')
-    }, 1200)
-  } catch (e: any) {
-    if (e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data) {
-      error.value = (e.data as any).message
-    } else if (e instanceof Error) {
-      error.value = e.message
-    } else {
-      error.value = 'components.reportIncidentModal.errorSend'
-    }
-  } finally {
-    loading.value = false
   }
-}
+
+  const authStore = useAuthStore()
+  const user = authStore.user as unknown as User
+  const apiBase = useRuntimeConfig().public.apiBase
+
+  async function submitIncident() {
+    error.value = ''
+    success.value = false
+    if (!description.value.trim()) {
+      error.value = 'components.reportIncidentModal.errorDescriptionRequired'
+      return
+    }
+    if (!user?.email && !emailSignaleur.value.trim()) {
+      error.value = 'components.reportIncidentModal.errorEmailRequired'
+      return
+    }
+    loading.value = true
+    try {
+      const formData = new FormData()
+      // Compose details JSON for backend
+      const details = {
+        datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        object: description.value,
+        statut: status.value,
+        email_signaleur: user.email || emailSignaleur.value,
+        pieces_jointes: [] as string[],
+      }
+      // Upload files and collect their names (let backend handle storage)
+      files.value.forEach(f => formData.append('pieces_jointes[]', f))
+      // Add details as JSON string
+      formData.append('details', JSON.stringify(details))
+      const headers: Record<string, string> = {}
+      if (authStore.token) headers['Authorization'] = `Bearer ${authStore.token}`
+      await $fetch(`${apiBase}/admin/incidents`, {
+        method: 'POST',
+        body: formData,
+        headers,
+      })
+      success.value = true
+      description.value = ''
+      status.value = 'en_cours'
+      emailSignaleur.value = ''
+      files.value = []
+      // Reset file input (UX)
+      const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]')
+      if (fileInput) fileInput.value = ''
+      window.dispatchEvent(new CustomEvent('incident-reported'))
+      setTimeout(() => {
+        emit('close')
+      }, 1200)
+    } catch (e: any) {
+      if (e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data) {
+        error.value = (e.data as any).message
+      } else if (e instanceof Error) {
+        error.value = e.message
+      } else {
+        error.value = 'components.reportIncidentModal.errorSend'
+      }
+    } finally {
+      loading.value = false
+    }
+  }
 </script>
 
 <style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.2s;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+  .animate-fade-in {
+    animation: fadeIn 0.2s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
+
 

@@ -109,9 +109,11 @@
 </template>
 
 <script setup lang="ts">
-// Composant de navigation latérale pour l'administration
+  // Composant de navigation latérale pour l'administration
 </script>
 
 <style scoped>
-/* Styles supplémentaires si nécessaire */
+  /* Styles supplémentaires si nécessaire */
 </style>
+
+

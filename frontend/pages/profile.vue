@@ -503,663 +503,663 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
-// Formate le numéro selon l'indicatif international
-function formatPhoneNumber(num: string) {
-  if (!num) return ''
-  if (num.startsWith('+')) {
-    const match = num.match(/^(\+\d{1,3})(\d+)$/)
-    if (match) {
-      const indicatif = match[1]
-      const reste = match[2]
-      if (indicatif === '+33' && reste.length === 9) {
-        return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
-      }
-      if (indicatif === '+228' && reste.length === 8) {
-        return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
-      }
-      return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
-    }
-  }
-  if (num.startsWith('0') && num.length === 10) {
-    return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
-  }
-  return num
-}
-definePageMeta({
-  middleware: 'auth'
-})
-
-useHead({
-  title: computed(() => t('profile.pageTitle'))
-})
-
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
-
-// Types
-interface User {
-  nom: string
-  prenom: string
-  email: string
-  numero_telephone: string
-  photo_profil?: string | null
-  type?: string
-  user_type?: string
-  role?: string
-  [key: string]: any
-}
-
-interface Stats {
-  role: string
-  messages_envoyes: number
-  messages_ce_mois?: number
-  tendance_messages?: number
-  
-  // Nouvelles propriétés de visites
-  visites_total: number
-  visites_en_cours?: number
-  visites_terminees?: number
-  visites_annulees?: number
-  taux_reussite_visites?: number
-  
-  groupes_participes: number
-  groupes_actifs?: number
-  date_inscription: string
-  derniere_connexion: string
-  score_activite?: number
-  temps_reponse_moyen?: number
-  incidents_signales?: number
-  incidents_resolus?: number
-  taux_resolution?: number
-  anciennete_jours?: number
-  role_details?: { [key: string]: any }
-  badges?: Array<{
-    nom: string
-    icone: string
-    couleur: string
-  }>
-}
-
-interface ApiResponse {
-  success: boolean
-  data: any
-}
-
-// État réactif
-const user = computed(() => authStore.user as User | null)
-const stats = ref<Stats | null>(null)
-const loading = ref(false)
-
-// Gestion d'erreur pour l'avatar
-const avatarError = ref(false)
-// Computed pour déterminer l'URL de l'avatar
-const avatarUrl = computed(() => {
-  if (!user.value?.photo_profil) return null
-  if (avatarError.value) return null
-
-  const value = user.value.photo_profil;
-  // Si c'est déjà une URL complète, la retourner telle quelle
-  if (value.startsWith('http')) {
-    return value;
-  }
-  // Si le backend retourne déjà un chemin commençant par /avatars/ ou /storage/avatars/, utiliser tel quel avec apiBase
-  if (value.startsWith('/avatars/') || value.startsWith('avatars/')) {
-    return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
-  }
-  if (value.startsWith('/storage/avatars/') || value.startsWith('storage/avatars/')) {
-    // Supporte aussi le cas /storage/avatars/...
-    return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
-  }
-  // Si le backend retourne juste le nom de fichier
-  return `${config.public.apiBase.replace(/\/$/, '')}/avatars/${value}`;
-})
-
-// Computed pour déterminer le rôle correct de l'utilisateur
-const userRole = computed(() => {
-  // D'abord essayer d'utiliser le rôle des stats (qui vient de l'API)
-  if (stats.value?.role) {
-    return stats.value.role
-  }
-  if (user.value?.role) {
-    return user.value.role
-  }
-  if (user.value) {
-    if (user.value.type === 'invite' || user.value.user_type === 'invite') {
-      return 'invite'
-    }
-  }
-  return 'user'
-})
-
-// Computed pour les couleurs du rôle
-const roleColors = computed(() => {
-  const role = userRole.value.toLowerCase()
-  
-  switch (role) {
-    case 'administrateur':
-    case 'admin':
-      return {
-        background: 'bg-gradient-to-r from-red-500 to-red-600',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-    case 'gardien':
-      return {
-        background: 'bg-gradient-to-r from-orange-500 to-orange-600',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-    case 'résident':
-    case 'resident':
-      return {
-        background: 'bg-gradient-to-r from-[#0097b2] to-[#008699]',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-    case 'invité':
-    case 'invite':
-      return {
-        background: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-    default:
-      return {
-        background: 'bg-gradient-to-r from-gray-500 to-gray-600',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-  }
-})
-
-// Modals
-const showEditModal = ref(false)
-const showPasswordModal = ref(false)
-const showCurrentPasswordModal = ref(false)
-const showAvatarModal = ref(false)
-
-// États des formulaires
-const updatingProfile = ref(false)
-const updatingPassword = ref(false)
-const passwordError = ref('')
-const newPasswordError = ref('')
-const profileError = ref('')
-const successMessage = ref('')
-
-// Données des formulaires
-const editForm = ref({
-  nom: '',
-  prenom: '',
-  numero_telephone: ''
-})
-
-const currentPasswordForm = ref({
-  current_password: ''
-})
-
-const passwordForm = ref({
-  new_password: '',
-  new_password_confirmation: ''
-})
-
-// Charger les statistiques au montage
-onMounted(async () => {
-  // Attente pour l'hydratation côté client
-  await nextTick()
-  
-  if (process.client) {
-    // Force l'initialisation de l'auth
-    authStore.initAuth()
-    
-    // Attendre un moment pour que l'initialisation se termine
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    if (authStore.token) {
-      await loadStats()
-    } else {
-      // Essayer de recharger la page si on n'a vraiment pas de token
-      setTimeout(() => {
-        if (!authStore.token) {
-          navigateTo('/login')
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+  // Formate le numéro selon l'indicatif international
+  function formatPhoneNumber(num: string) {
+    if (!num) return ''
+    if (num.startsWith('+')) {
+      const match = num.match(/^(\+\d{1,3})(\d+)$/)
+      if (match) {
+        const indicatif = match[1]
+        const reste = match[2]
+        if (indicatif === '+33' && reste.length === 9) {
+          return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
         }
-      }, 1000)
-    }
-  }
-  
-  initEditForm()
-})
-
-// Watcher pour surveiller les changements de token
-watch(() => authStore.token, async (newToken, oldToken) => {
-  if (newToken && !oldToken && !stats.value) {
-    await loadStats()
-  }
-})
-
-// Charger les statistiques
-const loadStats = async () => {
-  try {
-    loading.value = true
-    
-    const response = await fetch(`${config.public.apiBase}/profile/stats`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
+        if (indicatif === '+228' && reste.length === 8) {
+          return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
+        }
+        return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
       }
-    })
-    
-    const data = await response.json()
-    
-    if (data && data.success) {
-      stats.value = data.data
     }
-  } catch (error: any) {
-    // Gestion silencieuse des erreurs
-  } finally {
-    loading.value = false
-  }
-}
-
-// Initialiser le formulaire d'édition
-const initEditForm = () => {
-  if (user.value) {
-    editForm.value = {
-      nom: user.value.nom || '',
-      prenom: user.value.prenom || '',
-      numero_telephone: user.value.numero_telephone || ''
+    if (num.startsWith('0') && num.length === 10) {
+      return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
     }
+    return num
   }
-}
+  definePageMeta({
+    middleware: 'auth'
+  })
 
-// Modals
-const openEditModal = () => {
-  initEditForm()
-  profileError.value = ''
-  successMessage.value = ''
-  showEditModal.value = true
-}
+  useHead({
+    title: computed(() => t('profile.pageTitle'))
+  })
 
-const closeEditModal = () => {
-  showEditModal.value = false
-  profileError.value = ''
-  initEditForm()
-}
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-const openPasswordModal = () => {
-  currentPasswordForm.value = {
+  // Types
+  interface User {
+    nom: string
+    prenom: string
+    email: string
+    numero_telephone: string
+    photo_profil?: string | null
+    type?: string
+    user_type?: string
+    role?: string
+    [key: string]: any
+  }
+
+  interface Stats {
+    role: string
+    messages_envoyes: number
+    messages_ce_mois?: number
+    tendance_messages?: number
+    
+    // Nouvelles propriétés de visites
+    visites_total: number
+    visites_en_cours?: number
+    visites_terminees?: number
+    visites_annulees?: number
+    taux_reussite_visites?: number
+    
+    groupes_participes: number
+    groupes_actifs?: number
+    date_inscription: string
+    derniere_connexion: string
+    score_activite?: number
+    temps_reponse_moyen?: number
+    incidents_signales?: number
+    incidents_resolus?: number
+    taux_resolution?: number
+    anciennete_jours?: number
+    role_details?: { [key: string]: any }
+    badges?: Array<{
+      nom: string
+      icone: string
+      couleur: string
+    }>
+  }
+
+  interface ApiResponse {
+    success: boolean
+    data: any
+  }
+
+  // État réactif
+  const user = computed(() => authStore.user as User | null)
+  const stats = ref<Stats | null>(null)
+  const loading = ref(false)
+
+  // Gestion d'erreur pour l'avatar
+  const avatarError = ref(false)
+  // Computed pour déterminer l'URL de l'avatar
+  const avatarUrl = computed(() => {
+    if (!user.value?.photo_profil) return null
+    if (avatarError.value) return null
+
+    const value = user.value.photo_profil;
+    // Si c'est déjà une URL complète, la retourner telle quelle
+    if (value.startsWith('http')) {
+      return value;
+    }
+    // Si le backend retourne déjà un chemin commençant par /avatars/ ou /storage/avatars/, utiliser tel quel avec apiBase
+    if (value.startsWith('/avatars/') || value.startsWith('avatars/')) {
+      return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
+    }
+    if (value.startsWith('/storage/avatars/') || value.startsWith('storage/avatars/')) {
+      // Supporte aussi le cas /storage/avatars/...
+      return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
+    }
+    // Si le backend retourne juste le nom de fichier
+    return `${config.public.apiBase.replace(/\/$/, '')}/avatars/${value}`;
+  })
+
+  // Computed pour déterminer le rôle correct de l'utilisateur
+  const userRole = computed(() => {
+    // D'abord essayer d'utiliser le rôle des stats (qui vient de l'API)
+    if (stats.value?.role) {
+      return stats.value.role
+    }
+    if (user.value?.role) {
+      return user.value.role
+    }
+    if (user.value) {
+      if (user.value.type === 'invite' || user.value.user_type === 'invite') {
+        return 'invite'
+      }
+    }
+    return 'user'
+  })
+
+  // Computed pour les couleurs du rôle
+  const roleColors = computed(() => {
+    const role = userRole.value.toLowerCase()
+    
+    switch (role) {
+      case 'administrateur':
+      case 'admin':
+        return {
+          background: 'bg-gradient-to-r from-red-500 to-red-600',
+          text: 'text-white',
+          icon: 'text-white'
+        }
+      case 'gardien':
+        return {
+          background: 'bg-gradient-to-r from-orange-500 to-orange-600',
+          text: 'text-white',
+          icon: 'text-white'
+        }
+      case 'résident':
+      case 'resident':
+        return {
+          background: 'bg-gradient-to-r from-[#0097b2] to-[#008699]',
+          text: 'text-white',
+          icon: 'text-white'
+        }
+      case 'invité':
+      case 'invite':
+        return {
+          background: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+          text: 'text-white',
+          icon: 'text-white'
+        }
+      default:
+        return {
+          background: 'bg-gradient-to-r from-gray-500 to-gray-600',
+          text: 'text-white',
+          icon: 'text-white'
+        }
+    }
+  })
+
+  // Modals
+  const showEditModal = ref(false)
+  const showPasswordModal = ref(false)
+  const showCurrentPasswordModal = ref(false)
+  const showAvatarModal = ref(false)
+
+  // États des formulaires
+  const updatingProfile = ref(false)
+  const updatingPassword = ref(false)
+  const passwordError = ref('')
+  const newPasswordError = ref('')
+  const profileError = ref('')
+  const successMessage = ref('')
+
+  // Données des formulaires
+  const editForm = ref({
+    nom: '',
+    prenom: '',
+    numero_telephone: ''
+  })
+
+  const currentPasswordForm = ref({
     current_password: ''
-  }
-  passwordError.value = ''
-  newPasswordError.value = ''
-  successMessage.value = ''
-  showCurrentPasswordModal.value = true
-}
+  })
 
-const closePasswordModal = () => {
-  showPasswordModal.value = false
-  showCurrentPasswordModal.value = false
-  passwordForm.value = {
+  const passwordForm = ref({
     new_password: '',
     new_password_confirmation: ''
-  }
-  currentPasswordForm.value = {
-    current_password: ''
-  }
-  passwordError.value = ''
-  newPasswordError.value = ''
-}
+  })
 
-const closeCurrentPasswordModal = () => {
-  showCurrentPasswordModal.value = false
-  currentPasswordForm.value = {
-    current_password: ''
-  }
-  passwordError.value = ''
-  newPasswordError.value = ''
-}
-
-// Fonction pour afficher un message de succès temporaire
-const showSuccessMessage = (message: string) => {
-  successMessage.value = t(message)
-  setTimeout(() => {
-    successMessage.value = ''
-  }, 5000) // Disparaît après 5 secondes
-}
-
-const openAvatarModal = () => {
-  showAvatarModal.value = true
-}
-
-const closeAvatarModal = () => {
-  showAvatarModal.value = false
-}
-
-const handleAvatarSuccess = (newAvatarUrl: string | null) => {
-  showSuccessMessage(newAvatarUrl ? t('profile.common.profilePhotoUpdatedSuccess') : t('profile.common.profilePhotoDeletedSuccess'))
-}
-
-const handleAvatarError = (event?: Event) => {
-  // On ne bloque plus définitivement l'affichage de l'avatar, on affiche juste le fallback
-  avatarError.value = true
-}
-
-// Si l'utilisateur change d'avatar, on reset l'erreur
-import { watch } from 'vue'
-watch(() => user.value?.photo_profil, () => {
-  avatarError.value = false
-})
-
-// Mettre à jour le profil
-const updateProfile = async () => {
-  try {
-    updatingProfile.value = true
-    profileError.value = ''
-    // Validation côté client pour le format international du téléphone
-    const cleanPhone = editForm.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
-    if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
-      profileError.value = t('profile.errors.phoneFormat')
-      return
-    }
-    const response = await $fetch(`${config.public.apiBase}/profile/update`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: editForm.value
-    }) as ApiResponse
-    if (response.success) {
-      // Mettre à jour les données utilisateur
-      authStore.updateUser(response.data)
-      // L'affichage se met à jour automatiquement via le store Pinia (authStore.user)
-      // Afficher le message de succès dans la modale
-      successMessage.value = t('profile.success.updated')
-      // Fermer la modale après un court délai
-      setTimeout(() => {
-        closeEditModal()
-        showSuccessMessage('profile.success.updated')
-      }, 1200)
-    }
-  } catch (error: any) {
-    console.error('Erreur lors de la mise à jour du profil:', error)
-    if (error.response?.status === 422) {
-      // Vérifier si l'erreur est spécifiquement liée au format du téléphone
-      if (error.data?.errors?.numero_telephone) {
-        profileError.value = Array.isArray(error.data.errors.numero_telephone) 
-          ? t(error.data.errors.numero_telephone[0]) 
-          : t(error.data.errors.numero_telephone)
+  // Charger les statistiques au montage
+  onMounted(async () => {
+    // Attente pour l'hydratation côté client
+    await nextTick()
+    
+    if (process.client) {
+      // Force l'initialisation de l'auth
+      authStore.initAuth()
+      
+      // Attendre un moment pour que l'initialisation se termine
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      if (authStore.token) {
+        await loadStats()
       } else {
-        profileError.value = t('profile.errors.invalidData')
+        // Essayer de recharger la page si on n'a vraiment pas de token
+        setTimeout(() => {
+          if (!authStore.token) {
+            navigateTo('/login')
+          }
+        }, 1000)
       }
-    } else {
-      profileError.value = t('profile.errors.update')
     }
-  } finally {
-    updatingProfile.value = false
-  }
-}
+    
+    initEditForm()
+  })
 
-// Vérifier le mot de passe actuel (vraie vérification)
-const verifyCurrentPassword = async () => {
-  if (!currentPasswordForm.value.current_password) {
-    passwordError.value = t('profile.errors.currentPasswordRequired')
-    return
-  }
+  // Watcher pour surveiller les changements de token
+  watch(() => authStore.token, async (newToken, oldToken) => {
+    if (newToken && !oldToken && !stats.value) {
+      await loadStats()
+    }
+  })
 
-  try {
-    updatingPassword.value = true
-    passwordError.value = ''
-    
-    console.log('🔐 Vérification du mot de passe actuel:', currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]')
-    
-    // Faire une vraie vérification du mot de passe actuel
-    const response = await $fetch(`${config.public.apiBase}/profile/verify-password`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: {
-        current_password: currentPasswordForm.value.current_password
-      }
-    }) as ApiResponse
-    
-    if (response.success) {
-      console.log('✅ Mot de passe actuel vérifié avec succès')
-      // Passer à l'étape suivante
-      showCurrentPasswordModal.value = false
-      passwordForm.value = {
-        new_password: '',
-        new_password_confirmation: ''
-      }
-      showPasswordModal.value = true
-    }
-  } catch (error: any) {
-    console.error('❌ Erreur lors de la vérification du mot de passe:', error)
-    
-    if (error.response?.status === 422 || error.response?.status === 401) {
-      passwordError.value = t('profile.errors.currentPasswordIncorrect')
-    } else {
-      passwordError.value = t('profile.errors.passwordVerificationError')
-    }
-  } finally {
-    updatingPassword.value = false
-  }
-}
-
-// Changer le mot de passe
-const updatePassword = async () => {
-  // Validation côté client
-  if (passwordForm.value.new_password !== passwordForm.value.new_password_confirmation) {
-    newPasswordError.value = t('profile.errors.passwordMismatch')
-    return
-  }
-  if (passwordForm.value.new_password.length < 8) {
-    newPasswordError.value = t('profile.errors.passwordTooShort')
-    return
-  }
-  
-  try {
-    updatingPassword.value = true
-    newPasswordError.value = ''
-    
-    const requestBody = {
-      current_password: currentPasswordForm.value.current_password,
-      new_password: passwordForm.value.new_password,
-      new_password_confirmation: passwordForm.value.new_password_confirmation
-    }
-    
-    console.log('🔐 Changement de mot de passe - Données envoyées:', {
-      current_password: currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]',
-      new_password: passwordForm.value.new_password ? `[${passwordForm.value.new_password.length} caractères]` : '[VIDE]',
-      new_password_confirmation: passwordForm.value.new_password_confirmation ? `[${passwordForm.value.new_password_confirmation.length} caractères]` : '[VIDE]'
-    })
-    
-    console.log('🔐 Vérification avant envoi:')
-    console.log('  - current_password rempli:', !!currentPasswordForm.value.current_password)
-    console.log('  - new_password rempli:', !!passwordForm.value.new_password)
-    console.log('  - new_password_confirmation rempli:', !!passwordForm.value.new_password_confirmation)
-    console.log('  - Les mots de passe correspondent:', passwordForm.value.new_password === passwordForm.value.new_password_confirmation)
-    
-    console.log('🔐 URL de l\'API:', `${config.public.apiBase}/profile/password`)
-    console.log('🔐 Token présent:', !!authStore.token)
-    
-    const response = await $fetch(`${config.public.apiBase}/profile/password`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: requestBody
-    }) as ApiResponse
-    
-    if (response.success) {
-      console.log('✅ Changement de mot de passe réussi')
-      closePasswordModal()
-      showSuccessMessage('profile.success.passwordUpdated')
-      // Reset forms
-      currentPasswordForm.value = { current_password: '' }
-      passwordForm.value = { new_password: '', new_password_confirmation: '' }
-    }
-  } catch (error: any) {
-    console.error('❌ Erreur lors du changement de mot de passe:', error)
-    console.error('❌ Status d\'erreur:', error.response?.status)
-    console.error('❌ Headers de réponse:', error.response?.headers)
-    console.error('❌ Données d\'erreur complètes:', error.response?._data || error.data)
-    
-    if (error.response?.status === 422) {
-      // Analyser l'erreur plus précisément
-      const errorData = error.response._data || error.data
-      console.log('🔍 Analyse des erreurs 422:', {
-        errorData,
-        hasErrors: !!errorData?.errors,
-        hasMessage: !!errorData?.message,
-        errorsKeys: errorData?.errors ? Object.keys(errorData.errors) : [],
-        message: errorData?.message
+  // Charger les statistiques
+  const loadStats = async () => {
+    try {
+      loading.value = true
+      
+      const response = await fetch(`${config.public.apiBase}/profile/stats`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json'
+        }
       })
       
-      if (errorData?.errors) {
-        const errors = errorData.errors
-        console.log('🔍 Erreurs spécifiques:', errors)
-        
-        if (errors.current_password) {
-          console.log('❌ Erreur sur current_password:', errors.current_password)
-          // Retourner au premier modal pour corriger le mot de passe actuel
-          showPasswordModal.value = false
-          passwordError.value = Array.isArray(errors.current_password) ? errors.current_password[0] : errors.current_password
-          showCurrentPasswordModal.value = true
-        } else if (errors.new_password) {
-          console.log('❌ Erreur sur new_password:', errors.new_password)
-          newPasswordError.value = Array.isArray(errors.new_password) ? errors.new_password[0] : errors.new_password
-        } else if (errors.new_password_confirmation) {
-          console.log('❌ Erreur sur new_password_confirmation:', errors.new_password_confirmation)
-          newPasswordError.value = Array.isArray(errors.new_password_confirmation) ? errors.new_password_confirmation[0] : errors.new_password_confirmation
+      const data = await response.json()
+      
+      if (data && data.success) {
+        stats.value = data.data
+      }
+    } catch (error: any) {
+      // Gestion silencieuse des erreurs
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Initialiser le formulaire d'édition
+  const initEditForm = () => {
+    if (user.value) {
+      editForm.value = {
+        nom: user.value.nom || '',
+        prenom: user.value.prenom || '',
+        numero_telephone: user.value.numero_telephone || ''
+      }
+    }
+  }
+
+  // Modals
+  const openEditModal = () => {
+    initEditForm()
+    profileError.value = ''
+    successMessage.value = ''
+    showEditModal.value = true
+  }
+
+  const closeEditModal = () => {
+    showEditModal.value = false
+    profileError.value = ''
+    initEditForm()
+  }
+
+  const openPasswordModal = () => {
+    currentPasswordForm.value = {
+      current_password: ''
+    }
+    passwordError.value = ''
+    newPasswordError.value = ''
+    successMessage.value = ''
+    showCurrentPasswordModal.value = true
+  }
+
+  const closePasswordModal = () => {
+    showPasswordModal.value = false
+    showCurrentPasswordModal.value = false
+    passwordForm.value = {
+      new_password: '',
+      new_password_confirmation: ''
+    }
+    currentPasswordForm.value = {
+      current_password: ''
+    }
+    passwordError.value = ''
+    newPasswordError.value = ''
+  }
+
+  const closeCurrentPasswordModal = () => {
+    showCurrentPasswordModal.value = false
+    currentPasswordForm.value = {
+      current_password: ''
+    }
+    passwordError.value = ''
+    newPasswordError.value = ''
+  }
+
+  // Fonction pour afficher un message de succès temporaire
+  const showSuccessMessage = (message: string) => {
+    successMessage.value = t(message)
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 5000) // Disparaît après 5 secondes
+  }
+
+  const openAvatarModal = () => {
+    showAvatarModal.value = true
+  }
+
+  const closeAvatarModal = () => {
+    showAvatarModal.value = false
+  }
+
+  const handleAvatarSuccess = (newAvatarUrl: string | null) => {
+    showSuccessMessage(newAvatarUrl ? t('profile.common.profilePhotoUpdatedSuccess') : t('profile.common.profilePhotoDeletedSuccess'))
+  }
+
+  const handleAvatarError = (event?: Event) => {
+    // On ne bloque plus définitivement l'affichage de l'avatar, on affiche juste le fallback
+    avatarError.value = true
+  }
+
+  // Si l'utilisateur change d'avatar, on reset l'erreur
+  import { watch } from 'vue'
+  watch(() => user.value?.photo_profil, () => {
+    avatarError.value = false
+  })
+
+  // Mettre à jour le profil
+  const updateProfile = async () => {
+    try {
+      updatingProfile.value = true
+      profileError.value = ''
+      // Validation côté client pour le format international du téléphone
+      const cleanPhone = editForm.value.numero_telephone.replace(/\s/g, '') // Retirer les espaces
+      if (!/^\+\d{1,4}\d{6,15}$/.test(cleanPhone)) {
+        profileError.value = t('profile.errors.phoneFormat')
+        return
+      }
+      const response = await $fetch(`${config.public.apiBase}/profile/update`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: editForm.value
+      }) as ApiResponse
+      if (response.success) {
+        // Mettre à jour les données utilisateur
+        authStore.updateUser(response.data)
+        // L'affichage se met à jour automatiquement via le store Pinia (authStore.user)
+        // Afficher le message de succès dans la modale
+        successMessage.value = t('profile.success.updated')
+        // Fermer la modale après un court délai
+        setTimeout(() => {
+          closeEditModal()
+          showSuccessMessage('profile.success.updated')
+        }, 1200)
+      }
+    } catch (error: any) {
+      console.error('Erreur lors de la mise à jour du profil:', error)
+      if (error.response?.status === 422) {
+        // Vérifier si l'erreur est spécifiquement liée au format du téléphone
+        if (error.data?.errors?.numero_telephone) {
+          profileError.value = Array.isArray(error.data.errors.numero_telephone) 
+            ? t(error.data.errors.numero_telephone[0]) 
+            : t(error.data.errors.numero_telephone)
         } else {
-          console.log('❌ Erreur générale de validation')
-          newPasswordError.value = 'Les données saisies ne sont pas valides'
-        }
-      } else if (errorData?.message) {
-        console.log('❌ Message d\'erreur direct:', errorData.message)
-        if (errorData.message.includes('actuel incorrect') || errorData.message.includes('current password')) {
-          // Retourner au premier modal pour corriger le mot de passe actuel
-          showPasswordModal.value = false
-          passwordError.value = errorData.message
-          showCurrentPasswordModal.value = true
-        } else {
-          newPasswordError.value = errorData.message
+          profileError.value = t('profile.errors.invalidData')
         }
       } else {
-        console.log('❌ Erreur 422 sans structure reconnue')
-        newPasswordError.value = t('profile.errors.validationError')
+        profileError.value = t('profile.errors.update')
       }
-    } else {
-      console.log('❌ Erreur non-422:', error.response?.status)
-      newPasswordError.value = t('profile.errors.passwordUpdateError')
+    } finally {
+      updatingProfile.value = false
     }
-  } finally {
-    updatingPassword.value = false
   }
-}
 
-// Utilitaires
-const formatDate = (dateString: string | undefined) => {
-  if (!dateString) return 'Non disponible'
-  
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  } catch {
-    return t('profile.common.invalidDate')
+  // Vérifier le mot de passe actuel (vraie vérification)
+  const verifyCurrentPassword = async () => {
+    if (!currentPasswordForm.value.current_password) {
+      passwordError.value = t('profile.errors.currentPasswordRequired')
+      return
+    }
+
+    try {
+      updatingPassword.value = true
+      passwordError.value = ''
+      
+      console.log('🔐 Vérification du mot de passe actuel:', currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]')
+      
+      // Faire une vraie vérification du mot de passe actuel
+      const response = await $fetch(`${config.public.apiBase}/profile/verify-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: {
+          current_password: currentPasswordForm.value.current_password
+        }
+      }) as ApiResponse
+      
+      if (response.success) {
+        console.log('✅ Mot de passe actuel vérifié avec succès')
+        // Passer à l'étape suivante
+        showCurrentPasswordModal.value = false
+        passwordForm.value = {
+          new_password: '',
+          new_password_confirmation: ''
+        }
+        showPasswordModal.value = true
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la vérification du mot de passe:', error)
+      
+      if (error.response?.status === 422 || error.response?.status === 401) {
+        passwordError.value = t('profile.errors.currentPasswordIncorrect')
+      } else {
+        passwordError.value = t('profile.errors.passwordVerificationError')
+      }
+    } finally {
+      updatingPassword.value = false
+    }
   }
-}
 
-const toggleMobileMenu = () => {
-  console.log('Toggle mobile menu')
-}
-
-const logout = async () => {
-  try {
-    await authStore.logout()
-    // La redirection est maintenant gérée par le store
-  } catch (error) {
-    console.error('Erreur lors de la déconnexion:', error)
-    // En cas d'erreur, forcer la redirection
-    await navigateTo('/')
+  // Changer le mot de passe
+  const updatePassword = async () => {
+    // Validation côté client
+    if (passwordForm.value.new_password !== passwordForm.value.new_password_confirmation) {
+      newPasswordError.value = t('profile.errors.passwordMismatch')
+      return
+    }
+    if (passwordForm.value.new_password.length < 8) {
+      newPasswordError.value = t('profile.errors.passwordTooShort')
+      return
+    }
+    
+    try {
+      updatingPassword.value = true
+      newPasswordError.value = ''
+      
+      const requestBody = {
+        current_password: currentPasswordForm.value.current_password,
+        new_password: passwordForm.value.new_password,
+        new_password_confirmation: passwordForm.value.new_password_confirmation
+      }
+      
+      console.log('🔐 Changement de mot de passe - Données envoyées:', {
+        current_password: currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]',
+        new_password: passwordForm.value.new_password ? `[${passwordForm.value.new_password.length} caractères]` : '[VIDE]',
+        new_password_confirmation: passwordForm.value.new_password_confirmation ? `[${passwordForm.value.new_password_confirmation.length} caractères]` : '[VIDE]'
+      })
+      
+      console.log('🔐 Vérification avant envoi:')
+      console.log('  - current_password rempli:', !!currentPasswordForm.value.current_password)
+      console.log('  - new_password rempli:', !!passwordForm.value.new_password)
+      console.log('  - new_password_confirmation rempli:', !!passwordForm.value.new_password_confirmation)
+      console.log('  - Les mots de passe correspondent:', passwordForm.value.new_password === passwordForm.value.new_password_confirmation)
+      
+      console.log('🔐 URL de l\'API:', `${config.public.apiBase}/profile/password`)
+      console.log('🔐 Token présent:', !!authStore.token)
+      
+      const response = await $fetch(`${config.public.apiBase}/profile/password`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: requestBody
+      }) as ApiResponse
+      
+      if (response.success) {
+        console.log('✅ Changement de mot de passe réussi')
+        closePasswordModal()
+        showSuccessMessage('profile.success.passwordUpdated')
+        // Reset forms
+        currentPasswordForm.value = { current_password: '' }
+        passwordForm.value = { new_password: '', new_password_confirmation: '' }
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur lors du changement de mot de passe:', error)
+      console.error('❌ Status d\'erreur:', error.response?.status)
+      console.error('❌ Headers de réponse:', error.response?.headers)
+      console.error('❌ Données d\'erreur complètes:', error.response?._data || error.data)
+      
+      if (error.response?.status === 422) {
+        // Analyser l'erreur plus précisément
+        const errorData = error.response._data || error.data
+        console.log('🔍 Analyse des erreurs 422:', {
+          errorData,
+          hasErrors: !!errorData?.errors,
+          hasMessage: !!errorData?.message,
+          errorsKeys: errorData?.errors ? Object.keys(errorData.errors) : [],
+          message: errorData?.message
+        })
+        
+        if (errorData?.errors) {
+          const errors = errorData.errors
+          console.log('🔍 Erreurs spécifiques:', errors)
+          
+          if (errors.current_password) {
+            console.log('❌ Erreur sur current_password:', errors.current_password)
+            // Retourner au premier modal pour corriger le mot de passe actuel
+            showPasswordModal.value = false
+            passwordError.value = Array.isArray(errors.current_password) ? errors.current_password[0] : errors.current_password
+            showCurrentPasswordModal.value = true
+          } else if (errors.new_password) {
+            console.log('❌ Erreur sur new_password:', errors.new_password)
+            newPasswordError.value = Array.isArray(errors.new_password) ? errors.new_password[0] : errors.new_password
+          } else if (errors.new_password_confirmation) {
+            console.log('❌ Erreur sur new_password_confirmation:', errors.new_password_confirmation)
+            newPasswordError.value = Array.isArray(errors.new_password_confirmation) ? errors.new_password_confirmation[0] : errors.new_password_confirmation
+          } else {
+            console.log('❌ Erreur générale de validation')
+            newPasswordError.value = 'Les données saisies ne sont pas valides'
+          }
+        } else if (errorData?.message) {
+          console.log('❌ Message d\'erreur direct:', errorData.message)
+          if (errorData.message.includes('actuel incorrect') || errorData.message.includes('current password')) {
+            // Retourner au premier modal pour corriger le mot de passe actuel
+            showPasswordModal.value = false
+            passwordError.value = errorData.message
+            showCurrentPasswordModal.value = true
+          } else {
+            newPasswordError.value = errorData.message
+          }
+        } else {
+          console.log('❌ Erreur 422 sans structure reconnue')
+          newPasswordError.value = t('profile.errors.validationError')
+        }
+      } else {
+        console.log('❌ Erreur non-422:', error.response?.status)
+        newPasswordError.value = t('profile.errors.passwordUpdateError')
+      }
+    } finally {
+      updatingPassword.value = false
+    }
   }
-}
 
-// Fonctions utilitaires pour les nouvelles statistiques
-const getActivityLevel = (score: number) => {
-  if (score >= 80) return t('profile.activityLevels.veryActive')
-  if (score >= 60) return t('profile.activityLevels.active')
-  if (score >= 40) return t('profile.activityLevels.moderate')
-  if (score >= 20) return t('profile.activityLevels.beginner')
-  return t('profile.activityLevels.new')
-}
-
-const getActivityColor = (score: number) => {
-  if (score >= 80) return 'from-green-400 to-emerald-500'
-  if (score >= 60) return 'from-blue-400 to-cyan-500'
-  if (score >= 40) return 'from-yellow-400 to-orange-500'
-  if (score >= 20) return 'from-orange-400 to-red-500'
-  return 'from-gray-400 to-gray-500'
-}
-
-const getBadgeClass = (couleur: string) => {
-  const classes = {
-    blue: 'bg-blue-100 text-blue-700 border border-blue-200',
-    green: 'bg-green-100 text-green-700 border border-green-200',
-    yellow: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-    purple: 'bg-purple-100 text-purple-700 border border-purple-200',
-    red: 'bg-red-100 text-red-700 border border-red-200',
-    orange: 'bg-orange-100 text-orange-700 border border-orange-200'
+  // Utilitaires
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Non disponible'
+    
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    } catch {
+      return t('profile.common.invalidDate')
+    }
   }
-  return classes[couleur as keyof typeof classes] || 'bg-gray-100 text-gray-700 border border-gray-200'
-}
 
-const getTrendClass = (trend: number) => {
-  if (trend > 0) return 'text-green-600'
-  if (trend < 0) return 'text-red-600'
-  return 'text-gray-500'
-}
-
-const getTrendText = (trend: number) => {
-  if (trend > 0) return `+${trend} ${t('profile.trends.thisMonth')}`
-  if (trend < 0) return `${trend} ${t('profile.trends.thisMonth')}`
-  return t('profile.trends.stable')
-}
-
-const formatRoleKey = (key: string) => {
-  const translations: { [key: string]: string } = {
-    niveau_acces: t('profile.roleDetails.accessLevel'),
-    date_nomination: t('profile.roleDetails.nominationDate'),
-    actions_admin: t('profile.roleDetails.adminActions'),
-    incidents_traites: t('profile.roleDetails.incidentsHandled'),
-    visites_effectuees: t('profile.roleDetails.visitsCompleted'),
-    date_debut_sejour: t('profile.roleDetails.stayStartDate'),
-    date_fin_sejour: t('profile.roleDetails.stayEndDate'),
-    statut_invitation: t('profile.roleDetails.invitationStatus'),
-    adresse_logement: t('profile.roleDetails.housingAddress'),
-    date_emmenagement: t('profile.roleDetails.moveInDate')
+  const toggleMobileMenu = () => {
+    console.log('Toggle mobile menu')
   }
-  return translations[key] || key.replace(/_/g, ' ')
-}
 
-const formatRoleValue = (key: string, value: any) => {
-  if (key.includes('date') && value) {
-    return formatDate(value)
+  const logout = async () => {
+    try {
+      await authStore.logout()
+      // La redirection est maintenant gérée par le store
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+      // En cas d'erreur, forcer la redirection
+      await navigateTo('/')
+    }
   }
-  if (typeof value === 'number') {
-    return value.toString()
+
+  // Fonctions utilitaires pour les nouvelles statistiques
+  const getActivityLevel = (score: number) => {
+    if (score >= 80) return t('profile.activityLevels.veryActive')
+    if (score >= 60) return t('profile.activityLevels.active')
+    if (score >= 40) return t('profile.activityLevels.moderate')
+    if (score >= 20) return t('profile.activityLevels.beginner')
+    return t('profile.activityLevels.new')
   }
-  return value || t('profile.roleDetails.undefined')
-}
+
+  const getActivityColor = (score: number) => {
+    if (score >= 80) return 'from-green-400 to-emerald-500'
+    if (score >= 60) return 'from-blue-400 to-cyan-500'
+    if (score >= 40) return 'from-yellow-400 to-orange-500'
+    if (score >= 20) return 'from-orange-400 to-red-500'
+    return 'from-gray-400 to-gray-500'
+  }
+
+  const getBadgeClass = (couleur: string) => {
+    const classes = {
+      blue: 'bg-blue-100 text-blue-700 border border-blue-200',
+      green: 'bg-green-100 text-green-700 border border-green-200',
+      yellow: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
+      purple: 'bg-purple-100 text-purple-700 border border-purple-200',
+      red: 'bg-red-100 text-red-700 border border-red-200',
+      orange: 'bg-orange-100 text-orange-700 border border-orange-200'
+    }
+    return classes[couleur as keyof typeof classes] || 'bg-gray-100 text-gray-700 border border-gray-200'
+  }
+
+  const getTrendClass = (trend: number) => {
+    if (trend > 0) return 'text-green-600'
+    if (trend < 0) return 'text-red-600'
+    return 'text-gray-500'
+  }
+
+  const getTrendText = (trend: number) => {
+    if (trend > 0) return `+${trend} ${t('profile.trends.thisMonth')}`
+    if (trend < 0) return `${trend} ${t('profile.trends.thisMonth')}`
+    return t('profile.trends.stable')
+  }
+
+  const formatRoleKey = (key: string) => {
+    const translations: { [key: string]: string } = {
+      niveau_acces: t('profile.roleDetails.accessLevel'),
+      date_nomination: t('profile.roleDetails.nominationDate'),
+      actions_admin: t('profile.roleDetails.adminActions'),
+      incidents_traites: t('profile.roleDetails.incidentsHandled'),
+      visites_effectuees: t('profile.roleDetails.visitsCompleted'),
+      date_debut_sejour: t('profile.roleDetails.stayStartDate'),
+      date_fin_sejour: t('profile.roleDetails.stayEndDate'),
+      statut_invitation: t('profile.roleDetails.invitationStatus'),
+      adresse_logement: t('profile.roleDetails.housingAddress'),
+      date_emmenagement: t('profile.roleDetails.moveInDate')
+    }
+    return translations[key] || key.replace(/_/g, ' ')
+  }
+
+  const formatRoleValue = (key: string, value: any) => {
+    if (key.includes('date') && value) {
+      return formatDate(value)
+    }
+    if (typeof value === 'number') {
+      return value.toString()
+    }
+    return value || t('profile.roleDetails.undefined')
+  }
 </script>
 
 

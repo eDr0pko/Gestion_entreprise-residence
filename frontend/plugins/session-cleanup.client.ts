@@ -32,3 +32,5 @@ export default defineNuxtPlugin(() => {
     setInterval(cleanExpiredSessions, 5 * 60 * 1000)
   }
 })
+
+

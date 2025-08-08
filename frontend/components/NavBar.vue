@@ -122,34 +122,36 @@
 
 
 <script setup lang="ts">
-import type { User } from '~/types/index'
-const authStore = useAuthStore()
-const mobileMenuOpen = ref(false)
-const user = computed(() => authStore.user as User | null)
+  import type { User } from '~/types/index'
+  const authStore = useAuthStore()
+  const mobileMenuOpen = ref(false)
+  const user = computed(() => authStore.user as User | null)
 
-// Obtenir le libellé du rôle
-const getRoleLabel = (role?: string) => {
-  switch (role) {
-    case 'admin': return 'Administrateur'
-    case 'gardien': return 'Gardien'
-    case 'resident': return 'Résident'
-    default: return 'Invité'
-  }
-}
-
-// Gérer la déconnexion
-const handleLogout = async () => {
-  await authStore.logout()
-  mobileMenuOpen.value = false
-}
-
-// Fermer le menu mobile quand on clique ailleurs
-onMounted(() => {
-  document.addEventListener('click', (e) => {
-    const nav = document.querySelector('nav')
-    if (nav && !nav.contains(e.target as Node)) {
-      mobileMenuOpen.value = false
+  // Obtenir le libellé du rôle
+  const getRoleLabel = (role?: string) => {
+    switch (role) {
+      case 'admin': return 'Administrateur'
+      case 'gardien': return 'Gardien'
+      case 'resident': return 'Résident'
+      default: return 'Invité'
     }
+  }
+
+  // Gérer la déconnexion
+  const handleLogout = async () => {
+    await authStore.logout()
+    mobileMenuOpen.value = false
+  }
+
+  // Fermer le menu mobile quand on clique ailleurs
+  onMounted(() => {
+    document.addEventListener('click', (e) => {
+      const nav = document.querySelector('nav')
+      if (nav && !nav.contains(e.target as Node)) {
+        mobileMenuOpen.value = false
+      }
+    })
   })
-})
 </script>
+
+

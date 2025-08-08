@@ -105,36 +105,38 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: false,
-  auth: false
-})
+  definePageMeta({
+    layout: false,
+    auth: false
+  })
 
-useHead({
-  title: 'Mot de passe oublié - Gestion Entreprise de Résidence'
-})
+  useHead({
+    title: 'Mot de passe oublié - Gestion Entreprise de Résidence'
+  })
 
-const email = ref('')
-const loading = ref(false)
-const message = ref('')
-const success = ref(false)
+  const email = ref('')
+  const loading = ref(false)
+  const message = ref('')
+  const success = ref(false)
 
-const handleReset = async () => {
-  loading.value = true
-  message.value = ''
-  
-  try {
-    // Simulation d'envoi d'email (à implémenter selon votre backend)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+  const handleReset = async () => {
+    loading.value = true
+    message.value = ''
     
-    success.value = true
-    message.value = 'Un lien de réinitialisation a été envoyé à votre adresse email.'
-    email.value = ''
-  } catch (error) {
-    success.value = false
-    message.value = 'Une erreur est survenue. Veuillez réessayer.'
-  } finally {
-    loading.value = false
+    try {
+      // Simulation d'envoi d'email (à implémenter selon votre backend)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      success.value = true
+      message.value = 'Un lien de réinitialisation a été envoyé à votre adresse email.'
+      email.value = ''
+    } catch (error) {
+      success.value = false
+      message.value = 'Une erreur est survenue. Veuillez réessayer.'
+    } finally {
+      loading.value = false
+    }
   }
-}
 </script>
+
+

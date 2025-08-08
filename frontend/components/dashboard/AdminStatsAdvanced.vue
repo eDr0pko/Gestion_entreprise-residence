@@ -223,82 +223,81 @@
 </template>
 
 <script setup lang="ts">
+  import { computed, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
 
-import { computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 
+  const { t } = useI18n()
+  // Utilisation du composable unifié
+  const {
+    stats,
+    loadingStats,
+    errorStats,
+    fetchStats
+  } = useAdminData()
 
-const { t } = useI18n()
-// Utilisation du composable unifié
-const {
-  stats,
-  loadingStats,
-  errorStats,
-  fetchStats
-} = useAdminData()
-
-// Fonctions utilitaires
-function getTotalVisits() {
-  if (!stats.value.visits?.by_status) return 0
-  return stats.value.visits.by_status.reduce((total: number, visit: any) => total + visit.count, 0)
-}
-
-function getVisitStatusColor(status: string) {
-  switch (status) {
-    case 'programmee': return 'bg-blue-500'
-    case 'en_cours': return 'bg-green-500'
-    case 'terminee': return 'bg-gray-500'
-    case 'annulee': return 'bg-red-500'
-    default: return 'bg-gray-300'
+  // Fonctions utilitaires
+  function getTotalVisits() {
+    if (!stats.value.visits?.by_status) return 0
+    return stats.value.visits.by_status.reduce((total: number, visit: any) => total + visit.count, 0)
   }
-}
 
-function getVisitStatusLabel(status: string) {
-  switch (status) {
-    case 'programmee': return t('adminStatsAdvanced.statusScheduled')
-    case 'en_cours': return t('adminStatsAdvanced.statusOngoing')
-    case 'terminee': return t('adminStatsAdvanced.statusFinished')
-    case 'annulee': return t('adminStatsAdvanced.statusCancelled')
-    default: return status
+  function getVisitStatusColor(status: string) {
+    switch (status) {
+      case 'programmee': return 'bg-blue-500'
+      case 'en_cours': return 'bg-green-500'
+      case 'terminee': return 'bg-gray-500'
+      case 'annulee': return 'bg-red-500'
+      default: return 'bg-gray-300'
+    }
   }
-}
 
-function getActionLabel(action: string) {
-  switch (action) {
-    case 'login': return t('adminStatsAdvanced.actionLogin')
-    case 'login_attempt': return t('adminStatsAdvanced.actionLoginAttempt')
-    case 'read_messages': return t('adminStatsAdvanced.actionReadMessages')
-    case 'add_reaction': return t('adminStatsAdvanced.actionAddReaction')
-    default: return action
+  function getVisitStatusLabel(status: string) {
+    switch (status) {
+      case 'programmee': return t('adminStatsAdvanced.statusScheduled')
+      case 'en_cours': return t('adminStatsAdvanced.statusOngoing')
+      case 'terminee': return t('adminStatsAdvanced.statusFinished')
+      case 'annulee': return t('adminStatsAdvanced.statusCancelled')
+      default: return status
+    }
   }
-}
 
-function formatDate(dateString: string | null | undefined) {
-  if (!dateString) return t('adminStatsAdvanced.notAvailable')
-  try {
-    return new Date(dateString).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch {
-    return t('adminStatsAdvanced.notAvailable')
+  function getActionLabel(action: string) {
+    switch (action) {
+      case 'login': return t('adminStatsAdvanced.actionLogin')
+      case 'login_attempt': return t('adminStatsAdvanced.actionLoginAttempt')
+      case 'read_messages': return t('adminStatsAdvanced.actionReadMessages')
+      case 'add_reaction': return t('adminStatsAdvanced.actionAddReaction')
+      default: return action
+    }
   }
-}
 
-function formatFileSize(bytes: number) {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
+  function formatDate(dateString: string | null | undefined) {
+    if (!dateString) return t('adminStatsAdvanced.notAvailable')
+    try {
+      return new Date(dateString).toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return t('adminStatsAdvanced.notAvailable')
+    }
+  }
 
-onMounted(() => {
-  fetchStats()
-})
+  function formatFileSize(bytes: number) {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  onMounted(() => {
+    fetchStats()
+  })
 </script>
 
 <style scoped>
@@ -310,3 +309,5 @@ onMounted(() => {
   overflow: hidden;
 }
 </style>
+
+

@@ -152,120 +152,122 @@
 </template>
 
 <script setup lang="ts">
-import MessageReactions from './MessageReactions.vue'
-import MessageAttachment from './MessageAttachment.vue'
-import type { Message, FichierMessage } from '~/types'
+  import MessageReactions from './MessageReactions.vue'
+  import MessageAttachment from './MessageAttachment.vue'
+  import type { Message, FichierMessage } from '~/types'
 
-interface Props {
-  messages: Message[]
-  loading: boolean
-  isAtBottom: boolean
-  currentUserEmail: string
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'download-file': [fichierId: number]
-  'reaction-toggled': [messageId: number, emoji: string]
-  'scroll-to-bottom': []
-  'scroll': []
-}>()
-
-const messagesContainer = ref<HTMLElement | null>(null)
-
-const handleScroll = () => {
-  emit('scroll')
-}
-
-// Transformer les réactions du format API vers le format attendu par le composant
-const transformReactions = (reactions: Record<string, any>) => {
-  // Les réactions arrivent déjà dans le bon format depuis le backend
-  // Format: { "👍": { count: 2, users: [{ id_personne: 1, email: "user@test.com", nom: "John Doe" }] } }
-  if (!reactions || typeof reactions !== 'object') {
-    return {}
+  interface Props {
+    messages: Message[]
+    loading: boolean
+    isAtBottom: boolean
+    currentUserEmail: string
   }
-  
-  const transformed: Record<string, { count: number; users: { email: string; nom: string; }[] }> = {}
-  
-  for (const [emoji, reactionData] of Object.entries(reactions)) {
-    if (reactionData && typeof reactionData === 'object' && reactionData.users) {
-      transformed[emoji] = {
-        count: reactionData.count || reactionData.users.length,
-        users: reactionData.users.map((user: any) => ({
-          email: user.email,
-          nom: user.nom
-        }))
+
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    'download-file': [fichierId: number]
+    'reaction-toggled': [messageId: number, emoji: string]
+    'scroll-to-bottom': []
+    'scroll': []
+  }>()
+
+  const messagesContainer = ref<HTMLElement | null>(null)
+
+  const handleScroll = () => {
+    emit('scroll')
+  }
+
+  // Transformer les réactions du format API vers le format attendu par le composant
+  const transformReactions = (reactions: Record<string, any>) => {
+    // Les réactions arrivent déjà dans le bon format depuis le backend
+    // Format: { "👍": { count: 2, users: [{ id_personne: 1, email: "user@test.com", nom: "John Doe" }] } }
+    if (!reactions || typeof reactions !== 'object') {
+      return {}
+    }
+    
+    const transformed: Record<string, { count: number; users: { email: string; nom: string; }[] }> = {}
+    
+    for (const [emoji, reactionData] of Object.entries(reactions)) {
+      if (reactionData && typeof reactionData === 'object' && reactionData.users) {
+        transformed[emoji] = {
+          count: reactionData.count || reactionData.users.length,
+          users: reactionData.users.map((user: any) => ({
+            email: user.email,
+            nom: user.nom
+          }))
+        }
       }
     }
-  }
-  
-  return transformed
-}
-
-// Formater l'heure
-const formatTime = (dateString: string): string => {
-  if (!dateString) return ''
-  
-  try {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     
-    if (days === 0) {
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    } else if (days === 1) {
-      return 'Hier'
-    } else if (days < 7) {
-      return date.toLocaleDateString('fr-FR', { weekday: 'short' })
-    } else {
-      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-    }
-  } catch (error) {
-    console.error('Erreur formatage date:', error)
-    return ''
+    return transformed
   }
-}
 
-// Exposer la référence du container pour le scroll
-defineExpose({ messagesContainer })
+  // Formater l'heure
+  const formatTime = (dateString: string): string => {
+    if (!dateString) return ''
+    
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diff = now.getTime() - date.getTime()
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      
+      if (days === 0) {
+        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      } else if (days === 1) {
+        return 'Hier'
+      } else if (days < 7) {
+        return date.toLocaleDateString('fr-FR', { weekday: 'short' })
+      } else {
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+      }
+    } catch (error) {
+      console.error('Erreur formatage date:', error)
+      return ''
+    }
+  }
+
+  // Exposer la référence du container pour le scroll
+  defineExpose({ messagesContainer })
 </script>
 
 <style scoped>
-/* Scrollbar personnalisée */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
-}
+  /* Scrollbar personnalisée */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f7fafc;
-  border-radius: 3px;
-}
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
-  transition: background-color 0.2s;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
 
-/* Animation pour le bouton de retour en bas */
-.fade-enter-active, .fade-leave-active {
-  transition: all 0.3s ease;
-}
+  /* Animation pour le bouton de retour en bas */
+  .fade-enter-active, .fade-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px) scale(0.9);
-}
+  .fade-enter-from, .fade-leave-to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
 </style>
+
+

@@ -11,29 +11,29 @@
 </template>
 
 <script setup lang="ts">
-// Authentification requise pour cette page
-definePageMeta({
-  middleware: 'auth'
-})
+  // Authentification requise pour cette page
+  definePageMeta({
+    middleware: 'auth'
+  })
 
-// Meta de la page
-useHead({
-  title: 'Administration - Paramètres de l\'application',
-  meta: [
-    { name: 'description', content: 'Interface d\'administration pour personnaliser l\'application' }
-  ]
-})
+  // Meta de la page
+  useHead({
+    title: 'Administration - Paramètres de l\'application',
+    meta: [
+      { name: 'description', content: 'Interface d\'administration pour personnaliser l\'application' }
+    ]
+  })
 
-// Vérifier que l'utilisateur est admin si nécessaire
-// const { user } = useAuth()
-// if (!user.value?.is_admin) {
-//   throw createError({
-//     statusCode: 403,
-//     statusMessage: 'Accès non autorisé'
-//   })
-// }
+  // Vérifier que l'utilisateur est admin si nécessaire
+  // const { user } = useAuth()
+  // if (!user.value?.is_admin) {
+  //   throw createError({
+  //     statusCode: 403,
+  //     statusMessage: 'Accès non autorisé'
+  //   })
+  // }
 </script>
 
 <style scoped>
-/* Styles spécifiques à la page settings */
+  /* Styles spécifiques à la page settings */
 </style>

@@ -106,9 +106,11 @@
 </template>
 
 <script setup>
-// Aucun script nécessaire pour cette page statique
+  // Aucun script nécessaire pour cette page statique
 </script>
 
 <style scoped>
-/* Ajouter animations ou responsivité ici si besoin */
+  /* Ajouter animations ou responsivité ici si besoin */
 </style>
+
+

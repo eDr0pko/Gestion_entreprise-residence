@@ -1,11 +1,21 @@
 -- Gestion d'entreprise de résidence
 
--- Creation de la base de données avec support UTF8MB4 pour les emojis
 CREATE DATABASE IF NOT EXISTS gestion_entreprise_residence 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 USE gestion_entreprise_residence;
-DROP TABLE IF EXISTS incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
+DROP TABLE IF EXISTS app_settings ,incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
+
+-- TABLE app_settings (stockage du nom et du logo du site)
+CREATE TABLE app_settings (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  app_name VARCHAR(255) NOT NULL DEFAULT 'Gestion Résidence',
+  logo_url VARCHAR(512) DEFAULT NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Valeur par défaut
+INSERT INTO app_settings (app_name, logo_url) VALUES ('Gestion Résidence', NULL);
 
 
 -- TABLE personne

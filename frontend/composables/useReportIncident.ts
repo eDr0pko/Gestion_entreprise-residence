@@ -51,3 +51,5 @@ async function reportIncident(description: string, statut: string = 'en_cours') 
 }
 
 export { reportIncident, reportLoading, reportError, success };
+
+

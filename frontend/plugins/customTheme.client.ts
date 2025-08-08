@@ -37,8 +37,8 @@ export default defineNuxtPlugin(() => {
   const { settings } = useAppSettings()
   
   watch(() => settings.value, (newSettings) => {
-    if (newSettings.app_primary_color && newSettings.app_secondary_color) {
-      applyCustomColors(newSettings.app_primary_color, newSettings.app_secondary_color)
+    if (newSettings.primary_color && newSettings.secondary_color) {
+      applyCustomColors(newSettings.primary_color, newSettings.secondary_color)
     }
   }, { immediate: true })
 
@@ -49,3 +49,5 @@ export default defineNuxtPlugin(() => {
     }
   }
 })
+
+

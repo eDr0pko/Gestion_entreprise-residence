@@ -10,3 +10,5 @@ export interface AdminPerson {
   date_nomination?: string;
   adresse_logement?: string;
 }
+
+

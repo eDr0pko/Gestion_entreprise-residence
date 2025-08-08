@@ -22,15 +22,17 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  sections: Array<{ key: string; label: string; icon: any }>
-  selectedSection: string
-}>()
-const emit = defineEmits(['select'])
+    const props = defineProps<{
+    sections: Array<{ key: string; label: string; icon: any }>
+    selectedSection: string
+    }>()
+    const emit = defineEmits(['select'])
 </script>
 
 <style scoped>
-.dashboard-sidebar {
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07), 0 1.5px 4px 0 rgba(0,0,0,0.03);
-}
+    .dashboard-sidebar {
+        box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07), 0 1.5px 4px 0 rgba(0,0,0,0.03);
+    }
 </style>
+
+

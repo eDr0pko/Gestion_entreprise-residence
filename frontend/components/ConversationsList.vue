@@ -195,122 +195,124 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { computed } from 'vue'
-const { t } = useI18n()
+  import { useI18n } from 'vue-i18n'
+  import { computed } from 'vue'
+  const { t } = useI18n()
 
-interface Conversation {
-  id_groupe_message: number
-  nom_groupe: string
-  date_creation: string
-  derniere_activite?: string
-  messages_non_lus: number
-  dernier_contenu?: string
-  dernier_auteur?: string
-  nombre_membres?: number
-}
-
-interface Props {
-  conversations: Conversation[]
-  selectedConversation: Conversation | null
-  loading: boolean
-  error: string
-  searchQuery: string
-  totalMessagesNonLus: number
-  isMobile: boolean
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'create-conversation': []
-  'select-conversation': [conversation: Conversation]
-  'retry-load': []
-  'debug-auth': []
-  'refresh-conversations': []
-  'update-search': [searchQuery: string]
-}>()
-
-const searchQuery = computed({
-  get: () => props.searchQuery,
-  set: (value: string) => emit('update-search', value)
-})
-
-const filteredConversations = computed(() => {
-  if (!searchQuery.value) return props.conversations
-  return props.conversations.filter((conv: Conversation) => 
-    conv.nom_groupe?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
-
-const totalMessagesNonLus = computed(() => props.totalMessagesNonLus)
-
-const selectedConversation = computed(() => props.selectedConversation)
-const isMobile = computed(() => props.isMobile)
-
-// Formater l'heure
-const formatTime = (dateString: string): string => {
-  if (!dateString) return ''
-  try {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    if (days === 0) {
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    } else if (days === 1) {
-      return t('conversationsList.yesterday')
-    } else if (days < 7) {
-      return date.toLocaleDateString('fr-FR', { weekday: 'short' })
-    } else {
-      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-    }
-  } catch (error) {
-    console.error('Erreur formatage date:', error)
-    return ''
+  interface Conversation {
+    id_groupe_message: number
+    nom_groupe: string
+    date_creation: string
+    derniere_activite?: string
+    messages_non_lus: number
+    dernier_contenu?: string
+    dernier_auteur?: string
+    nombre_membres?: number
   }
-}
+
+  interface Props {
+    conversations: Conversation[]
+    selectedConversation: Conversation | null
+    loading: boolean
+    error: string
+    searchQuery: string
+    totalMessagesNonLus: number
+    isMobile: boolean
+  }
+
+  const props = defineProps<Props>()
+
+  const emit = defineEmits<{
+    'create-conversation': []
+    'select-conversation': [conversation: Conversation]
+    'retry-load': []
+    'debug-auth': []
+    'refresh-conversations': []
+    'update-search': [searchQuery: string]
+  }>()
+
+  const searchQuery = computed({
+    get: () => props.searchQuery,
+    set: (value: string) => emit('update-search', value)
+  })
+
+  const filteredConversations = computed(() => {
+    if (!searchQuery.value) return props.conversations
+    return props.conversations.filter((conv: Conversation) => 
+      conv.nom_groupe?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  })
+
+  const totalMessagesNonLus = computed(() => props.totalMessagesNonLus)
+
+  const selectedConversation = computed(() => props.selectedConversation)
+  const isMobile = computed(() => props.isMobile)
+
+  // Formater l'heure
+  const formatTime = (dateString: string): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diff = now.getTime() - date.getTime()
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      if (days === 0) {
+        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      } else if (days === 1) {
+        return t('conversationsList.yesterday')
+      } else if (days < 7) {
+        return date.toLocaleDateString('fr-FR', { weekday: 'short' })
+      } else {
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+      }
+    } catch (error) {
+      console.error('Erreur formatage date:', error)
+      return ''
+    }
+  }
 </script>
 
 <style scoped>
-/* Scrollbar personnalisée */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
-}
+  /* Scrollbar personnalisée */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f7fafc;
-  border-radius: 3px;
-}
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
-  transition: background-color 0.2s;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
 
-/* Animation pour le badge */
-.badge-enter-active, .badge-leave-active {
-  transition: all 0.3s ease;
-}
+  /* Animation pour le badge */
+  .badge-enter-active, .badge-leave-active {
+    transition: all 0.3s ease;
+  }
 
-.badge-enter-from {
-  opacity: 0;
-  transform: scale(0.3);
-}
+  .badge-enter-from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 
-.badge-leave-to {
-  opacity: 0;
-  transform: scale(0.3);
-}
+  .badge-leave-to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 </style>
+
+

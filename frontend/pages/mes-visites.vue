@@ -76,86 +76,88 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: 'auth' // Protéger la page via Sanctum
-})
-
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
-
-const visites = ref<any[]>([])
-const loading = ref(true)
-const error = ref('')
-
-// Charger les visites
-const loadVisites = async () => {
-  try {
-    error.value = ''
-    loading.value = true
-
-    const response = await fetch(`${config.public.apiBase}/visites`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
-      }
-    })
-
-    const data = await response.json()
-
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Erreur lors du chargement')
-    }
-
-    visites.value = data.visites
-  } catch (err: any) {
-    console.error(err)
-    error.value = 'Erreur lors du chargement des visites.'
-  } finally {
-    loading.value = false
-  }
-}
-
-// Mettre à jour le statut d'une visite
-const changerStatut = async (id: number, statut: string) => {
-  try {
-    const response = await fetch(`${config.public.apiBase}/visites/${id}/statut`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ statut })
-    })
-
-    const data = await response.json()
-
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Erreur lors du changement de statut')
-    }
-
-    await loadVisites()
-  } catch (err: any) {
-    console.error(err)
-    error.value = 'Erreur lors du changement de statut.'
-  }
-}
-
-// Formatage des dates
-const formatDate = (str: string) => {
-  const date = new Date(str)
-  return date.toLocaleString('fr-FR', {
-    day: '2-digit', month: '2-digit',
-    hour: '2-digit', minute: '2-digit'
+  definePageMeta({
+    middleware: 'auth' // Protéger la page via Sanctum
   })
-}
 
-// Fonction pour afficher un message d'information
-const showReportMessage = () => {
-  // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
-}
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-onMounted(() => {
-  loadVisites()
-})
+  const visites = ref<any[]>([])
+  const loading = ref(true)
+  const error = ref('')
+
+  // Charger les visites
+  const loadVisites = async () => {
+    try {
+      error.value = ''
+      loading.value = true
+
+      const response = await fetch(`${config.public.apiBase}/visites`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Erreur lors du chargement')
+      }
+
+      visites.value = data.visites
+    } catch (err: any) {
+      console.error(err)
+      error.value = 'Erreur lors du chargement des visites.'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Mettre à jour le statut d'une visite
+  const changerStatut = async (id: number, statut: string) => {
+    try {
+      const response = await fetch(`${config.public.apiBase}/visites/${id}/statut`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ statut })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Erreur lors du changement de statut')
+      }
+
+      await loadVisites()
+    } catch (err: any) {
+      console.error(err)
+      error.value = 'Erreur lors du changement de statut.'
+    }
+  }
+
+  // Formatage des dates
+  const formatDate = (str: string) => {
+    const date = new Date(str)
+    return date.toLocaleString('fr-FR', {
+      day: '2-digit', month: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    })
+  }
+
+  // Fonction pour afficher un message d'information
+  const showReportMessage = () => {
+    // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
+  }
+
+  onMounted(() => {
+    loadVisites()
+  })
 </script>
+
+

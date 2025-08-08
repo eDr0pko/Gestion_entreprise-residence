@@ -113,3 +113,5 @@ const uniqueUsers = computed(() => {
 onMounted(fetchLogs);
 
 export { logs, loading, error, deletingLogs, fetchLogs, deleteLogsBefore, uniqueActions, uniqueUsers };
+
+

@@ -65,110 +65,112 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+  import { computed, ref } from 'vue'
 
-const props = defineProps({
-  selectedDate: {
-    type: Date,
-    required: true
-  },
-  visites: {
-    type: Array,
-    default: () => []
+  const props = defineProps({
+    selectedDate: {
+      type: Date,
+      required: true
+    },
+    visites: {
+      type: Array,
+      default: () => []
+    }
+  })
+
+  const emit = defineEmits(['visit-click', 'date-select', 'visit-edit'])
+
+  const selectedCalendarDate = ref(new Date(props.selectedDate))
+
+  const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+
+  const calendarDates = computed(() => {
+    const year = props.selectedDate.getFullYear()
+    const month = props.selectedDate.getMonth()
+    
+    // First day of the month
+    const firstDay = new Date(year, month, 1)
+    // Last day of the month
+    const lastDay = new Date(year, month + 1, 0)
+    
+    // Start from Monday of the week containing the first day
+    const startDate = new Date(firstDay)
+    const dayOfWeek = firstDay.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    startDate.setDate(firstDay.getDate() + mondayOffset)
+    
+    // Generate 42 days (6 weeks)
+    const dates = []
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate)
+      date.setDate(startDate.getDate() + i)
+      dates.push(date)
+    }
+    
+    return dates
+  })
+
+  function isCurrentMonth(date) {
+    return date.getMonth() === props.selectedDate.getMonth()
   }
-})
 
-const emit = defineEmits(['visit-click', 'date-select', 'visit-edit'])
-
-const selectedCalendarDate = ref(new Date(props.selectedDate))
-
-const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-
-const calendarDates = computed(() => {
-  const year = props.selectedDate.getFullYear()
-  const month = props.selectedDate.getMonth()
-  
-  // First day of the month
-  const firstDay = new Date(year, month, 1)
-  // Last day of the month
-  const lastDay = new Date(year, month + 1, 0)
-  
-  // Start from Monday of the week containing the first day
-  const startDate = new Date(firstDay)
-  const dayOfWeek = firstDay.getDay()
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  startDate.setDate(firstDay.getDate() + mondayOffset)
-  
-  // Generate 42 days (6 weeks)
-  const dates = []
-  for (let i = 0; i < 42; i++) {
-    const date = new Date(startDate)
-    date.setDate(startDate.getDate() + i)
-    dates.push(date)
+  function isToday(date) {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
   }
-  
-  return dates
-})
 
-function isCurrentMonth(date) {
-  return date.getMonth() === props.selectedDate.getMonth()
-}
-
-function isToday(date) {
-  const today = new Date()
-  return date.toDateString() === today.toDateString()
-}
-
-function isSelected(date) {
-  return date.toDateString() === selectedCalendarDate.value.toDateString()
-}
-
-function selectDate(date) {
-  selectedCalendarDate.value = date
-  emit('date-select', date)
-}
-
-function getVisitesForDate(date) {
-  return props.visites.filter(visite => {
-    const visiteDate = new Date(visite.date_visite_start)
-    return visiteDate.toDateString() === date.toDateString()
-  }).sort((a, b) => new Date(a.date_visite_start) - new Date(b.date_visite_start))
-}
-
-function getVisiteIndicatorClass(visite) {
-  const baseClass = 'inline-block'
-  
-  switch (visite.statut_visite) {
-    case 'programmee':
-      return `${baseClass} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300`
-    case 'en_cours':
-      return `${baseClass} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300`
-    case 'terminee':
-      return `${baseClass} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300`
-    case 'annulee':
-      return `${baseClass} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300`
-    default:
-      return `${baseClass} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300`
+  function isSelected(date) {
+    return date.toDateString() === selectedCalendarDate.value.toDateString()
   }
-}
+
+  function selectDate(date) {
+    selectedCalendarDate.value = date
+    emit('date-select', date)
+  }
+
+  function getVisitesForDate(date) {
+    return props.visites.filter(visite => {
+      const visiteDate = new Date(visite.date_visite_start)
+      return visiteDate.toDateString() === date.toDateString()
+    }).sort((a, b) => new Date(a.date_visite_start) - new Date(b.date_visite_start))
+  }
+
+  function getVisiteIndicatorClass(visite) {
+    const baseClass = 'inline-block'
+    
+    switch (visite.statut_visite) {
+      case 'programmee':
+        return `${baseClass} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300`
+      case 'en_cours':
+        return `${baseClass} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300`
+      case 'terminee':
+        return `${baseClass} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300`
+      case 'annulee':
+        return `${baseClass} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300`
+      default:
+        return `${baseClass} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300`
+    }
+  }
 </script>
 
 <style scoped>
-.calendar-grid {
-  max-height: calc(100vh - 200px);
-  overflow: auto;
-}
+  .calendar-grid {
+    max-height: calc(100vh - 200px);
+    overflow: auto;
+  }
 
-.calendar-cell {
-  transition: all 0.2s ease;
-}
+  .calendar-cell {
+    transition: all 0.2s ease;
+  }
 
-.calendar-cell:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+  .calendar-cell:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
-.dark .calendar-cell:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
+  .dark .calendar-cell:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 </style>
+
+

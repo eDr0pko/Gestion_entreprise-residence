@@ -98,153 +98,155 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-const config = useRuntimeConfig()
+  import { ref, computed } from 'vue'
+  import { useAuthStore } from '@/stores/auth'
+  const authStore = useAuthStore()
+  const config = useRuntimeConfig()
 
-const open = ref(false)
-const btnClicked = ref(false)
-const showTrash = ref(false)
-const notifications = ref([])
-const emit = defineEmits(['update:open'])
+  const open = ref(false)
+  const btnClicked = ref(false)
+  const showTrash = ref(false)
+  const notifications = ref([])
+  const emit = defineEmits(['update:open'])
 
-const toggleSidebar = () => {
-  btnClicked.value = true
-  open.value = !open.value
-  emit('update:open', open.value) // Ajout : on informe le parent
-  if (open.value) fetchNotifications()
-}
+  const toggleSidebar = () => {
+    btnClicked.value = true
+    open.value = !open.value
+    emit('update:open', open.value) // Ajout : on informe le parent
+    if (open.value) fetchNotifications()
+  }
 
-const fetchNotifications = async () => {
-  try {
-    const res = await fetch(`${config.public.apiBase}/visites`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Accept': 'application/json'
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch(`${config.public.apiBase}/visites`, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Accept': 'application/json'
+        }
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        notifications.value = data.visites
+      } else {
+        notifications.value = []
       }
-    })
-    const data = await res.json()
-    if (res.ok && data.success) {
-      notifications.value = data.visites
-    } else {
+    } catch (err) {
       notifications.value = []
     }
-  } catch (err) {
-    notifications.value = []
   }
-}
 
-const changerStatut = async (id, statut) => {
-  try {
-    const res = await fetch(`${config.public.apiBase}/visites/${id}/statut`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ statut })
-    })
-    const data = await res.json()
-    if (!res.ok || !data.success) throw new Error(data.message)
-    await fetchNotifications()
-  } catch (e) {
-    console.error('Erreur lors du changement de statut:', e)
+  const changerStatut = async (id, statut) => {
+    try {
+      const res = await fetch(`${config.public.apiBase}/visites/${id}/statut`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ statut })
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.message)
+      await fetchNotifications()
+    } catch (e) {
+      console.error('Erreur lors du changement de statut:', e)
+    }
   }
-}
 
-const filteredNotifications = computed(() =>
-  notifications.value.filter(v =>
-    showTrash.value ? v.statut_visite === 'annulee' : v.statut_visite !== 'annulee'
+  const filteredNotifications = computed(() =>
+    notifications.value.filter(v =>
+      showTrash.value ? v.statut_visite === 'annulee' : v.statut_visite !== 'annulee'
+    )
   )
-)
 
-const formatDate = (str) => {
-  const date = new Date(str)
-  return date.toLocaleString('fr-FR', {
-    day: '2-digit', month: '2-digit',
-    hour: '2-digit', minute: '2-digit'
-  })
-}
+  const formatDate = (str) => {
+    const date = new Date(str)
+    return date.toLocaleString('fr-FR', {
+      day: '2-digit', month: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    })
+  }
 
-// Fonction pour afficher un message d'information
-const showReportMessage = () => {
-  // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
-}
+  // Fonction pour afficher un message d'information
+  const showReportMessage = () => {
+    // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
+  }
 </script>
 
 <style scoped>
-.notif-btn {
-  position: absolute;
-  top: 130px;
-  right: 12px;
-  z-index: 1001;
-  background: linear-gradient(to right, #0097b2, #008699);
-  color: #fff;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 9999px;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.15s, background 0.3s;
-  box-shadow: 0 10px 30px -10px rgba(0, 151, 178, 0.4);
-}
-.notif-btn:hover {
-  background: linear-gradient(to right, #008699, #007a94);
-  transform: scale(1.05);
-}
-.notif-btn.clicked {
-  animation: notif-pop 0.15s;
-}
-@keyframes notif-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-.notif-btn-fade-enter-active, .notif-btn-fade-leave-active {
-  transition: opacity 0.2s;
-}
-.notif-btn-fade-enter-from, .notif-btn-fade-leave-to {
-  opacity: 0;
-}
-.sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 360px;
-  height: 100%;
-  background: #fff;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-}
-.sidebar-header {
-  background: #f5f5f5;
-  border-bottom: 1px solid #eee;
-}
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-.notif-list {
-  list-style: none;
-  padding: 1rem;
-  margin: 0;
-  flex: 1;
-  overflow-y: auto;
-}
-.slide-enter-active, .slide-leave-active {
-  transition: transform 0.3s;
-}
-.slide-enter-from, .slide-leave-to {
-  transform: translateX(100%);
-}
+  .notif-btn {
+    position: absolute;
+    top: 130px;
+    right: 12px;
+    z-index: 1001;
+    background: linear-gradient(to right, #0097b2, #008699);
+    color: #fff;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 9999px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.3s;
+    box-shadow: 0 10px 30px -10px rgba(0, 151, 178, 0.4);
+  }
+  .notif-btn:hover {
+    background: linear-gradient(to right, #008699, #007a94);
+    transform: scale(1.05);
+  }
+  .notif-btn.clicked {
+    animation: notif-pop 0.15s;
+  }
+  @keyframes notif-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .notif-btn-fade-enter-active, .notif-btn-fade-leave-active {
+    transition: opacity 0.2s;
+  }
+  .notif-btn-fade-enter-from, .notif-btn-fade-leave-to {
+    opacity: 0;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-header {
+    background: #f5f5f5;
+    border-bottom: 1px solid #eee;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .notif-list {
+    list-style: none;
+    padding: 1rem;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .slide-enter-active, .slide-leave-active {
+    transition: transform 0.3s;
+  }
+  .slide-enter-from, .slide-leave-to {
+    transform: translateX(100%);
+  }
 </style>
+
+

@@ -12,3 +12,5 @@ export default defineNuxtPlugin(() => {
     token: !!authStore.token
   })
 })
+
+

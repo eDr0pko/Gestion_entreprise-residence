@@ -36,84 +36,85 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '~/stores/auth'
+  import { ref, watch } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAuthStore } from '~/stores/auth'
 
-const { t } = useI18n()
-const props = defineProps<{ show: boolean }>()
-const emit = defineEmits(['close'])
-const authStore = useAuthStore()
+  const { t } = useI18n()
+  const props = defineProps<{ show: boolean }>()
+  const emit = defineEmits(['close'])
+  const authStore = useAuthStore()
 
-const email = ref('')
-const message = ref('')
-const files = ref<File[]>([])
-const loading = ref(false)
-const error = ref('')
-const success = ref(false)
+  const email = ref('')
+  const message = ref('')
+  const files = ref<File[]>([])
+  const loading = ref(false)
+  const error = ref('')
+  const success = ref(false)
 
-watch(() => props.show, (val) => {
-  if (val) {
-    email.value = (authStore.user as any)?.email || ''
-    message.value = ''
-    files.value = []
+  watch(() => props.show, (val) => {
+    if (val) {
+      email.value = (authStore.user as any)?.email || ''
+      message.value = ''
+      files.value = []
+      error.value = ''
+      success.value = false
+    }
+  })
+
+  function handleFiles(e: Event) {
+    const input = e.target as HTMLInputElement
+    if (input.files) files.value = Array.from(input.files)
+  }
+
+  async function submitContact() {
     error.value = ''
     success.value = false
-  }
-})
-
-function handleFiles(e: Event) {
-  const input = e.target as HTMLInputElement
-  if (input.files) files.value = Array.from(input.files)
-}
-
-async function submitContact() {
-  error.value = ''
-  success.value = false
-  if (!message.value.trim()) {
-    error.value = 'Le message est obligatoire.'
-    return
-  }
-  loading.value = true
-  try {
-    const formData = new FormData()
-    // Préparer le JSON details
-    const details = {
-      datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      object: `[Contact Admin] ${message.value}`,
-      statut: 'a_venir',
-      email_signaleur: email.value
+    if (!message.value.trim()) {
+      error.value = 'Le message est obligatoire.'
+      return
     }
-    formData.append('details', JSON.stringify(details))
-    files.value.forEach(f => formData.append('pieces_jointes[]', f))
+    loading.value = true
+    try {
+      const formData = new FormData()
+      // Préparer le JSON details
+      const details = {
+        datetime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        object: `[Contact Admin] ${message.value}`,
+        statut: 'a_venir',
+        email_signaleur: email.value
+      }
+      formData.append('details', JSON.stringify(details))
+      files.value.forEach(f => formData.append('pieces_jointes[]', f))
 
-    const apiBase = useRuntimeConfig().public.apiBase
-    await $fetch(`${apiBase}/contact-admin`, {
-      method: 'POST',
-      body: formData
-    })
-    success.value = true
-    message.value = ''
-    files.value = []
-    setTimeout(() => {
-      emit('close')
-    }, 1200)
-  } catch (e: any) {
-    console.error('Erreur backend:', e)
-    error.value = e?.data?.message || e?.message || 'Erreur lors de l\'envoi du message.'
-  } finally {
-    loading.value = false
+      const apiBase = useRuntimeConfig().public.apiBase
+      await $fetch(`${apiBase}/contact-admin`, {
+        method: 'POST',
+        body: formData
+      })
+      success.value = true
+      message.value = ''
+      files.value = []
+      setTimeout(() => {
+        emit('close')
+      }, 1200)
+    } catch (e: any) {
+      console.error('Erreur backend:', e)
+      error.value = e?.data?.message || e?.message || 'Erreur lors de l\'envoi du message.'
+    } finally {
+      loading.value = false
+    }
   }
-}
 </script>
 
 <style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.2s;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+  .animate-fade-in {
+    animation: fadeIn 0.2s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
+
 

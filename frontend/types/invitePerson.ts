@@ -11,3 +11,5 @@ export interface InvitePerson {
   invite_par?: string;
   commentaire?: string;
 }
+
+

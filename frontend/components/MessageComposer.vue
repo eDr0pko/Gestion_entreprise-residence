@@ -88,64 +88,66 @@
 </template>
 
 <script setup lang="ts">
-import FileUploadZone from './FileUploadZone.vue'
+  import FileUploadZone from './FileUploadZone.vue'
 
-interface Props {
-  sending: boolean
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'send-message': []
-}>()
-
-const message = defineModel<string>('message', { required: true })
-const selectedFiles = defineModel<File[]>('selectedFiles', { required: true })
-
-const messageInput = ref<HTMLTextAreaElement | null>(null)
-const fileUploadRef = ref()
-const showFileUpload = ref(false)
-
-const toggleFileUpload = () => {
-  showFileUpload.value = !showFileUpload.value
-  // Ne vider les fichiers que si on ferme la zone et qu'il n'y a pas de fichiers
-  if (!showFileUpload.value && selectedFiles.value.length === 0) {
-    fileUploadRef.value?.clearFiles()
+  interface Props {
+    sending: boolean
   }
-}
 
-const handleFilesChanged = (files: File[]) => {
-  selectedFiles.value = files
-}
+  const props = defineProps<Props>()
 
-const removeFile = (index: number) => {
-  selectedFiles.value.splice(index, 1)
-}
+  const emit = defineEmits<{
+    'send-message': []
+  }>()
 
-const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault()
-    emit('send-message')
+  const message = defineModel<string>('message', { required: true })
+  const selectedFiles = defineModel<File[]>('selectedFiles', { required: true })
+
+  const messageInput = ref<HTMLTextAreaElement | null>(null)
+  const fileUploadRef = ref()
+  const showFileUpload = ref(false)
+
+  const toggleFileUpload = () => {
+    showFileUpload.value = !showFileUpload.value
+    // Ne vider les fichiers que si on ferme la zone et qu'il n'y a pas de fichiers
+    if (!showFileUpload.value && selectedFiles.value.length === 0) {
+      fileUploadRef.value?.clearFiles()
+    }
   }
-}
 
-// Watcher pour auto-resize du textarea
-watch(message, () => {
-  nextTick(() => {
-    if (messageInput.value) {
-      messageInput.value.style.height = 'auto'
-      messageInput.value.style.height = Math.min(messageInput.value.scrollHeight, 120) + 'px'
+  const handleFilesChanged = (files: File[]) => {
+    selectedFiles.value = files
+  }
+
+  const removeFile = (index: number) => {
+    selectedFiles.value.splice(index, 1)
+  }
+
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      emit('send-message')
+    }
+  }
+
+  // Watcher pour auto-resize du textarea
+  watch(message, () => {
+    nextTick(() => {
+      if (messageInput.value) {
+        messageInput.value.style.height = 'auto'
+        messageInput.value.style.height = Math.min(messageInput.value.scrollHeight, 120) + 'px'
+      }
+    })
+  })
+
+  // Exposer les méthodes nécessaires
+  defineExpose({
+    clearFiles: () => {
+      selectedFiles.value = []
+      showFileUpload.value = false
+      fileUploadRef.value?.clearFiles()
     }
   })
-})
-
-// Exposer les méthodes nécessaires
-defineExpose({
-  clearFiles: () => {
-    selectedFiles.value = []
-    showFileUpload.value = false
-    fileUploadRef.value?.clearFiles()
-  }
-})
 </script>
+
+

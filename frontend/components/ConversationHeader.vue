@@ -26,27 +26,29 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+  import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
-interface Conversation {
-  id_groupe_message: number
-  nom_groupe: string
-  date_creation: string
-  derniere_activite?: string
-  messages_non_lus: number
-  dernier_contenu?: string
-  dernier_auteur?: string
-  nombre_membres?: number
-}
+  const { t } = useI18n()
+  interface Conversation {
+    id_groupe_message: number
+    nom_groupe: string
+    date_creation: string
+    derniere_activite?: string
+    messages_non_lus: number
+    dernier_contenu?: string
+    dernier_auteur?: string
+    nombre_membres?: number
+  }
 
-interface Props {
-  conversation: Conversation | null
-}
+  interface Props {
+    conversation: Conversation | null
+  }
 
-const props = defineProps<Props>()
+  const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  'show-members': []
-}>()
+  const emit = defineEmits<{
+    'show-members': []
+  }>()
 </script>
+
+
