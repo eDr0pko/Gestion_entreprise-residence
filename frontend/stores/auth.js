@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
             this.token = token
             this.user = JSON.parse(user)
             this.isAuthenticated = true
-            console.log('Auth initialisé depuis localStorage:', { token: !!token, user: this.user })
+            // Suppression du log inutile
           } catch (error) {
             console.error('Erreur lors de l\'initialisation auth:', error)
             this.clearAuth()
@@ -83,11 +83,7 @@ export const useAuthStore = defineStore('auth', {
             localStorage.setItem('auth_token', response.access_token)
             localStorage.setItem('user', JSON.stringify(response.user))
           }
-          console.log('Connexion réussie:', { 
-            token: !!this.token, 
-            user: this.user,
-            authenticated: this.isAuthenticated 
-          })
+          // Suppression du log inutile
           return { success: true, user: this.user }
         } else {
           throw new Error((response && response.message) || 'Erreur de connexion')
@@ -176,11 +172,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(user))
       }
       
-      console.log('Authentification définie:', { 
-        token: !!this.token, 
-        user: this.user,
-        authenticated: this.isAuthenticated 
-      })
+  // Suppression du log inutile
     },
 
     // Nettoyer l'authentification

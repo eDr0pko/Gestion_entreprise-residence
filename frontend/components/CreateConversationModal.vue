@@ -233,23 +233,71 @@
   }
 
   const loadUsers = async () => {
+    // Empêcher les appels multiples en parallèle
+    if (loadingUsers.value) return
     try {
       loadingUsers.value = true
       error.value = ''
-      const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
+
+      // Vérification / récupération du token (race condition potentielle au montage)
+      let workingToken = authStore.token as unknown as string | null
+      if ((!workingToken || typeof workingToken !== 'string') && process.client) {
+        const stored = localStorage.getItem('auth_token')
+        if (stored) {
+          workingToken = stored
+          // Ne pas forcer le type sur le store (store JS) – assignment toléré
+          // @ts-ignore
+          authStore.token = stored
+          console.debug('[CreateConversationModal] Token restauré depuis localStorage')
+        }
+      }
+
+      if (!workingToken || typeof workingToken !== 'string') {
+        console.warn('[CreateConversationModal] Aucun token disponible avant requête utilisateurs')
+        error.value = 'Token manquant – veuillez vous reconnecter.'
+        return
+      }
+
+      const tokenPreview = workingToken.length > 8 ? workingToken.substring(0,8) + '...' : '[court]'
+      console.debug('[CreateConversationModal] Chargement des utilisateurs avec token (tronqué):', tokenPreview)
+      const response = await $fetch<any>(`${config.public.apiBase}/conversations/users`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${workingToken}`,
           'Accept': 'application/json'
         }
+      }).catch((fetchErr: any) => {
+        console.error('[CreateConversationModal] Erreur réseau/fetch brute:', fetchErr)
+        throw fetchErr
       })
-      if (response.success && response.users) {
-        users.value = response.users
+
+      console.debug('[CreateConversationModal] Réponse brute /conversations/users:', response)
+
+      // Normalisation (si string avec espaces / BOM)
+      let parsed: any = response
+      if (typeof response === 'string') {
+        const trimmed = response.trim()
+        try {
+          parsed = JSON.parse(trimmed)
+          console.debug('[CreateConversationModal] Réponse parsée depuis string')
+        } catch (e) {
+          console.warn('[CreateConversationModal] Impossible de parser la réponse texte en JSON, utilisation brute')
+        }
+      }
+
+      const success = !!parsed?.success
+      const usersPayload: User[] | undefined = parsed?.users
+      if (success && Array.isArray(usersPayload)) {
+        users.value = usersPayload
+        console.debug(`[CreateConversationModal] ${users.value.length} utilisateurs chargés`)
       } else {
-        throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+        const apiError = (parsed && (parsed.error || parsed.message)) || 'Réponse inattendue du serveur'
+        throw new Error(apiError)
       }
     } catch (err: any) {
       console.error('Erreur lors du chargement des utilisateurs:', err)
-      error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
+      // Conserver le message original pour faciliter le debug
+      const msg = err?.data?.message || err?.message || 'Impossible de charger les utilisateurs'
+      error.value = msg
     } finally {
       loadingUsers.value = false
     }
@@ -258,27 +306,51 @@
   const createConversation = async () => {
     try {
       creating.value = true
-      const response = await $fetch<{success: boolean, conversation: any, error?: string}>(`${config.public.apiBase}/conversations`, {
+      error.value = ''
+      const payload = {
+        nom_groupe: nomGroupe.value.trim(),
+        participants: selectedUsers.value.map(user => user.email)
+      }
+      console.debug('[CreateConversationModal] Envoi création conversation payload:', JSON.stringify(payload))
+      const rawResponse = await $fetch<any>(`${config.public.apiBase}/conversations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: {
-          nom_groupe: nomGroupe.value.trim(),
-          participants: selectedUsers.value.map(user => user.email)
-        }
+        body: payload
       })
-      if (response.success && response.conversation) {
+      console.debug('[CreateConversationModal] Réponse création conversation brute:', rawResponse)
+
+      // Normalisation similaire à loadUsers (gestion des retours avec espaces / lignes vides)
+      let response = rawResponse
+      if (typeof rawResponse === 'string') {
+        const trimmed = rawResponse.trim()
+        try {
+          response = JSON.parse(trimmed)
+          console.debug('[CreateConversationModal] Réponse création conversation parsée depuis string (taille initiale:', rawResponse.length, ')')
+        } catch (e) {
+          console.warn('[CreateConversationModal] Impossible de parser la réponse création conversation texte en JSON, utilisation brute')
+        }
+      }
+
+      if (response && response.success && response.conversation) {
         emit('created', response.conversation)
         closeModal()
       } else {
-        throw new Error(response.error || 'Erreur lors de la création de la conversation')
+        const apiError = (response && (response.error || response.message)) || 'Erreur lors de la création de la conversation'
+        throw new Error(apiError)
       }
     } catch (err: any) {
       console.error('Erreur lors de la création de la conversation:', err)
-      error.value = err.data?.message || err.message || 'Impossible de créer la conversation'
+      // Afficher erreurs de validation si présentes
+      if (err?.data?.errors) {
+        const flat = Object.entries(err.data.errors).map(([k,v]: any) => `${k}: ${(v as any[]).join(', ')}`).join(' | ')
+        error.value = flat
+      } else {
+        error.value = err?.data?.message || err.message || 'Impossible de créer la conversation'
+      }
     } finally {
       creating.value = false
     }

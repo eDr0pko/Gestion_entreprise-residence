@@ -133,6 +133,12 @@
             return $this->getRole() === $role;
         }
 
+        // Relations
+        public function badges()
+        {
+            return $this->hasMany(Badge::class, 'id_utilisateur', 'id_personne');
+        }
+
         // Accesseur pour le nom complet
         public function getNomCompletAttribute()
         {

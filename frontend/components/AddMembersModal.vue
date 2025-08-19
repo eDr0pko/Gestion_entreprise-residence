@@ -27,7 +27,7 @@
               <div class="flex-1 min-h-0 flex flex-col">
                 <div class="p-4 border-b border-gray-100">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ t('components.addMembersModal.selectMembers', { count: selectedUsers.length }) }} ({{ selectedUsers.length }} {{ t('components.addMembersModal.selected', { count: selectedUsers.length }) }})
+                    {{ t('components.addMembersModal.selectMembers') }} – {{ selectedUsers.length }} {{ t('components.addMembersModal.selected', { count: selectedUsers.length }) }}
                   </label>
                   
                   <!-- Barre de recherche -->
@@ -250,28 +250,55 @@
 
   // Charger les utilisateurs disponibles (qui ne sont pas déjà membres)
   const loadAvailableUsers = async () => {
+    if (loadingUsers.value) return
     try {
       loadingUsers.value = true
       error.value = ''
-      
-      const response = await $fetch<{success: boolean, users: User[], error?: string}>(`${config.public.apiBase}/conversations/users`, {
+      console.debug('[AddMembersModal] Loading available users')
+
+      // Restaurer token si nécessaire
+      let workingToken = authStore.token as unknown as string | null
+      if ((!workingToken || typeof workingToken !== 'string') && process.client) {
+        const stored = localStorage.getItem('auth_token')
+        if (stored) {
+          workingToken = stored
+          // @ts-ignore
+          authStore.token = stored
+          console.debug('[AddMembersModal] Token restauré depuis localStorage')
+        }
+      }
+      if (!workingToken || typeof workingToken !== 'string') {
+        error.value = 'Token manquant – veuillez vous reconnecter.'
+        console.warn('[AddMembersModal] Aucun token disponible')
+        return
+      }
+      const tokenPreview = workingToken.length > 8 ? workingToken.substring(0,8)+'...' : '[court]'
+      console.debug('[AddMembersModal] Utilisation token:', tokenPreview)
+
+      const url = `${config.public.apiBase}/conversations/users`
+      let response: any = await $fetch<any>(url, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`,
+          'Authorization': `Bearer ${workingToken}`,
           'Accept': 'application/json'
         }
-      })
-      
-      if (response.success && response.users) {
-        // Filtrer les utilisateurs qui ne sont pas déjà membres
-        const existingEmails = props.existingMembers.map(member => member.email)
-        availableUsers.value = response.users.filter(user => !existingEmails.includes(user.email))
-      } else {
-        throw new Error(response.error || 'Erreur lors du chargement des utilisateurs')
+      }).catch((e: any) => { console.error('[AddMembersModal] Network/parse error', e); throw e })
+
+      if (typeof response === 'string') {
+        try { response = JSON.parse(response) } catch { /* ignore parse error */ }
       }
-      
+      console.debug('[AddMembersModal] Raw response keys:', response ? Object.keys(response) : [])
+      const usersArray = Array.isArray(response?.users) ? response.users : []
+      const successFlag = (typeof response?.success === 'boolean') ? response.success : usersArray.length > 0
+      if (!successFlag) {
+        error.value = response?.error || response?.message || 'Erreur lors du chargement des utilisateurs'
+        return
+      }
+      const existingEmails = props.existingMembers.map(m => m.email)
+      availableUsers.value = (usersArray as User[]).filter((u: User) => !existingEmails.includes(u.email))
+      console.debug('[AddMembersModal] Users loaded (filtered):', availableUsers.value.length)
     } catch (err: any) {
       console.error('Erreur lors du chargement des utilisateurs:', err)
-      error.value = err.data?.message || err.message || 'Impossible de charger les utilisateurs'
+      error.value = err?.data?.message || err?.message || 'Impossible de charger les utilisateurs'
     } finally {
       loadingUsers.value = false
     }
@@ -283,8 +310,9 @@
     
     try {
       adding.value = true
-      
-      const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
+      console.debug('[AddMembersModal] Adding members', selectedUsers.value.map(u => u.email))
+      const url = `${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`
+      let response: any = await $fetch<any>(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
@@ -294,15 +322,32 @@
         body: {
           members: selectedUsers.value.map(user => user.email)
         }
-      })
-      
-      if (response.success && response.members) {
-        emit('membersAdded', response.members)
-        closeModal()
-      } else {
-        throw new Error(response.error || 'Erreur lors de l\'ajout des membres')
+      }).catch((e: any) => { console.error('[AddMembersModal] Network/parse error (add)', e); throw e })
+
+      // Permettre le backend proxy de renvoyer une chaîne brute
+      if (typeof response === 'string') {
+        try { response = JSON.parse(response); console.debug('[AddMembersModal] Parsed string response for addMembers') } catch {/* ignore */}
       }
-      
+      console.debug('[AddMembersModal] Raw add members response keys:', Object.keys(response || {}))
+
+      const hasMembersArray = response && Array.isArray(response.members)
+      const successFlag = (typeof response?.success === 'boolean') ? response.success : hasMembersArray
+
+      if (!successFlag) {
+        // Essayer de détecter un message d'erreur détaillé
+        const serverMessage = response?.error || response?.message
+        throw new Error(serverMessage || 'Erreur lors de l\'ajout des membres')
+      }
+
+      const newMembers: Member[] = hasMembersArray ? response.members : []
+      console.debug('[AddMembersModal] Members added count:', newMembers.length)
+
+      if (newMembers.length > 0) {
+        emit('membersAdded', newMembers)
+      } else {
+        console.debug('[AddMembersModal] No new members actually added (likely already present)')
+      }
+      closeModal()
     } catch (err: any) {
       console.error('Erreur lors de l\'ajout des membres:', err)
       error.value = err.data?.message || err.message || 'Impossible d\'ajouter les membres'

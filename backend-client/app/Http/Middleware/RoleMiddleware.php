@@ -6,12 +6,21 @@
 
     class RoleMiddleware
     {
-        public function handle(Request $request, Closure $next, $role)
+        public function handle(Request $request, Closure $next, ...$roles)
         {
-            if (!$request->user() || $request->user()->getRole() !== $role) {
+            if (!$request->user()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Accès non autorisé'
+                    'message' => 'Authentification requise'
+                ], 401);
+            }
+
+            $userRole = $request->user()->getRole();
+            
+            if (!in_array($userRole, $roles)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Accès non autorisé - Rôle requis: ' . implode(' ou ', $roles)
                 ], 403);
             }
 

@@ -595,26 +595,9 @@
   // Gestion d'erreur pour l'avatar
   const avatarError = ref(false)
   // Computed pour déterminer l'URL de l'avatar
-  const avatarUrl = computed(() => {
-    if (!user.value?.photo_profil) return null
-    if (avatarError.value) return null
-
-    const value = user.value.photo_profil;
-    // Si c'est déjà une URL complète, la retourner telle quelle
-    if (value.startsWith('http')) {
-      return value;
-    }
-    // Si le backend retourne déjà un chemin commençant par /avatars/ ou /storage/avatars/, utiliser tel quel avec apiBase
-    if (value.startsWith('/avatars/') || value.startsWith('avatars/')) {
-      return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
-    }
-    if (value.startsWith('/storage/avatars/') || value.startsWith('storage/avatars/')) {
-      // Supporte aussi le cas /storage/avatars/...
-      return `${config.public.apiBase.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
-    }
-    // Si le backend retourne juste le nom de fichier
-    return `${config.public.apiBase.replace(/\/$/, '')}/avatars/${value}`;
-  })
+  import { useAvatarUrl } from '@/composables/useAvatarUrl'
+  const { url: avatarUrl, set: setAvatarSource, markError: markAvatarError } = useAvatarUrl()
+  watch(() => user.value?.photo_profil, (val) => setAvatarSource(val || null), { immediate: true })
 
   // Computed pour déterminer le rôle correct de l'utilisateur
   const userRole = computed(() => {

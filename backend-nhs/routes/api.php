@@ -182,6 +182,21 @@
     });
 
     //
+    // 🏷️ Routes pour la gestion des badges (Admin & Gardien uniquement)
+    //
+    use App\Http\Controllers\BadgeController;
+    Route::middleware(['auth:sanctum', 'role:admin,gardien'])->group(function () {
+        Route::get('/badges', [BadgeController::class, 'index']);
+        Route::post('/badges', [BadgeController::class, 'store']);
+        Route::get('/badges/stats', [BadgeController::class, 'stats']);
+        Route::get('/badges/search-users', [BadgeController::class, 'searchUsers']);
+        Route::get('/badges/{numero}', [BadgeController::class, 'show']);
+        Route::put('/badges/{numero}', [BadgeController::class, 'update']);
+        Route::delete('/badges/{numero}', [BadgeController::class, 'destroy']);
+        Route::post('/badges/{numero}/toggle-status', [BadgeController::class, 'toggleStatus']);
+    });
+
+    //
     // 🧪 Routes de test et debug
     //
     Route::get('/test-conversation', function () {
@@ -209,6 +224,6 @@
             ], 500);
         }
     });
-?>
+// (Removed closing PHP tag to prevent accidental output)
 
 

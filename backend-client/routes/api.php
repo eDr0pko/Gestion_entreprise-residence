@@ -7,6 +7,7 @@
     use App\Http\Controllers\AuthController;
     use App\Http\Controllers\MessageController;
     use App\Http\Controllers\Api\LogoUploadController;
+    use App\Http\Controllers\Api\BadgeController;
 
     /*
     |--------------------------------------------------------------------------
@@ -27,6 +28,43 @@
             'server' => 'Laravel Backend-Client (Proxy)',
             'timestamp' => now(),
             'role' => 'proxy_and_database'
+        ]);
+    });
+
+    // 🔧 Debug temporaire pour vérifier les données badges
+    Route::get('/debug/badges', function () {
+        $badges = \App\Models\Badge::with('personne')->get();
+        $stats = [
+            'total_badges' => \App\Models\Badge::count(),
+            'badges_actifs' => \App\Models\Badge::whereExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('suivi_badge')
+                      ->whereColumn('suivi_badge.numero_badge', 'badge.numero_badge')
+                      ->where('suivi_badge.status', 'actif')
+                      ->whereNull('suivi_badge.date_fin');
+            })->count(),
+            'badges_inactifs' => \App\Models\Badge::whereExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('suivi_badge')
+                      ->whereColumn('suivi_badge.numero_badge', 'badge.numero_badge')
+                      ->where('suivi_badge.status', 'inactif')
+                      ->whereNull('suivi_badge.date_fin');
+            })->count(),
+            'badges_suspendus' => \App\Models\Badge::whereExists(function ($query) {
+                $query->select(\DB::raw(1))
+                      ->from('suivi_badge')
+                      ->whereColumn('suivi_badge.numero_badge', 'badge.numero_badge')
+                      ->where('suivi_badge.status', 'suspendu')
+                      ->whereNull('suivi_badge.date_fin');
+            })->count(),
+        ];
+        
+        return response()->json([
+            'badges_count' => $badges->count(),
+            'badges_data' => $badges->take(5), // Premier 5 badges pour debug
+            'stats' => $stats,
+            'suivi_count' => \App\Models\SuiviBadge::count(),
+            'personne_count' => \App\Models\Personne::count()
         ]);
     });
 
@@ -199,6 +237,20 @@
         Route::post('/admin/logs/delete-before', [UnifiedProxyController::class, 'handle'])->defaults('path', 'admin/logs/delete-before');
     });
 
+    // 🏷️ Gestion des badges (admin & gardien seulement) - PRIORITÉ HAUTE
+    Route::middleware(['auth:sanctum', 'role:admin,gardien'])->group(function () {
+        Route::get('/badges', [BadgeController::class, 'index']);
+        Route::post('/badges', [BadgeController::class, 'store']);
+        Route::get('/badges/stats', [BadgeController::class, 'stats']);
+        Route::get('/badges/statistiques', [BadgeController::class, 'stats']); // Alias pour compatibilité
+        Route::get('/badges/search-users', [BadgeController::class, 'searchUsers']);
+        Route::get('/badges/{numero}', [BadgeController::class, 'show']);
+        Route::get('/badges/{numero}/activity', [BadgeController::class, 'activity']); // Nouvelle route pour l'activité
+        Route::put('/badges/{numero}', [BadgeController::class, 'update']);
+        Route::delete('/badges/{numero}', [BadgeController::class, 'destroy']);
+        Route::post('/badges/{numero}/toggle-status', [BadgeController::class, 'toggleStatus']);
+    });
+
     //
     // 🧪 Test API temporaire - Accès direct DB
     //
@@ -219,6 +271,7 @@
         $path = ltrim($request->path(), 'api/');
         return app(UnifiedProxyController::class)->handle($request, $path);
     });
-?>
+
+
 
 

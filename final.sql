@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS gestion_entreprise_residence
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 USE gestion_entreprise_residence;
-DROP TABLE IF EXISTS app_settings ,incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
+DROP TABLE IF EXISTS suivi_badge, badge, identite, app_settings ,incident, logs, invite, message_fichier, message_reaction, personal_access_tokens, visite, message, personne_groupe, groupe_message, ban, resident, gardien, admin, personne;
 
 -- TABLE app_settings (stockage de la personnalisation complète du site)
 CREATE TABLE app_settings (
@@ -221,6 +221,48 @@ CREATE TABLE incident (
   FOREIGN KEY(id_signaleur) REFERENCES personne(id_personne) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- TABLE badge (gestion des badges d'accès)
+CREATE TABLE badge (
+  numero INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_utilisateur INT UNSIGNED NULL, -- Maintenant nullable - badge peut être non assigné
+  commentaire VARCHAR(512),
+  droit VARCHAR(255) NOT NULL,
+  statut ENUM('actif', 'inactif', 'suspendu', 'en_attente') DEFAULT 'en_attente',
+  date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date_derniere_utilisation TIMESTAMP NULL,
+  zone_acces VARCHAR(255) DEFAULT 'Accès général',
+  niveau_securite ENUM('basic', 'standard', 'elevé', 'maximum') DEFAULT 'standard',
+  FOREIGN KEY(id_utilisateur) REFERENCES personne(id_personne) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- TABLE suivi_badge (historique des actions sur les badges)
+CREATE TABLE suivi_badge (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  date_heure DATETIME NOT NULL,
+  id_badge INT UNSIGNED NOT NULL,
+  action VARCHAR(64) NOT NULL,
+  message TEXT,
+  id_utilisateur_action INT UNSIGNED NULL, -- Qui a effectué l'action
+  details_technique JSON NULL, -- Informations techniques (lecteur, localisation, etc.)
+  FOREIGN KEY(id_badge) REFERENCES badge(numero) ON DELETE CASCADE,
+  FOREIGN KEY(id_utilisateur_action) REFERENCES personne(id_personne) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- TABLE identite (informations d'identité de la personne)
+CREATE TABLE identite (
+  id_identite INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id_personne INT UNSIGNED NOT NULL,
+  nom VARCHAR(45) NOT NULL,
+  prenom VARCHAR(45) NOT NULL,
+  date_naissance DATE,
+  lieu_naissance VARCHAR(255),
+  nationalite VARCHAR(100),
+  type_document VARCHAR(100),
+  numero_document VARCHAR(100),
+  date_expiration DATE,
+  commentaire VARCHAR(512),
+  FOREIGN KEY(id_personne) REFERENCES personne(id_personne) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- ----- ----- ----- ----- ----- ----- ----- ----- -----
 -- Jeu de Test
@@ -237,6 +279,58 @@ INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES
 ('gardien@residence.com', 'Martin', 'Pierre', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '+33234567890'),
 ('gardien2@residence.com', 'Leroy', 'Antoine', '$2y$10$FycjpWZZ3NoBalGyU3WlD.CBL4Bez.t6wHdsN25fUoOfTOlm.SmRq', '+33234567891');
+
+-- Ajout de badges pour les utilisateurs et badges non assignés
+INSERT INTO badge (id_utilisateur, commentaire, droit, statut, zone_acces, niveau_securite) VALUES
+(1, 'Badge principal administrateur', 'Accès total', 'actif', 'Toutes zones', 'maximum'),
+(2, 'Badge secondaire admin', 'Accès bureaux', 'actif', 'Zone administrative', 'elevé'),
+(5, 'Badge résident A101', 'Accès bâtiment A', 'actif', 'Bâtiment A', 'standard'),
+(15, 'Badge résident B201', 'Accès bâtiment B', 'actif', 'Bâtiment B', 'standard'),
+(3, 'Badge gardien - service', 'Accès maintenance', 'actif', 'Zones techniques', 'elevé'),
+(4, 'Badge gardien - sécurité', 'Accès sécurité', 'actif', 'Zones sécurisées', 'elevé'),
+(7, 'Badge résident A103', 'Accès bâtiment A', 'actif', 'Bâtiment A', 'standard'),
+(12, 'Badge résident A108', 'Accès bâtiment A', 'suspendu', 'Bâtiment A', 'standard'),
+(18, 'Badge résident B204', 'Accès bâtiment B', 'actif', 'Bâtiment B', 'standard'),
+(23, 'Badge résident C301', 'Accès bâtiment C', 'inactif', 'Bâtiment C', 'standard'),
+
+-- Badges non assignés (en stock)
+(NULL, 'Badge de remplacement #1', 'Accès général', 'en_attente', 'À définir', 'standard'),
+(NULL, 'Badge temporaire visiteurs', 'Accès limité', 'en_attente', 'Zones publiques', 'basic'),
+(NULL, 'Badge maintenance externe', 'Accès technique', 'en_attente', 'Zones techniques', 'standard'),
+(NULL, 'Badge urgence secours', 'Accès urgence', 'en_attente', 'Toutes zones', 'elevé'),
+(NULL, 'Badge livraison', 'Accès livraison', 'en_attente', 'Zone livraison', 'basic'),
+(NULL, 'Badge de remplacement #2', 'Accès général', 'en_attente', 'À définir', 'standard'),
+(NULL, 'Badge invité temporaire', 'Accès limité invité', 'en_attente', 'Zones communes', 'basic'),
+(NULL, 'Badge prestataire', 'Accès prestataire', 'en_attente', 'Zones autorisées', 'standard'),
+(NULL, 'Badge de secours gardien', 'Accès gardien secours', 'en_attente', 'Zones techniques', 'elevé'),
+(NULL, 'Badge administration temporaire', 'Accès admin temp', 'en_attente', 'Zone administrative', 'elevé');
+
+-- Ajout de suivis de badge étendus
+INSERT INTO suivi_badge (date_heure, id_badge, action, message, id_utilisateur_action, details_technique) VALUES
+('2025-07-01 08:00:00', 1, 'activation', 'Badge activé par l''administrateur', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-02 09:15:00', 1, 'utilisation', 'Entrée principale ouverte', NULL, '{"lecteur": "002", "localisation": "Entrée principale", "porte": "A1"}'),
+('2025-07-03 18:30:00', 2, 'activation', 'Badge activé pour accès bureaux', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-04 07:45:00', 3, 'utilisation', 'Accès bâtiment A - porte nord', NULL, '{"lecteur": "003", "localisation": "Bâtiment A Nord", "porte": "A2"}'),
+('2025-07-05 12:10:00', 4, 'utilisation', 'Accès bâtiment B - porte sud', NULL, '{"lecteur": "004", "localisation": "Bâtiment B Sud", "porte": "B1"}'),
+('2025-07-06 19:00:00', 1, 'desactivation', 'Badge désactivé temporairement pour maintenance', 3, '{"lecteur": "001", "localisation": "Bureau gardien"}'),
+('2025-07-07 08:30:00', 5, 'activation', 'Badge gardien activé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-07 14:20:00', 5, 'utilisation', 'Accès local technique', NULL, '{"lecteur": "005", "localisation": "Local technique", "porte": "T1"}'),
+('2025-07-08 16:45:00', 6, 'activation', 'Badge gardien sécurité activé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-09 11:30:00', 7, 'utilisation', 'Accès appartement A103', NULL, '{"lecteur": "003", "localisation": "Bâtiment A", "porte": "A3"}'),
+('2025-07-10 09:00:00', 8, 'suspension', 'Badge suspendu suite à problème technique', 3, '{"lecteur": "001", "localisation": "Bureau gardien", "raison": "dysfonctionnement"}'),
+('2025-07-11 15:15:00', 9, 'utilisation', 'Accès bâtiment B', NULL, '{"lecteur": "004", "localisation": "Bâtiment B", "porte": "B2"}'),
+('2025-07-12 20:30:00', 10, 'desactivation', 'Badge résident C301 désactivé', 1, '{"lecteur": "001", "localisation": "Bureau admin", "raison": "déménagement"}'),
+('2025-07-13 10:45:00', 11, 'creation', 'Badge de remplacement créé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-14 13:20:00', 12, 'creation', 'Badge temporaire visiteurs créé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-15 16:00:00', 1, 'reactivation', 'Badge administrateur réactivé après maintenance', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-16 08:15:00', 13, 'creation', 'Badge maintenance externe créé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-17 12:30:00', 14, 'creation', 'Badge urgence secours créé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-18 14:45:00', 15, 'creation', 'Badge livraison créé', 1, '{"lecteur": "001", "localisation": "Bureau admin"}'),
+('2025-07-19 09:30:00', 5, 'utilisation', 'Accès parking sous-sol', NULL, '{"lecteur": "006", "localisation": "Parking", "porte": "P1"}'),
+('2025-07-20 17:20:00', 7, 'utilisation', 'Accès salle commune', NULL, '{"lecteur": "007", "localisation": "Salle commune", "porte": "C1"}'),
+('2025-07-21 11:00:00', 9, 'utilisation', 'Accès buanderie', NULL, '{"lecteur": "008", "localisation": "Buanderie", "porte": "S1"}'),
+('2025-07-22 19:45:00', 2, 'utilisation', 'Accès bureau administration', NULL, '{"lecteur": "009", "localisation": "Bureau admin", "porte": "ADM1"}'),
+('2025-07-23 08:00:00', 6, 'utilisation', 'Accès local gardien', NULL, '{"lecteur": "010", "localisation": "Local gardien", "porte": "G1"}');
 
 -- Résidents Bâtiment A
 INSERT INTO personne (email, nom, prenom, mot_de_passe, numero_telephone) VALUES

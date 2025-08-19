@@ -223,12 +223,13 @@
                         'message.date_envoi',
                         'message.id_auteur',
                         'message.a_fichiers',
+                        'message.reply_to',
                         'personne.nom',
                         'personne.prenom',
                         'personne.email',
                         DB::raw('CONCAT(personne.prenom, " ", personne.nom) as auteur_nom')
                     )
-                    ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.id_auteur', 'message.a_fichiers', 'personne.nom', 'personne.prenom', 'personne.email')
+                    ->groupBy('message.id_message', 'message.contenu_message', 'message.date_envoi', 'message.id_auteur', 'message.a_fichiers', 'message.reply_to', 'personne.nom', 'personne.prenom', 'personne.email')
                     ->orderBy('message.date_envoi', 'asc')
                     ->get();
 
@@ -281,6 +282,23 @@
                         $statut = 'recu'; // Message non lu (envoyé après la dernière connexion ou jamais connecté)
                     }
 
+                    // Construire l'éventuel bloc de citation
+                    $replyPayload = null;
+                    if ($message->reply_to) {
+                        $replyRow = DB::table('message')
+                            ->join('personne', 'message.id_auteur', '=', 'personne.id_personne')
+                            ->where('message.id_message', $message->reply_to)
+                            ->select('message.id_message','message.contenu_message','personne.prenom','personne.nom')
+                            ->first();
+                        if ($replyRow) {
+                            $replyPayload = [
+                                'id_message' => $replyRow->id_message,
+                                'auteur_nom' => $replyRow->prenom . ' ' . $replyRow->nom,
+                                'excerpt' => mb_substr($replyRow->contenu_message, 0, 120)
+                            ];
+                        }
+                    }
+
                     $messagesArray[] = [
                         'id_message' => $message->id_message,
                         'contenu_message' => $message->contenu_message,
@@ -292,7 +310,8 @@
                         'reactions' => $reactions,
                         'fichiers' => $fichiers,
                         'statut_lecture' => $statut,
-                        'a_fichiers' => (bool)$message->a_fichiers
+                        'a_fichiers' => (bool)$message->a_fichiers,
+                        'reply_to' => $replyPayload
                     ];
                 }
 
@@ -378,7 +397,8 @@
                 $request->validate([
                     'contenu' => 'nullable|string|max:5000',
                     'fichiers' => 'nullable|array|max:5',
-                    'fichiers.*' => 'file|max:10240' // 10MB max par fichier
+                    'fichiers.*' => 'file|max:10240', // 10MB max par fichier
+                    'reply_to' => 'nullable|integer'
                 ]);
 
                 // Vérifier qu'il y a soit du contenu soit des fichiers
@@ -405,12 +425,21 @@
                 
                 try {
                     // Créer le message
+                    $replyMessage = null;
+                    if ($request->reply_to) {
+                        $replyMessage = DB::table('message')
+                            ->where('id_message', $request->reply_to)
+                            ->where('id_groupe_message', $groupId)
+                            ->first();
+                    }
+
                     $message = Message::create([
                         'id_groupe_message' => $groupId,
                         'id_auteur' => $user->id_personne,
                         'contenu_message' => $request->contenu ?? '',
                         'date_envoi' => now(),
-                        'a_fichiers' => $request->hasFile('fichiers')
+                        'a_fichiers' => $request->hasFile('fichiers'),
+                        'reply_to' => $replyMessage ? $request->reply_to : null
                     ]);
 
                     $fichiers = [];
@@ -449,6 +478,19 @@
                     DB::commit();
                     $this->logAction($user->id_personne, 'send_message', "Message envoyé dans le groupe $groupId", $request);
 
+                    $replyPayload = null;
+                    if ($replyMessage) {
+                        $replyAuthor = DB::table('personne')
+                            ->where('id_personne', $replyMessage->id_auteur)
+                            ->select('prenom', 'nom')
+                            ->first();
+                        $replyPayload = [
+                            'id_message' => $replyMessage->id_message,
+                            'auteur_nom' => $replyAuthor ? ($replyAuthor->prenom . ' ' . $replyAuthor->nom) : '',
+                            'excerpt' => mb_substr($replyMessage->contenu_message, 0, 120)
+                        ];
+                    }
+
                     return response()->json([
                         'success' => true,
                         'message' => [
@@ -461,7 +503,8 @@
                             'reactions' => [],
                             'fichiers' => $fichiers,
                             'statut_lecture' => 'envoye',
-                            'a_fichiers' => !empty($fichiers)
+                            'a_fichiers' => !empty($fichiers),
+                            'reply_to' => $replyPayload
                         ]
                     ]);
 
@@ -672,7 +715,6 @@
         {
             try {
                 $user = $this->getCurrentUser($request);
-                
                 if (!$user) {
                     return response()->json([
                         'success' => false,
@@ -680,43 +722,63 @@
                     ], 401);
                 }
 
-                $request->validate([
-                    'nom_groupe' => 'required|string|max:100',
-                    'participants' => 'required|array|min:1',
-                    'participants.*' => 'required|email|exists:personne,email'
+                // Log brut du contenu reçu (pour diagnostiquer perte de payload via proxy)
+                Log::info('Payload brut création conversation', [
+                    'raw' => $request->getContent(),
+                    'parsed_all' => $request->all()
                 ]);
 
-                Log::info('Création d\'une nouvelle conversation par ID: ' . $user->id_personne);
-                
-                // Vérifier que l'utilisateur ne s'ajoute pas lui-même dans les participants
-                $participants = collect($request->participants);
-                if (!$participants->contains($user->email)) {
-                    // Ajouter automatiquement l'utilisateur actuel
-                    $participants->push($user->email);
+                // Parfois via proxy certains champs peuvent être perdus: tentative de récupération manuelle si manquants
+                $rawJson = [];
+                if ($request->getContent()) {
+                    try { $rawJson = json_decode($request->getContent(), true) ?: []; } catch (\Throwable $t) { $rawJson = []; }
                 }
 
-                // Supprimer les doublons
-                $participants = $participants->unique();
-
-                // Convertir les emails en IDs
-                $participantIds = [];
-                foreach ($participants as $email) {
-                    $personne = Personne::where('email', $email)->first();
-                    if ($personne) {
-                        $participantIds[] = $personne->id_personne;
+                // Fusion prudente: ne pas écraser les valeurs déjà présentes
+                foreach (['nom_groupe','participants'] as $k) {
+                    if (!$request->has($k) && array_key_exists($k, $rawJson)) {
+                        // Injecter dans la request pour validation
+                        $request->merge([$k => $rawJson[$k]]);
                     }
                 }
 
-                DB::beginTransaction();
-                
                 try {
-                    // Créer le groupe
-                $groupe = GroupeMessage::create([
-                        'nom_groupe' => $request->nom_groupe,
+                    $validated = $request->validate([
+                        'nom_groupe' => 'required|string|max:100',
+                        'participants' => 'required|array|min:1',
+                        'participants.*' => 'required|email|exists:personne,email'
+                    ]);
+                } catch (\Illuminate\Validation\ValidationException $ve) {
+                    Log::warning('Validation création conversation échouée', [
+                        'errors' => $ve->errors(),
+                        'input' => $request->all()
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation échouée',
+                        'errors' => $ve->errors()
+                    ], 422);
+                }
+
+                Log::info('Création d\'une nouvelle conversation par ID: ' . $user->id_personne);
+
+                // Normaliser la liste des participants (collection)
+                $participants = collect($validated['participants'] ?? []);
+                if (!$participants->contains($user->email)) {
+                    $participants->push($user->email);
+                }
+                $participants = $participants->unique();
+
+                // Convertir en IDs
+                $participantIds = Personne::whereIn('email', $participants)->pluck('id_personne')->all();
+
+                DB::beginTransaction();
+                try {
+                    $groupe = GroupeMessage::create([
+                        'nom_groupe' => $validated['nom_groupe'],
                         'date_creation' => now()
                     ]);
 
-                    // Ajouter tous les participants au groupe
                     foreach ($participantIds as $participantId) {
                         DB::table('personne_groupe')->insert([
                             'id_personne' => $participantId,
@@ -726,22 +788,18 @@
                         ]);
                     }
 
-                    // Envoyer un message de bienvenue automatique
-                    $messageContenu = "Conversation créée par " . $user->nom_complet . ". Bienvenue à tous !";
-                    
-                Message::create([
+                    $messageContenu = 'Conversation créée par ' . $user->nom_complet . '. Bienvenue à tous !';
+                    Message::create([
                         'id_groupe_message' => $groupe->id_groupe_message,
                         'id_auteur' => $user->id_personne,
                         'contenu_message' => $messageContenu,
                         'date_envoi' => now()
                     ]);
 
-                DB::commit();
-                $this->logAction($user->id_personne, 'create_conversation', "Création d'une conversation: $groupe->nom_groupe", $request);
-
+                    DB::commit();
+                    $this->logAction($user->id_personne, 'create_conversation', "Création d'une conversation: $groupe->nom_groupe", $request);
                     Log::info('Conversation créée avec succès: ' . $groupe->id_groupe_message);
 
-                    // Retourner les informations de la conversation créée
                     $conversationData = [
                         'id_groupe_message' => $groupe->id_groupe_message,
                         'nom_groupe' => $groupe->nom_groupe,
@@ -759,16 +817,13 @@
                         'message' => 'Conversation créée avec succès',
                         'conversation' => $conversationData
                     ]);
-
                 } catch (\Exception $e) {
                     DB::rollBack();
                     throw $e;
                 }
-                
             } catch (\Exception $e) {
                 Log::error('Erreur lors de la création de la conversation: ' . $e->getMessage());
                 Log::error('Stack trace: ' . $e->getTraceAsString());
-                
                 return response()->json([
                     'success' => false,
                     'message' => 'Erreur lors de la création de la conversation',
@@ -792,7 +847,7 @@
 
                 // Récupérer tous les utilisateurs sauf l'utilisateur actuel
                 $users = Personne::where('email', '!=', $user->email)
-                    ->select('email', 'nom', 'prenom')
+                    ->select('id_personne','email', 'nom', 'prenom')
                     ->get()
                     ->map(function ($personne) {
                         return [
@@ -800,7 +855,7 @@
                             'nom_complet' => $personne->nom_complet,
                             'nom' => $personne->nom,
                             'prenom' => $personne->prenom,
-                            'role' => $this->getUserRole($personne->email)
+                            'role' => $this->getUserRole($personne->id_personne)
                         ];
                     })
                     ->sortBy('nom_complet')
@@ -852,6 +907,7 @@
                     ->join('personne', 'personne_groupe.id_personne', '=', 'personne.id_personne')
                     ->where('personne_groupe.id_groupe_message', $groupId)
                     ->select(
+                        'personne.id_personne',
                         'personne.email',
                         'personne.nom',
                         'personne.prenom',
@@ -864,7 +920,7 @@
                             'nom' => $member->nom,
                             'prenom' => $member->prenom,
                             'nom_complet' => trim($member->prenom . ' ' . $member->nom),
-                            'role' => $this->getUserRole($member->email),
+                            'role' => $this->getUserRole($member->id_personne),
                             'is_current_user' => $member->email === $user->email,
                             'date_adhesion' => $member->date_adhesion
                         ];
@@ -951,7 +1007,7 @@
                                 'nom' => $memberInfo->nom,
                                 'prenom' => $memberInfo->prenom,
                                 'nom_complet' => $memberInfo->nom_complet,
-                                'role' => $this->getUserRole($memberInfo->email),
+                                'role' => $this->getUserRole($memberInfo->id_personne),
                                 'is_current_user' => false,
                                 'date_adhesion' => now()->toISOString()
                             ];

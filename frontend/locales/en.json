@@ -6,55 +6,7 @@
     "participantsLabel": "Participants ({count} selected)",
     "searchPlaceholder": "Search a user...",
     "loadingUsers": "Loading...",
-    "retry": "Retry",
-    "noUser": "No user found",
-    "cancel": "Cancel",
-    "create": "Create",
-    "creating": "Creating..."
-  },
-  "conversationsList": {
-    "title": "Your conversations",
-    "unreadBadge": "{count} unread message{count, plural, one {} other {s}} in total",
-    "searchPlaceholder": "Search a conversation...",
-    "refresh": "Refresh conversations",
-    "newConversation": "New conversation",
-    "loading": "Loading...",
-    "retry": "Retry",
-    "debugAuth": "Debug connection",
-    "noConversation": "No conversation found",
-    "unread": "Unread messages",
-    "noMessage": "No message",
-    "yesterday": "Yesterday"
-  },
-    "conversationHeader": {
-        "member": "member{count, plural, one {} other {s}}"
-    },
-    "adminStatsAdvanced": {
-        "title": "Advanced residence statistics",
-        "refresh": "Refresh",
-        "loading": "Loading statistics...",
-        "error": "Error loading statistics",
-        "totalUsers": "Total users",
-        "admins": "admins",
-        "gardiens": "guardians",
-        "residents": "residents",
-        "messagesExchanged": "Messages exchanged",
-        "groups": "groups",
-        "visits": "Visits",
-        "activeGuests": "active guests",
-        "reactions": "Reactions",
-        "sharedFiles": "shared files",
-        "mostActiveUsers": "Most active users",
-        "user": "User",
-        "top": "Top",
-        "messages": "messages",
-        "mostActiveGroups": "Most active groups",
-        "group": "Group",
-        "hot": "Hot",
-        "favoriteEmojis": "Favorite emojis",
-        "times": "times",
-        "visitStatus": "Visit status",
-        "recentMessages": "Recent messages",
+        
         "recentActivity": "Recent activity",
         "largestFiles": "Largest files",
         "popularActions": "Popular actions",
@@ -200,13 +152,13 @@
         "visits": "Visits",
         "incidents": "Incidents",
         "groups": "Groups",
-        "active": "active{count, plural, one {} other {s}}",
+        "active": "{count} active",
         "successful": "successful",
         "resolved": "resolved",
         "avgResponseTime": "Average response time",
         "memberSince": "Member since",
         "lastConnection": "Last connection",
-        "days": "day{count, plural, one {} other {s}}"
+        "days": "{count} day(s)"
         },
         "activityLevels": {
             "veryActive": "Very Active",
@@ -232,13 +184,6 @@
             "housingAddress": "Housing address",
             "moveInDate": "Move-in date",
             "undefined": "Not defined"
-        },
-        "common": {
-            "days": "days",
-            "invalidDate": "Invalid date",
-            "profilePhotoAlt": "Avatar preview",
-            "profilePhotoUpdatedSuccess": "Profile picture updated successfully",
-            "profilePhotoDeletedSuccess": "Profile picture deleted successfully"
         }
     },
     "copyright": "Copyright © 2025",
@@ -331,6 +276,7 @@
         "sections": {
         "incidents": "Incidents",
         "visitors": "Visitors",
+        "badges": "Badges",
         "residents": "Residents",
         "conversations": "Conversations",
         "logs": "Logs",
@@ -417,46 +363,21 @@
         "noDate": "-"
     },
     "messages": {
-    "pageTitle": "Messages - Residence Management",
+    "title": "Messages",
+    "pageTitle": "Messaging - Residence Management",
     "newConversation": "New conversation",
+    "selectConversationTitle": "Select a conversation",
+    "selectConversationHint": "Choose a conversation from the list to start chatting",
     "errors": {
-      "loadConversations": "Unable to load conversations",
-      "loadMessages": "Unable to load messages",
-      "missingToken": "Authentication token missing",
+      "loadConversations": "Error loading conversations",
+      "loadMessages": "Error loading messages",
+      "sendMessage": "Error sending message",
+      "reaction": "Error handling reaction",
+      "missingToken": "Missing authentication token",
       "noConversationSelected": "No conversation selected",
-      "sendMessage": "Unable to send message",
-      "reaction": "Unable to update reaction",
-      "downloadFile": "Unable to download file"
-    },
-        "title": "Messages",
-        "inbox": "Inbox",
-        "sent": "Sent",
-        "drafts": "Drafts",
-        "trash": "Trash",
-        "compose": "New message",
-        "reply": "Reply",
-        "forward": "Forward",
-        "delete": "Delete",
-        "archive": "Archive",
-        "markAsRead": "Mark as read",
-        "markAsUnread": "Mark as unread",
-        "search": "Search",
-        "from": "From",
-        "to": "To",
-        "subject": "Subject",
-        "message": "Message",
-        "send": "Send",
-        "save": "Save",
-        "cancel": "Cancel",
-        "attachment": "Attachment",
-        "attachments": "Attachments",
-        "noMessages": "No messages",
-        "loading": "Loading messages...",
-        "error": "Error loading messages",
-        "messageSent": "Message sent successfully",
-        "messageDeleted": "Message deleted",
-        "messageArchived": "Message archived"
-    },
+      "downloadFile": "Error downloading file"
+    }
+  },
     "planning": {
         "title": "Planning",
         "pageTitle": "Planning - Residence Management",
@@ -566,11 +487,53 @@
             "statusUpdateError": "Error updating status"
         },
         "notifications": {
+            "title": "Notifications",
+            "subtitle": "Visit requests",
+            "loading": "Loading...",
+            "retry": "Retry",
+            "defaultVisitReason": "Visit",
             "upcomingVisit": "Visit scheduled in {time}",
             "visitStarted": "Visit started",
             "visitEnded": "Visit ended",
             "visitCancelled": "Visit cancelled",
-            "newVisitRequest": "New visit request"
+            "newVisitRequest": "New visit request",
+            "stats": {
+                "total": "Total",
+                "pending": "Pending", 
+                "approved": "Approved"
+            },
+            "filters": {
+                "pending": "Pending",
+                "rejected": "Rejected"
+            },
+            "actions": {
+                "accept": "Accept",
+                "reject": "Reject",
+                "ban": "Ban"
+            },
+            "status": {
+                "scheduled": "Scheduled",
+                "pending": "Pending",
+                "inProgress": "In Progress",
+                "completed": "Completed",
+                "cancelled": "Cancelled",
+                "rejected": "Rejected",
+                "banned": "Banned"
+            },
+            "empty": {
+                "pending": "No pending requests",
+                "rejected": "No rejected visits",
+                "pendingDescription": "New requests will appear here",
+                "rejectedDescription": "Rejected visits will appear here"
+            },
+            "errors": {
+                "fetchFailed": "Error fetching notifications",
+                "invalidResponse": "Invalid server response",
+                "statusChangeFailed": "Error changing status"
+            },
+            "success": {
+                "statusChanged": "Status changed successfully"
+            }
         },
         "timeSlots": {
             "morning": "Morning",
@@ -602,7 +565,7 @@
             "pending": "Pending",
             "cancelled": "Cancelled"
         },
-        "createVisit": {
+    "createVisit": {
             "title": "Create a new visit",
             "sections": {
                 "residentSearch": "Resident search",
@@ -669,7 +632,56 @@
         "eventCreated": "Event created successfully",
         "eventUpdated": "Event updated",
         "eventDeleted": "Event deleted"
-    },
+        },
+        "notifications": {
+            "title": "Notifications",
+            "subtitle": "Visit requests",
+            "loading": "Loading...",
+            "retry": "Retry",
+            "defaultVisitReason": "Visit",
+            "upcomingVisit": "Visit scheduled in {time}",
+            "visitStarted": "Visit started",
+            "visitEnded": "Visit ended",
+            "visitCancelled": "Visit cancelled",
+            "newVisitRequest": "New visit request",
+            "stats": {
+                "total": "Total",
+                "pending": "Pending",
+                "approved": "Approved"
+            },
+            "filters": {
+                "pending": "Pending",
+                "rejected": "Rejected"
+            },
+            "actions": {
+                "accept": "Accept",
+                "reject": "Reject",
+                "ban": "Ban"
+            },
+            "status": {
+                "scheduled": "Scheduled",
+                "pending": "Pending",
+                "inProgress": "In Progress",
+                "completed": "Completed",
+                "cancelled": "Cancelled",
+                "rejected": "Rejected",
+                "banned": "Banned"
+            },
+            "empty": {
+                "pending": "No pending requests",
+                "rejected": "No rejected visits",
+                "pendingDescription": "New requests will appear here",
+                "rejectedDescription": "Rejected visits will appear here"
+            },
+            "errors": {
+                "fetchFailed": "Error fetching notifications",
+                "invalidResponse": "Invalid server response",
+                "statusChangeFailed": "Error changing status"
+            },
+            "success": {
+                "statusChanged": "Status changed successfully"
+            }
+        },
     "header": {
         "home": "Home",
         "dashboard": "Dashboard",
@@ -774,6 +786,15 @@
             "cancel": "Cancel",
             "addMembers": "Add {count, plural, one {member} other {# members}}",
             "adding": "Adding..."
+        },
+        "groupMembersModal": {
+            "addMembers": "Add members",
+            "loading": "Loading...",
+            "retry": "Retry",
+            "you": "You",
+            "noMembers": "No members found",
+            "close": "Close",
+            "memberCount": "{count} member(s)"
         },
         "reportIncidentModal": {
             "title": "Report an incident",
@@ -936,6 +957,9 @@
             "viewDetails": "View details",
             "showMore": "Show more",
             "showLess": "Show less"
+        },
+        "messageReply": {
+            "reply": "Reply"
         }
     },
     "adminSettings": {
@@ -966,6 +990,179 @@
         "reset": "Reset to default",
         "resetConfirm": "Are you sure you want to reset to default settings?",
         "error": "Error"
+    },
+    "badges": {
+        "title": "Badge Management",
+        "description": "Manage your residence access badges",
+        "subtitle": "Manage your residence access badges",
+        "newBadge": "New badge",
+        "loading": "Loading badges...",
+        "noBadges": "No badges found",
+        "badgesList": "Badge list",
+        "unassigned": "Unassigned",
+        "assignedUnknown": "Unknown user",
+        "availableForAssignment": "Available for assignment",
+        "searchPlaceholder": "Search by name, email, number...",
+        "statusLabel": "Status",
+        "allStatuses": "All statuses",
+        "sortBy": "Sort by",
+        "sortOptions": {
+            "number": "Number",
+            "person": "Person",
+            "rights": "Rights"
+        },
+        "statuses": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "suspended": "Suspended"
+        },
+        "stats": {
+            "total": "Total badges",
+            "active": "Active badges",
+            "inactive": "Inactive badges",
+            "suspended": "Suspended badges",
+            "today": "Today's usage"
+        },
+        "search": {
+            "label": "Search",
+            "placeholder": "Search by name, email, badge number..."
+        },
+        "filter": {
+            "status": "Status",
+            "allStatus": "All statuses"
+        },
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "unknown": "Unknown",
+            "suspended": "Suspended",
+            "pending": "Pending"
+        },
+        "table": {
+            "number": "Number",
+            "user": "User",
+            "rights": "Rights",
+            "status": "Status",
+            "lastUse": "Last use",
+            "actions": "Actions"
+        },
+        "list": {
+            "title": "Badge list",
+            "empty": "No badges found"
+        },
+        "actions": {
+            "create": "New badge",
+            "edit": "Edit",
+            "delete": "Delete",
+            "activate": "Activate",
+            "deactivate": "Deactivate",
+            "view": "View details",
+            "refresh": "Refresh",
+            "update": "Update"
+        },
+        "messages": {
+            "activated": "Badge activated successfully",
+            "deactivated": "Badge deactivated successfully",
+            "deleted": "Badge deleted successfully"
+        },
+        "errors": {
+            "loadFailed": "Error loading badges",
+            "saveFailed": "Save failed",
+            "deleteFailed": "Delete failed",
+            "activateFailed": "Activation failed",
+            "deactivateFailed": "Deactivation failed",
+            "toggleFailed": "Status change failed"
+        },
+        "form": {
+            "user": "User",
+            "userPlaceholder": "Search for a user...",
+            "userBadges": "{count} {count, plural, one {existing badge} other {existing badges}}",
+            "noUsers": "No users found",
+            "rights": "Access rights",
+            "rightsPlaceholder": "e.g., Building A access, Offices...",
+            "comment": "Comment",
+            "commentPlaceholder": "Additional information about this badge..."
+        },
+        "modal": {
+            "createTitle": "Create new badge",
+            "createSubtitle": "Assign an access badge to a user",
+            "editTitle": "Edit badge",
+            "editSubtitle": "Modify badge information"
+        },
+        "detail": {
+            "title": "Badge #{numero}",
+            "badgeInfo": "Badge information",
+            "userInfo": "User",
+            "actions": "Actions",
+            "history": "History",
+            "noHistory": "No activity recorded"
+        },
+        "details": {
+            "title": "Badge Details",
+            "information": "General Information",
+            "activity": "Activity History",
+            "noActivity": "No activity recorded"
+        },
+        "fields": {
+            "number": "Number",
+            "status": "Status",
+            "assignedTo": "Assigned to",
+            "rights": "Rights",
+            "comment": "Comment",
+            "createdAt": "Created on",
+            "lastModified": "Last modified"
+        },
+        "activity": {
+            "creation": "Badge created",
+            "activation": "Badge activated",
+            "desactivation": "Badge deactivated",
+            "suspension": "Badge suspended",
+            "modification": "Badge modified",
+            "assignation": "Badge assigned",
+            "changement_statut": "Status changed",
+            "reactivation": "Badge reactivated",
+            "from": "From",
+            "to": "To",
+            "by": "By"
+        },
+        "activities": {
+            "title": "Recent activities",
+            "empty": "No recent activities"
+        },
+        "createSuccess": "Badge created successfully",
+        "updateSuccess": "Badge updated successfully",
+        "deleteSuccess": "Badge deleted successfully",
+        "activatedSuccess": "Badge activated successfully",
+        "deactivatedSuccess": "Badge deactivated successfully",
+        "suspendedSuccess": "Badge suspended successfully",
+        "confirmDelete": "Are you sure you want to delete badge #{numero}?"
+    },
+    "common": {
+    "loading": "Loading...",
+    "never": "Never",
+    "cancel": "Cancel",
+    "close": "Close",
+    "create": "Create",
+    "save": "Save",
+    "update": "Update",
+    "refresh": "Refresh",
+    "search": "Search",
+    "searching": "Searching...",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count} days ago",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next",
+    "order": "Order",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone"
     }
 }
 

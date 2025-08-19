@@ -3,7 +3,7 @@
     "title": "Nouvelle conversation",
     "nameLabel": "Nom de la conversation",
     "namePlaceholder": "Ex: Équipe projet, Voisins étage 2...",
-    "participantsLabel": "Participants ({count} sélectionné{count, plural, one {} other {s}})",
+  "participantsLabel": "Participants ({count} sélectionné(s))",
     "searchPlaceholder": "Rechercher un utilisateur...",
     "loadingUsers": "Chargement...",
     "retry": "Réessayer",
@@ -14,7 +14,7 @@
   },
   "conversationsList": {
     "title": "Vos conversations",
-    "unreadBadge": "{count} message{count, plural, one {} other {s}} non lu{count, plural, one {} other {s}} au total",
+  "unreadBadge": "{count} message(s) non lu(s) au total",
     "searchPlaceholder": "Rechercher une conversation...",
     "refresh": "Rafraîchir les conversations",
     "newConversation": "Nouvelle conversation",
@@ -27,7 +27,7 @@
     "yesterday": "Hier"
   },
   "conversationHeader": {
-    "member": "{count, plural, one {{count} membre} other {{count} membres}}"
+    "member": "{count} membre(s)"
   },
   "adminStatsAdvanced": {
     "title": "Statistiques avancées de la résidence",
@@ -220,13 +220,13 @@
       "visits": "Visites",
       "incidents": "Incidents",
       "groups": "Groupes",
-      "active": "actif{count, plural, one { } other {s}}",
+  "active": "{count} actif(s)",
       "successful": "réussies",
       "resolved": "résolus",
       "avgResponseTime": "Temps de réponse moyen",
       "memberSince": "Membre depuis",
       "lastConnection": "Dernière connexion",
-      "days": "jour{count, plural, one { } other {s}}"
+  "days": "{count} jour(s)"
     },
     "activityLevels": {
       "veryActive": "Très Actif",
@@ -252,14 +252,37 @@
       "housingAddress": "Adresse logement",
       "moveInDate": "Date emménagement",
       "undefined": "Non défini"
-    },
-    "common": {
-      "days": "jours",
-      "invalidDate": "Date invalide",
-      "profilePhotoAlt": "Aperçu avatar",
-      "profilePhotoUpdatedSuccess": "Photo de profil mise à jour avec succès",
-      "profilePhotoDeletedSuccess": "Photo de profil supprimée avec succès"
     }
+  },
+  "common": {
+    "days": "jours",
+    "invalidDate": "Date invalide",
+    "profilePhotoAlt": "Aperçu avatar",
+    "profilePhotoUpdatedSuccess": "Photo de profil mise à jour avec succès",
+    "profilePhotoDeletedSuccess": "Photo de profil supprimée avec succès",
+    "loading": "Chargement...",
+    "refresh": "Actualiser",
+    "never": "Jamais",
+    "search": "Rechercher",
+    "searching": "Recherche en cours...",
+    "order": "Ordre",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "create": "Créer",
+    "save": "Enregistrer",
+    "update": "Mettre à jour",
+    "saving": "Enregistrement...",
+  "showing": "Affichage de",
+  "to": "à",
+  "of": "sur",
+  "results": "résultats",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "name": "Nom",
+  "email": "Email",
+  "phone": "Téléphone"
   },
   "copyright": "Copyright © 2025",
   "rights": "Tous droits réservés.",
@@ -355,6 +378,7 @@
     "sections": {
       "incidents": "Incidents",
       "visitors": "Visiteurs",
+      "badges": "Badges",
       "residents": "Résidents",
       "conversations": "Conversations",
       "logs": "Logs",
@@ -388,7 +412,7 @@
     "vacantUnits": "Unités vacantes",
     "expiringContracts": "Contrats expirant",
     "newTenantRequests": "Nouvelles demandes de locataires"
-  },
+  }, 
   "adminLogs": {
     "title": "Logs d'activité",
     "subtitle": "Historique des actions importantes et événements du système.",
@@ -441,45 +465,20 @@
     "noDate": "-"
   },
   "messages": {
-    "pageTitle": "Messages - Gestion Résidence",
-    "newConversation": "Nouvelle conversation",
-    "errors": {
-      "loadConversations": "Impossible de charger les conversations",
-      "loadMessages": "Impossible de charger les messages",
-      "missingToken": "Token d'authentification manquant",
-      "noConversationSelected": "Conversation non sélectionnée",
-      "sendMessage": "Impossible d'envoyer le message",
-      "reaction": "Impossible de modifier la réaction",
-      "downloadFile": "Impossible de télécharger le fichier"
-    },
     "title": "Messages",
-    "inbox": "Boîte de réception",
-    "sent": "Envoyés",
-    "drafts": "Brouillons",
-    "trash": "Corbeille",
-    "compose": "Nouveau message",
-    "reply": "Répondre",
-    "forward": "Transférer",
-    "delete": "Supprimer",
-    "archive": "Archiver",
-    "markAsRead": "Marquer comme lu",
-    "markAsUnread": "Marquer comme non lu",
-    "search": "Rechercher",
-    "from": "De",
-    "to": "À",
-    "subject": "Sujet",
-    "message": "Message",
-    "send": "Envoyer",
-    "save": "Sauvegarder",
-    "cancel": "Annuler",
-    "attachment": "Pièce jointe",
-    "attachments": "Pièces jointes",
-    "noMessages": "Aucun message",
-    "loading": "Chargement des messages...",
-    "error": "Erreur lors du chargement des messages",
-    "messageSent": "Message envoyé avec succès",
-    "messageDeleted": "Message supprimé",
-    "messageArchived": "Message archivé"
+    "pageTitle": "Messagerie - Gestion Résidence",
+    "newConversation": "Nouvelle conversation",
+  "selectConversationTitle": "Sélectionnez une conversation",
+  "selectConversationHint": "Choisissez une conversation dans la liste pour commencer à discuter",
+    "errors": {
+      "loadConversations": "Erreur lors du chargement des conversations",
+      "loadMessages": "Erreur lors du chargement des messages",
+      "sendMessage": "Erreur lors de l'envoi du message",
+      "reaction": "Erreur lors de la gestion de la réaction",
+      "missingToken": "Jeton d'authentification manquant",
+      "noConversationSelected": "Aucune conversation sélectionnée",
+      "downloadFile": "Erreur lors du téléchargement du fichier"
+    }
   },
   "planning": {
     "title": "Planning",
@@ -598,13 +597,7 @@
       "updating": "Mise à jour en cours...",
       "statusUpdateError": "Erreur lors de la mise à jour du statut"
     },
-    "notifications": {
-      "upcomingVisit": "Visite prévue dans {time}",
-      "visitStarted": "Visite commencée",
-      "visitEnded": "Visite terminée",
-      "visitCancelled": "Visite annulée",
-      "newVisitRequest": "Nouvelle demande de visite"
-    },
+    
     "timeSlots": {
       "morning": "Matin",
       "afternoon": "Après-midi",
@@ -635,7 +628,7 @@
       "pending": "En attente",
       "cancelled": "Annulée"
     },
-    "createVisit": {
+  "createVisit": {
       "title": "Créer une nouvelle visite",
       "sections": {
         "residentSearch": "Recherche de résident",
@@ -697,6 +690,7 @@
   "header": {
     "home": "Accueil",
     "dashboard": "Tableau de bord",
+  "loading": "Chargement...",
     "messages": "Messages",
     "planning": "Planning",
     "reports": "Rapports",
@@ -755,6 +749,55 @@
       "cta": "Commencer maintenant",
       "watchDemo": "Voir la démo"
     },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Demandes de visite",
+    "loading": "Chargement...",
+    "retry": "Réessayer",
+    "defaultVisitReason": "Visite",
+    "upcomingVisit": "Visite prévue dans {time}",
+    "visitStarted": "Visite commencée",
+    "visitEnded": "Visite terminée",
+    "visitCancelled": "Visite annulée",
+    "newVisitRequest": "Nouvelle demande de visite",
+    "stats": {
+      "total": "Total",
+      "pending": "En attente",
+      "approved": "Approuvées"
+    },
+    "filters": {
+      "pending": "En attente",
+      "rejected": "Refusées"
+    },
+    "actions": {
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "ban": "Bannir"
+    },
+    "status": {
+      "scheduled": "Programmée",
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "rejected": "Refusée",
+      "banned": "Banni"
+    },
+    "empty": {
+      "pending": "Aucune demande en attente",
+      "rejected": "Aucune visite refusée",
+      "pendingDescription": "Les nouvelles demandes apparaîtront ici",
+      "rejectedDescription": "Les visites refusées apparaîtront ici"
+    },
+    "errors": {
+      "fetchFailed": "Erreur lors de la récupération des notifications",
+      "invalidResponse": "Réponse invalide du serveur",
+      "statusChangeFailed": "Erreur lors du changement de statut"
+    },
+    "success": {
+      "statusChanged": "Statut modifié avec succès"
+    }
+  },
     "features": {
       "title": "Fonctionnalités principales",
       "subtitle": "Tout ce dont vous avez besoin pour gérer efficacement vos résidences",
@@ -788,7 +831,7 @@
         "addMembersModal": {
             "title": "Ajouter des membres",
             "selectMembers": "Sélectionner des membres",
-            "selected": "sélectionné{count, plural, one {} other {s}}",
+            "selected": "{count} sélectionné(s)",
             "searchPlaceholder": "Rechercher un utilisateur...",
             "loading": "Chargement des utilisateurs...",
             "retry": "Réessayer",
@@ -796,9 +839,23 @@
             "allUsersAreMembers": "Tous les utilisateurs sont déjà membres",
             "noUserFound": "Aucun utilisateur trouvé",
             "cancel": "Annuler",
-            "addMembers": "Ajouter {count, plural, one {membre} other {# membres}}",
+            "addMembers": "Ajouter {count} membre(s)",
             "adding": "Ajout..."
         },
+    "groupMembersModal": {
+      "addMembers": "Ajouter des membres",
+      "loading": "Chargement...",
+      "retry": "Réessayer",
+      "you": "Vous",
+      "noMembers": "Aucun membre trouvé",
+            "close": "Fermer",
+            "memberCount": "{count} membre(s)"
+    },
+    "messageReply": {
+        "reply": "Répondre",
+        "replyingTo": "En réponse à {author}",
+        "cancel": "Annuler la réponse"
+    },
     "reportIncidentModal": {
       "title": "Signaler un incident",
       "descriptionLabel": "Description",
@@ -958,6 +1015,157 @@
       "showMore": "Afficher plus",
       "showLess": "Afficher moins"
     }
+  },
+  "badges": {
+    "title": "Gestion des badges",
+    "description": "Gérez les badges d'accès de votre résidence",
+    "subtitle": "Gérez les badges d'accès de votre résidence",
+    "newBadge": "Nouveau badge",
+    "loading": "Chargement des badges...",
+    "noBadges": "Aucun badge trouvé",
+    "badgesList": "Liste des badges",
+    "unassigned": "Non assigné",
+    "assignedUnknown": "Utilisateur inconnu",
+    "availableForAssignment": "Disponible pour attribution",
+    "searchPlaceholder": "Rechercher par nom, email, numéro...",
+    "statusLabel": "Statut",
+    "allStatuses": "Tous les statuts",
+    "sortBy": "Trier par",
+    "sortOptions": {
+      "number": "Numéro",
+      "person": "Personne",
+      "rights": "Droits"
+    },
+    "statuses": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "suspended": "Suspendu"
+    },
+    "stats": {
+      "total": "Total badges",
+      "active": "Badges actifs",
+      "inactive": "Badges inactifs",
+      "suspended": "Badges suspendus",
+      "today": "Utilisations aujourd'hui"
+    },
+    "search": {
+      "label": "Recherche",
+      "placeholder": "Rechercher par nom, email, numéro de badge..."
+    },
+    "filter": {
+      "status": "Statut",
+      "allStatus": "Tous les statuts"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "unknown": "Inconnu",
+      "suspended": "Suspendu",
+      "pending": "En attente"
+    },
+    "table": {
+      "number": "Numéro",
+      "user": "Utilisateur",
+      "rights": "Droits",
+      "status": "Statut",
+      "lastUse": "Dernière utilisation",
+      "actions": "Actions"
+    },
+    "list": {
+      "title": "Liste des badges",
+      "empty": "Aucun badge trouvé"
+    },
+    "actions": {
+      "create": "Nouveau badge",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "view": "Détails",
+      "refresh": "Actualiser",
+      "update": "Mettre à jour"
+    },
+    "messages": {
+      "activated": "Badge activé avec succès",
+      "deactivated": "Badge désactivé avec succès",
+      "deleted": "Badge supprimé avec succès"
+    },
+    "errors": {
+      "loadFailed": "Erreur lors du chargement des badges",
+      "saveFailed": "Erreur lors de la sauvegarde",
+      "deleteFailed": "Erreur lors de la suppression",
+      "activateFailed": "Erreur lors de l'activation",
+      "deactivateFailed": "Erreur lors de la désactivation",
+      "toggleFailed": "Erreur lors du changement de statut"
+    },
+    "form": {
+      "user": "Utilisateur",
+  "userPlaceholder": "Rechercher un utilisateur...",
+  "userBadges": "{count} badge(s) existant(s)",
+      "noUsers": "Aucun utilisateur trouvé",
+      "rights": "Droits d'accès",
+      "rightsPlaceholder": "Ex: Accès bâtiment A, Bureaux...",
+      "comment": "Commentaire",
+      "commentPlaceholder": "Informations supplémentaires sur ce badge..."
+    },
+    "modal": {
+      "createTitle": "Créer un nouveau badge",
+      "createSubtitle": "Attribuez un badge d'accès à un utilisateur",
+      "editTitle": "Modifier le badge",
+      "editSubtitle": "Modifiez les informations du badge"
+    },
+    "detail": {
+      "title": "Badge #{numero}",
+      "badgeInfo": "Informations du badge",
+      "userInfo": "Utilisateur",
+      "actions": "Actions",
+      "history": "Historique",
+      "noHistory": "Aucune activité enregistrée"
+    },
+    "details": {
+      "title": "Détails du badge",
+      "information": "Informations générales",
+      "activity": "Historique d'activité",
+      "noActivity": "Aucune activité enregistrée"
+    },
+    "fields": {
+      "number": "Numéro",
+      "status": "Statut",
+      "assignedTo": "Assigné à",
+      "searchUser": "Rechercher un utilisateur...",
+      "rights": "Droits",
+      "rightsPlaceholder": "Ex: Accès complet, Zone A uniquement...",
+      "comment": "Commentaire",
+      "commentPlaceholder": "Informations supplémentaires...",
+      "createdAt": "Créé le",
+      "lastModified": "Modifié le"
+    },
+    "activity": {
+      "title": "Historique d'activité",
+      "noActivity": "Aucune activité récente",
+      "creation": "Badge créé",
+      "activation": "Badge activé",
+      "desactivation": "Badge désactivé",
+      "suspension": "Badge suspendu",
+      "modification": "Badge modifié",
+      "assignation": "Badge assigné",
+      "changement_statut": "Statut modifié",
+      "reactivation": "Badge réactivé",
+      "from": "De",
+      "to": "Vers",
+      "by": "Par"
+    },
+    "activities": {
+      "title": "Activités récentes",
+      "empty": "Aucune activité récente"
+    },
+    "createSuccess": "Badge créé avec succès",
+    "updateSuccess": "Badge mis à jour avec succès",
+    "deleteSuccess": "Badge supprimé avec succès",
+    "activatedSuccess": "Badge activé avec succès",
+    "deactivatedSuccess": "Badge désactivé avec succès",
+    "suspendedSuccess": "Badge suspendu avec succès",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer le badge #{numero} ?"
   },
   "adminSettings": {
     "title": "Personnalisation du site",

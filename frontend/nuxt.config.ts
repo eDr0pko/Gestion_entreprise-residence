@@ -9,6 +9,24 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/i18n'
   ],
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => false
+    }
+  },
+  vite: {
+    vue: {
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => false
+        }
+      }
+    },
+    define: {
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false
+    }
+  },
   i18n: {
     locales: [
       { code: 'fr', name: 'Français', file: 'fr.json' },

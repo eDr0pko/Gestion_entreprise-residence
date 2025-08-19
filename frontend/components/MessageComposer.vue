@@ -146,6 +146,11 @@
       selectedFiles.value = []
       showFileUpload.value = false
       fileUploadRef.value?.clearFiles()
+    },
+    focus: () => {
+      nextTick(() => {
+        messageInput.value?.focus()
+      })
     }
   })
 </script>

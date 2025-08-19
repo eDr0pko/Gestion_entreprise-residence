@@ -90,8 +90,8 @@
             <svg class="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
             </svg>
-            <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">Sélectionnez une conversation</h3>
-            <p class="text-sm text-gray-500">Choisissez une conversation dans la liste pour commencer à discuter</p>
+            <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">{{ t('messages.selectConversationTitle') }}</h3>
+            <p class="text-sm text-gray-500">{{ t('messages.selectConversationHint') }}</p>
           </div>
         </div>
 
@@ -114,7 +114,25 @@
             @reaction-toggled="handleReactionToggled"
             @download-file="downloadFile"
             @scroll="handleMessagesScroll"
+            @reply="onReplyMessage"
           />
+
+          <!-- Bandeau de réponse (citation) -->
+          <Transition name="fade">
+            <div v-if="replyingTo" class="px-3 lg:px-4 py-2 bg-[#0097b2]/5 border-l-4 border-[#0097b2] mx-3 lg:mx-4 mt-2 rounded relative">
+              <div class="flex items-start gap-2">
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-semibold text-[#0097b2] truncate">{{ replyingTo.auteur_nom }}</div>
+                  <div class="text-xs text-gray-600 truncate">{{ replyingTo.contenu_message }}</div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="cancelReply" :title="t('components.messageReply.cancel')">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </Transition>
 
           <!-- Message Composer -->
           <MessageComposer
@@ -198,6 +216,8 @@
   const selectedConversation = ref<Conversation | null>(null)
   const newMessage = ref('')
   const error = ref('')
+  // Réponse (citation)
+  const replyingTo = ref<Message | null>(null)
 
   // Fonction pour effacer l'erreur
   const clearError = () => {
@@ -387,7 +407,14 @@
           type_fichier: file.type,
           taille_fichier: file.size
         })),
-        reactions: {}
+        reactions: {},
+        reply_to: replyingTo.value
+          ? {
+              id_message: replyingTo.value.id_message,
+              auteur_nom: replyingTo.value.auteur_nom,
+              excerpt: replyingTo.value.contenu_message?.slice(0, 120) || ''
+            }
+          : null
       }
       
       // Sauvegarder les valeurs actuelles
@@ -407,6 +434,9 @@
       
       const formData = new FormData()
       formData.append('contenu', currentMessage)
+      if (replyingTo.value?.id_message) {
+        formData.append('reply_to', String(replyingTo.value.id_message))
+      }
       
       // Ajouter les fichiers
       currentFiles.forEach((file) => {
@@ -506,6 +536,8 @@
           if (currentFiles.length > 0 && messageComposerRef.value?.clearFiles) {
             messageComposerRef.value.clearFiles()
           }
+          // Réinitialiser la citation après envoi réussi
+          replyingTo.value = null
         } else {
           // En cas d'absence de message dans la réponse, retirer le message temporaire
           const tempMessageIndex = messages.value.findIndex(msg => msg.id_message === tempMessage.id_message)
@@ -537,6 +569,23 @@
       sendingMessage.value = false
     }
   }
+
+  // Démarrer une réponse à un message
+  const onReplyMessage = (message: Message) => {
+    replyingTo.value = message
+    // Essayer de focaliser le champ de saisie si le composant expose une méthode
+    try { messageComposerRef.value?.focus?.() } catch {}
+  }
+
+  // Annuler la réponse
+  const cancelReply = () => {
+    replyingTo.value = null
+  }
+
+  // Si on change de conversation, annuler une éventuelle citation
+  watch(selectedConversation, () => {
+    replyingTo.value = null
+  })
 
   // Scroll vers le bas
   const scrollToBottom = (smooth: boolean = true) => {

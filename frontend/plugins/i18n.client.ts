@@ -13,9 +13,9 @@ export default defineNuxtPlugin(() => {
         $i18n.setLocaleMessage('en', en.default || en)
         $i18n.setLocaleMessage('zh', zh.default || zh)
         
-        console.log('✅ i18n translations loaded successfully')
+  // Suppression du log inutile
       } catch (error) {
-        console.error('❌ Error loading i18n translations:', error)
+  // Suppression du log inutile
       }
     }
     

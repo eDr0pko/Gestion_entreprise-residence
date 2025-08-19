@@ -6,11 +6,7 @@ export default defineNuxtPlugin(() => {
   // Initialiser l'authentification depuis localStorage
   authStore.initAuth()
   
-  console.log('Plugin auth: initialisation', {
-    authenticated: authStore.isAuthenticated,
-    user: authStore.user?.email,
-    token: !!authStore.token
-  })
+  // console.log supprimé pour éviter l'affichage en console
 })
 
 

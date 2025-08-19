@@ -34,6 +34,15 @@ class UnifiedProxyController extends Controller
             
             // Préparation des données
             $data = $this->prepareData($request);
+
+            // Debug spécifique: perte potentielle du body sur POST conversations
+            if (strtolower($request->method()) === 'post' && preg_match('/^conversations$/', trim($path,'/'))) {
+                \Log::info('Proxy Debug POST /conversations (client -> proxy)', [
+                    'incoming_raw' => $request->getContent(),
+                    'incoming_all' => $request->all(),
+                    'prepared_data_keys' => array_keys($data),
+                ]);
+            }
             
             // Log pour debugging
             Log::info('Proxy Request', [
@@ -92,6 +101,12 @@ class UnifiedProxyController extends Controller
                 }
             }
             // Retour de la réponse par défaut
+            if (strtolower($request->method()) === 'post' && preg_match('/^conversations$/', trim($path,'/'))) {
+                \Log::info('Proxy Debug POST /conversations (proxy <- NHS)', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+            }
             return response($response->body(), $response->status())
                 ->withHeaders($this->filterResponseHeaders($response->headers()));
 
@@ -146,14 +161,32 @@ class UnifiedProxyController extends Controller
      */
     private function prepareData(Request $request): array
     {
-        // Pour les uploads de fichiers, utiliser la requête directement
+        // Uploads => renvoyer tel quel
         if ($request->hasFile('avatar') || $request->hasFile('file')) {
             return $request->all();
         }
 
         $data = $request->all();
-        
-        // Ajout d'informations contextuelles seulement pour les requêtes JSON
+        $raw = $request->getContent();
+        $decoded = null;
+        if ($raw !== '') {
+            try { $decoded = json_decode($raw, true); } catch (\Throwable $e) { $decoded = null; }
+        }
+        // Fusion prioritaire: si decoded est tableau on fusionne en conservant valeurs existantes
+        if (is_array($decoded)) {
+            foreach ($decoded as $k => $v) {
+                if (!array_key_exists($k, $data)) {
+                    $data[$k] = $v;
+                }
+            }
+            if (!empty(array_diff_key($decoded, $request->all()))) {
+                \Log::info('UnifiedProxyController merge JSON raw -> data', [ 'merged_keys' => array_keys($decoded) ]);
+            }
+        } else if (empty($data)) {
+            \Log::warning('UnifiedProxyController aucun param reçu & JSON invalide', [ 'raw_snippet' => substr($raw,0,120) ]);
+        }
+
+        // Ajouter contexte sans écraser clés utilisateur
         $data['_client_context'] = [
             'timestamp' => now()->toISOString(),
             'user_agent' => $request->userAgent(),

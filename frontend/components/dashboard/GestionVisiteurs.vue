@@ -81,7 +81,7 @@
             <!-- Header de la carte -->
             <div class="flex items-start gap-4 mb-4">
               <div class="relative">
-                <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil)" 
+                <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                   class="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300" alt="avatar" />
                 <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
                   {{ person.prenom[0] }}{{ person.nom[0] }}
@@ -256,7 +256,7 @@
             <!-- Header de la carte -->
             <div class="flex items-start gap-4 mb-4">
               <div class="relative">
-                <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil)" 
+                <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                   class="w-16 h-16 rounded-2xl object-cover border-2 border-red-100 grayscale" alt="avatar" />
                 <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xl font-bold text-gray-500 border-2 border-red-100">
                   {{ person.prenom[0] }}{{ person.nom[0] }}
@@ -474,9 +474,9 @@
   const persons = ref<InvitePerson[]>([])
   const bannedPersons = ref<InvitePerson[]>([])
 
-  function getAvatarUrl(photo: string) {
-    return `${apiBase}/avatars/${photo}`
-  }
+  // Remplace fonction locale par composable centralisé
+  import { useAvatarUrl } from '@/composables/useAvatarUrl'
+  const { build: getAvatarUrl } = useAvatarUrl()
 
   function formatDate(date: string) {
     if (!date) return ''

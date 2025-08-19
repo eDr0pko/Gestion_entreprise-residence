@@ -152,12 +152,10 @@
 
   // Fonction pour afficher un message d'information
   const showReportMessage = () => {
-    // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
-  }
+  // Fonction temporaire - la fonctionnalité de report sera implémentée plus tard
+}
 
-  onMounted(() => {
-    loadVisites()
-  })
+onMounted(() => {
+  loadVisites()
+})
 </script>
-
-

@@ -1,6 +1,11 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
-    <AppHeader />
+    <!-- Fixed header wrapper -->
+    <div class="fixed top-0 inset-x-0 z-50">
+      <AppHeader />
+    </div>
+    <!-- Add top padding equal to header height to prevent overlap -->
+    <div class="pt-[72px]"></div>
     
     <!-- Background decorative elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -394,7 +399,7 @@
       </div>
 
       <!-- Notifications sidebar -->
-      <div class="fixed top-20 right-4 z-30">
+      <div class="fixed top-20 right-4 z-[9999]">
         <Notif @update:open="notifOpen = $event" />
       </div>
     </div>

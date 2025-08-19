@@ -6,13 +6,16 @@
         <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
         <!-- Header -->
         <div class="text-center mb-6">
-          <div class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <div v-if="appSettings.logoUrl" class="mx-auto h-16 w-16 mb-4 rounded-2xl flex items-center justify-center shadow-lg">
+            <img :src="getLogoUrl(appSettings.logoUrl)" :alt="appSettings.appName" class="h-full w-full rounded-2xl object-contain" />
+          </div>
+          <div v-else class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('auth.register.title') }}</h1>
-          <p class="text-gray-600 text-sm">{{ t('auth.register.description') }}</p>
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ appSettings.appName || t('auth.register.title') }}</h1>
+          <p class="text-gray-600 text-sm">{{ appSettings.app_tagline || t('auth.register.description') }}</p>
         </div>
 
         <!-- Bouton retour à l'accueil -->
@@ -201,14 +204,20 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
   import ContactAdminModal from '../components/ContactAdminModal.vue'
   import AppFooter from '../components/AppFooter.vue'
 
   const { t } = useI18n()
+  const { settings, fetchSettings } = useAppSettings()
+  const { getLogoUrl } = useAssets()
+  
+  const appSettings = computed(() => settings.value)
 
   // Métadonnées de la page
   useHead({
-    title: computed(() => t('auth.register.pageTitle'))
+    title: computed(() => `${appSettings.value.appName || 'Gestion Entreprise de Résidence'} - ${t('auth.register.pageTitle')}`)
   })
 
   // État du formulaire
@@ -332,6 +341,11 @@
       loading.value = false
     }
   }
+
+  // Charger les paramètres de l'application au montage
+  onMounted(async () => {
+    await fetchSettings()
+  })
 </script>
 
 

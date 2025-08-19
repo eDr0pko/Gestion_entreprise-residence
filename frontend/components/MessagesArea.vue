@@ -53,6 +53,11 @@
                 message.statut_lecture === 'sending' ? 'opacity-75' : ''
               ]"
             >
+              <!-- Bloc de citation -->
+              <div v-if="message.reply_to" class="mb-2 pl-2 border-l-2 text-xs lg:text-sm" :class="message.is_current_user ? 'border-white/60 text-white/80' : 'border-[#0097b2] text-gray-600'">
+                <div class="font-semibold truncate">{{ message.reply_to.auteur_nom }}</div>
+                <div class="truncate">{{ message.reply_to.excerpt }}</div>
+              </div>
               <!-- Indicateur d'envoi en cours -->
               <div 
                 v-if="message.statut_lecture === 'sending'" 
@@ -123,13 +128,27 @@
               </div>
             </div>
 
-            <!-- RÉACTIONS SOUS LA BULLE -->
-            <MessageReactions
-              :message-id="message.id_message"
-              :reactions="transformReactions(message.reactions || {})"
-              :current-user-email="currentUserEmail"
-              @reaction-toggled="$emit('reaction-toggled', message.id_message, $event)"
-            />
+            <!-- RÉACTIONS + BOUTON REPLY SOUS LA BULLE -->
+            <div class="flex items-center gap-1 mt-1">
+              <button
+                class="transition-colors text-xs px-1 py-0.5 rounded focus:outline-none focus:ring-2 focus:ring-offset-1"
+                :class="message.is_current_user 
+                  ? 'text-[#0097b2] bg-white/10 hover:bg-white/20 focus:ring-white/40'
+                  : 'text-gray-500 hover:text-[#0097b2] hover:bg-gray-200 focus:ring-[#0097b2]/40'"
+                :title="t('components.messageReply.reply')"
+                @click.prevent="$emit('reply', message)"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10V6l8 6-8 6v-4H3z" />
+                </svg>
+              </button>
+              <MessageReactions
+                :message-id="message.id_message"
+                :reactions="transformReactions(message.reactions || {})"
+                :current-user-email="currentUserEmail"
+                @reaction-toggled="$emit('reaction-toggled', message.id_message, $event)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -155,6 +174,8 @@
   import MessageReactions from './MessageReactions.vue'
   import MessageAttachment from './MessageAttachment.vue'
   import type { Message, FichierMessage } from '~/types'
+  
+  const { t } = useI18n()
 
   interface Props {
     messages: Message[]
@@ -170,6 +191,7 @@
     'reaction-toggled': [messageId: number, emoji: string]
     'scroll-to-bottom': []
     'scroll': []
+  'reply': [message: Message]
   }>()
 
   const messagesContainer = ref<HTMLElement | null>(null)

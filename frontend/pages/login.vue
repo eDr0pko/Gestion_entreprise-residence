@@ -10,20 +10,24 @@
       <div class="max-w-md w-full space-y-8">
         <!-- En-tête moderne avec effet glassmorphism -->
         <div class="text-center">
-          <div class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
+          <div v-if="appSettings.logoUrl" class="mx-auto h-20 w-20 mb-8 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-all duration-300"
+               style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
+            <img :src="getLogoUrl(appSettings.logoUrl)" :alt="appSettings.appName" class="h-full w-full rounded-3xl object-contain" />
+          </div>
+          <div v-else class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
                style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </div>
           <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-3">
-            {{ t('login.title') }}
+            {{ appSettings.appName || t('login.title') }}
           </h1>
           <p class="text-gray-600 text-lg font-medium">
-            {{ t('login.subtitle') }}
+            {{ appSettings.welcome_title || t('login.subtitle') }}
           </p>
           <p class="text-gray-500 text-base mt-2">
-            {{ t('login.description') }}
+            {{ appSettings.welcome_message || t('login.description') }}
           </p>
         </div>
 
@@ -208,10 +212,17 @@
 
 
   import { useI18n } from 'vue-i18n'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
+  
   const { t } = useI18n()
+  const { settings, fetchSettings } = useAppSettings()
+  const { getLogoUrl } = useAssets()
+  
+  const appSettings = computed(() => settings.value)
 
   useHead({
-    title: computed(() => t('login.pageTitle'))
+    title: computed(() => `${appSettings.value.appName || 'Gestion Entreprise de Résidence'} - ${t('login.pageTitle')}`)
   })
 
   const authStore = useAuthStore()
@@ -288,7 +299,8 @@
   }
 
   // Rediriger si déjà connecté
-  onMounted(() => {
+  onMounted(async () => {
+    await fetchSettings()
     authStore.initAuth()
     if (authStore.isAuthenticated) {
       console.log('Déjà connecté, redirection vers /messages')

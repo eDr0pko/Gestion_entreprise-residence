@@ -18,6 +18,7 @@
             'contenu_message',
             'date_envoi',
             'a_fichiers',
+            'reply_to',
         ];
 
         protected $casts = [

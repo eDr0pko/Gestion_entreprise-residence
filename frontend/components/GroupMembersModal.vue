@@ -18,7 +18,7 @@
                 </div>
                 <div>
                   <h3 class="text-lg font-semibold text-gray-900">{{ conversation?.nom_groupe }}</h3>
-                  <p class="text-sm text-gray-500">{{ members.length }} membre{{ members.length > 1 ? 's' : '' }}</p>
+                  <p class="text-sm text-gray-500">{{ t('components.groupMembersModal.memberCount', { count: members.length }) }}</p>
                 </div>
               </div>
               <button 
@@ -42,7 +42,7 @@
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                   </svg>
-                  Ajouter des membres
+                  {{ t('components.groupMembersModal.addMembers') }}
                 </button>
               </div>
 
@@ -53,13 +53,13 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span class="text-sm">Chargement...</span>
+                  <span class="text-sm">{{ t('components.groupMembersModal.loading') }}</span>
                 </div>
 
                 <div v-else-if="error" class="p-4 text-center text-red-500">
                   <p class="text-sm">{{ error }}</p>
                   <button @click="loadMembers" class="text-xs text-[#0097b2] hover:text-[#007a94] mt-2">
-                    Réessayer
+                    {{ t('components.groupMembersModal.retry') }}
                   </button>
                 </div>
 
@@ -85,13 +85,13 @@
                     <!-- Badge "Vous" si c'est l'utilisateur actuel -->
                     <div v-if="member.is_current_user" class="ml-2">
                       <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Vous
+                        {{ t('components.groupMembersModal.you') }}
                       </span>
                     </div>
                   </div>
 
                   <div v-if="members.length === 0" class="p-4 text-center text-gray-500">
-                    <p class="text-sm">Aucun membre trouvé</p>
+                    <p class="text-sm">{{ t('components.groupMembersModal.noMembers') }}</p>
                   </div>
                 </div>
               </div>
@@ -103,7 +103,7 @@
                 @click="closeModal"
                 class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                Fermer
+                {{ t('components.groupMembersModal.close') }}
               </button>
             </div>
           </div>
@@ -123,6 +123,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
   import type { Member, Conversation } from '~/types'
 
   interface Props {
@@ -149,27 +151,49 @@
   // Charger les membres du groupe
   const loadMembers = async () => {
     if (!props.conversation) return
-    
+    if (loadingMembers.value) return
+    const groupId = props.conversation.id_groupe_message
     try {
       loadingMembers.value = true
       error.value = ''
-      
-      const response = await $fetch<{success: boolean, members: Member[], error?: string}>(`${config.public.apiBase}/conversations/${props.conversation.id_groupe_message}/members`, {
+      console.debug('[GroupMembersModal] Loading members for group', groupId)
+      const url = `${config.public.apiBase}/conversations/${groupId}/members`
+      let response: any = await $fetch<any>(url, {
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
           'Accept': 'application/json'
         }
-      })
-      
-      if (response.success && response.members) {
-        members.value = response.members
-      } else {
-        throw new Error(response.error || 'Erreur lors du chargement des membres')
+      }).catch((e: any) => { console.error('[GroupMembersModal] Network/parse error', e); throw e })
+
+      // Diagnostic
+      console.debug('[GroupMembersModal] Raw response (type):', typeof response)
+      if (typeof response === 'string') {
+        try {
+          response = JSON.parse(response)
+          console.debug('[GroupMembersModal] Parsed string JSON response')
+        } catch (parseErr) {
+          console.warn('[GroupMembersModal] Unable to parse string response as JSON')
+        }
       }
-      
+      console.debug('[GroupMembersModal] Response keys:', Object.keys(response || {}))
+
+      // Normalisation: certains endpoints anciens renvoient directement {members:[...]} sans success
+      const hasMembersArray = response && Array.isArray(response.members)
+      const hasUsersArray = response && Array.isArray(response.users)
+      const successFlag = (typeof response?.success === 'boolean') ? response.success : (hasMembersArray || hasUsersArray)
+
+      if (!successFlag) {
+        error.value = response?.error || 'Erreur lors du chargement des membres'
+        return
+      }
+
+      const list = hasMembersArray ? response.members : (hasUsersArray ? response.users : [])
+      members.value = list
+      console.debug('[GroupMembersModal] Final members count', members.value.length)
+
     } catch (err: any) {
-      console.error('Erreur lors du chargement des membres:', err)
-      error.value = err.data?.message || err.message || 'Impossible de charger les membres'
+      console.error('[GroupMembersModal] Exception while loading members', err)
+      error.value = err?.data?.message || err?.message || 'Impossible de charger les membres'
     } finally {
       loadingMembers.value = false
     }

@@ -13,7 +13,6 @@
       <div>
         <h2 class="text-sm lg:text-base font-semibold text-gray-900">{{ conversation?.nom_groupe }}</h2>
         <p class="text-xs lg:text-sm text-gray-500">
-          {{ conversation?.nombre_membres || 0 }}
           {{ t('conversationHeader.member', { count: conversation?.nombre_membres || 0 }) }}
         </p>
       </div>

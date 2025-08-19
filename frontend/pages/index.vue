@@ -10,20 +10,24 @@ s<template>
       <div class="max-w-4xl w-full">
         <!-- En-tête avec logo et titre -->
         <div class="text-center mb-12">
-          <div class="mx-auto h-24 w-24 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
+          <div v-if="appSettings.logoUrl" class="mx-auto h-24 w-24 mb-8 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-all duration-300"
+               style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
+            <img :src="getLogoUrl(appSettings.logoUrl)" :alt="appSettings.appName" class="h-full w-full rounded-3xl object-contain" />
+          </div>
+          <div v-else class="mx-auto h-24 w-24 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
                style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
             <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </div>
           <h1 class="text-5xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-4">
-            {{ t('index.title') }}
+            {{ appSettings.appName || t('index.title') }}
           </h1>
           <p class="text-xl text-gray-600 font-medium mb-2">
-            {{ t('index.subtitle') }}
+            {{ appSettings.company_name || t('index.subtitle') }}
           </p>
           <p class="text-lg text-gray-500">
-            {{ t('index.chooseAccess') }}
+            {{ appSettings.app_tagline || t('index.chooseAccess') }}
           </p>
         </div>
 
@@ -187,20 +191,27 @@ s<template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
 
   definePageMeta({
     layout: false
   })
 
-  useHead({
-    title: 'Accueil - Gestion Entreprise de Résidence'
-  })
-
   const { t } = useI18n()
   const authStore = useAuthStore()
+  const { settings, fetchSettings } = useAppSettings()
+  const { getLogoUrl } = useAssets()
+  
+  const appSettings = computed(() => settings.value)
+
+  useHead({
+    title: computed(() => `${appSettings.value.appName || 'Gestion Entreprise de Résidence'} - Accueil`)
+  })
 
   // Vérifier si l'utilisateur est déjà connecté au montage
   onMounted(async () => {
+    await fetchSettings()
     authStore.initAuth()
     
     // Laisser l'utilisateur voir les options d'accès même s'il est connecté

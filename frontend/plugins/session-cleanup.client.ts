@@ -11,12 +11,12 @@ export default defineNuxtPlugin(() => {
           // Décoder le token JWT pour vérifier l'expiration (si c'est un JWT)
           // Pour l'instant, on fait une vérification simple
           authStore.checkAuth().catch(() => {
-            console.log('Session expirée, nettoyage et redirection vers l\'accueil')
+            // Suppression du log inutile
             authStore.clearAuth()
             navigateTo('/')
           })
         } catch (error) {
-          console.log('Erreur de validation du token, nettoyage')
+          // Suppression du log inutile
           authStore.clearAuth()
           navigateTo('/')
         }

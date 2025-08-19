@@ -143,7 +143,7 @@
               <!-- Header de la carte -->
               <div class="flex items-start gap-4 mb-4">
                 <div class="relative">
-                  <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil)" 
+                  <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                     class="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300" alt="avatar" />
                   <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
                     {{ person.prenom[0] }}{{ person.nom[0] }}
@@ -300,7 +300,7 @@
           <div class="mb-3" v-if="editingPerson?.photo_profil">
             <label class="block text-sm font-medium mb-1">{{ $t('profile.avatar') }}</label>
             <div class="flex items-center gap-2">
-              <img :src="getAvatarUrl(editingPerson.photo_profil)" class="w-10 h-10 rounded-full object-cover border" alt="avatar" />
+              <img :src="getAvatarUrl(editingPerson.photo_profil) || ''" class="w-10 h-10 rounded-full object-cover border" alt="avatar" />
               <button type="button" @click="handleDeleteAvatar(editingPerson)" class="px-2 py-1 rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 text-xs">{{ $t('components.button.delete') }}</button>
             </div>
           </div>
@@ -325,6 +325,7 @@
   */
   import { ref, reactive, computed, onMounted, watch } from 'vue'
   import type { PersonData } from '~/composables/useAdminData'
+  import { useAvatarUrl } from '@/composables/useAvatarUrl'
   
   // Utilisation du composable unifié
   const { residents, loadingResidents, errorResidents, fetchResidents, addPerson, updatePersonData, deletePersonData, deleteAvatar } = useAdminData()
@@ -379,15 +380,7 @@
   }
 
   // Récupère l'URL de l'avatar
-  function getAvatarUrl(photo: string) {
-    const config = useRuntimeConfig();
-    const base = config.public.apiBase.replace(/\/api$/, '');
-    if (!photo) return '';
-    if (photo.startsWith('http')) return photo;
-    if (photo.startsWith('avatars/')) return `${base}/storage/${photo}`;
-    if (photo.startsWith('public/avatars/')) return `${base}/storage/${photo.replace('public/', '')}`;
-    return `${base}/avatars/${photo.split('/').pop()}`;
-  }
+  const { build: getAvatarUrl } = useAvatarUrl()
 
   // Formate la date en français
   function formatDate(date: string) {

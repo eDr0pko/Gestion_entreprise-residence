@@ -6,13 +6,16 @@
         <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-8 border border-white/20">
         <!-- Header -->
         <div class="text-center mb-6">
-          <div class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <div v-if="appSettings.logoUrl" class="mx-auto h-16 w-16 mb-4 rounded-2xl flex items-center justify-center shadow-lg">
+            <img :src="getLogoUrl(appSettings.logoUrl)" :alt="appSettings.appName" class="h-full w-full rounded-2xl object-contain" />
+          </div>
+          <div v-else class="mx-auto h-16 w-16 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-2">Connexion Invité</h1>
-          <p class="text-gray-600 text-sm">Connectez-vous avec votre compte invité</p>
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ appSettings.appName || 'Gestion Résidence' }} - Connexion Invité</h1>
+          <p class="text-gray-600 text-sm">{{ appSettings.app_tagline || 'Connectez-vous avec votre compte invité' }}</p>
         </div>
 
         <!-- Bouton retour à l'accueil -->
@@ -141,15 +144,21 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
 
   import AppFooter from '~/components/AppFooter.vue'
   import ContactAdminModal from '../components/ContactAdminModal.vue'
 
   const showContactModal = ref(false)
+  const { settings, fetchSettings } = useAppSettings()
+  const { getLogoUrl } = useAssets()
+  
+  const appSettings = computed(() => settings.value)
 
   // Métadonnées de la page
   useHead({
-    title: 'Connexion Invité - Gestion Entreprise de Résidence'
+    title: computed(() => `${appSettings.value.appName || 'Gestion Entreprise de Résidence'} - Connexion Invité`)
   })
 
   // État du formulaire
@@ -254,6 +263,7 @@
 
   // Vérifier si l'utilisateur est déjà connecté
   onMounted(async () => {
+    await fetchSettings()
     authStore.initAuth()
     
     // Si l'utilisateur est déjà connecté, rediriger vers les messages
