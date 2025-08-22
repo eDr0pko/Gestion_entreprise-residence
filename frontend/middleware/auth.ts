@@ -8,11 +8,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
   // Vérifier si l'utilisateur est authentifié (membre ou invité)
   if (!authStore.isAuthenticated) {
-    console.log('Middleware auth: utilisateur non authentifié, redirection vers /')
     return navigateTo('/')
   }
-
-  console.log('Middleware auth: utilisateur authentifié:', authStore.user)
 
   // Vérifications de rôles pour les routes admin (seulement pour les membres)
   if (to.path.startsWith('/admin')) {

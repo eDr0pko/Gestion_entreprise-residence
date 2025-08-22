@@ -1,9 +1,9 @@
-s<template>
-  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden">
+<template>
+  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-slate-800 dark:to-slate-900 flex flex-col relative overflow-hidden transition-colors duration-300">
     <!-- Éléments décoratifs de fond -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
-    <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent rounded-full opacity-10 animate-pulse"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 dark:from-cyan-900/30 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 dark:from-teal-900/30 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
+    <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent rounded-full opacity-10 dark:opacity-20 animate-pulse"></div>
     
     <!-- Contenu principal centré -->
     <div class="flex-grow flex items-center justify-center px-2 sm:px-6 lg:px-8 relative z-10">
@@ -20,13 +20,13 @@ s<template>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </div>
-          <h1 class="text-5xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-4">
+          <h1 class="text-5xl font-bold bg-gradient-to-r from-gray-900 dark:from-white to-[#0097b2] dark:to-[#26c6da] bg-clip-text text-transparent mb-4">
             {{ appSettings.appName || t('index.title') }}
           </h1>
-          <p class="text-xl text-gray-600 font-medium mb-2">
+          <p class="text-xl text-gray-600 dark:text-gray-300 font-medium mb-2 transition-colors duration-300">
             {{ appSettings.company_name || t('index.subtitle') }}
           </p>
-          <p class="text-lg text-gray-500">
+          <p class="text-lg text-gray-500 dark:text-gray-400 transition-colors duration-300">
             {{ appSettings.app_tagline || t('index.chooseAccess') }}
           </p>
         </div>
@@ -202,6 +202,7 @@ s<template>
   const authStore = useAuthStore()
   const { settings, fetchSettings } = useAppSettings()
   const { getLogoUrl } = useAssets()
+  const { initTheme } = useTheme()
   
   const appSettings = computed(() => settings.value)
 
@@ -211,6 +212,7 @@ s<template>
 
   // Vérifier si l'utilisateur est déjà connecté au montage
   onMounted(async () => {
+    initTheme() // Initialiser le thème
     await fetchSettings()
     authStore.initAuth()
     

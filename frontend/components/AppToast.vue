@@ -18,7 +18,7 @@
         <div class="p-4">
           <div class="flex items-start">
             <div class="flex-shrink-0">
-              <component :is="getToastIcon(toast.type)" :class="getIconClasses(toast.type)" class="h-6 w-6" />
+              <Icon :name="getToastIcon(toast.type)" :class="getIconClasses(toast.type)" class="h-6 w-6" />
             </div>
             <div class="ml-3 w-0 flex-1 pt-0.5">
               <p class="text-sm font-medium text-gray-900">
@@ -31,7 +31,7 @@
                 class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <span class="sr-only">Close</span>
-                <XMarkIcon class="h-5 w-5" />
+                <Icon name="x-mark" class="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -43,27 +43,20 @@
 
 <script setup lang="ts">
 import { useToast } from '~/composables/useToast'
-import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  InformationCircleIcon,
-  XMarkIcon
-} from '@heroicons/vue/24/outline'
 
 const { toasts, removeToast } = useToast()
 
 const getToastIcon = (type: string) => {
   switch (type) {
     case 'success':
-      return CheckCircleIcon
+      return 'check-circle'
     case 'warning':
-      return ExclamationTriangleIcon
+      return 'exclamation-triangle'
     case 'error':
-      return ExclamationCircleIcon
+      return 'exclamation-circle'
     case 'info':
     default:
-      return InformationCircleIcon
+      return 'information-circle'
   }
 }
 

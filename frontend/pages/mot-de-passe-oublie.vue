@@ -1,35 +1,35 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex flex-col relative overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col relative overflow-hidden transition-colors duration-300">
     <!-- Éléments décoratifs de fond -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent dark:from-cyan-900/30 dark:to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent dark:from-teal-900/30 dark:to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
     
     <!-- Contenu principal -->
     <div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="max-w-md w-full space-y-8">
         <!-- En-tête -->
         <div class="text-center">
-          <div class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
+          <div class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] dark:from-[#26c6da] dark:to-[#00acc1] rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m0 0a2 2 0 01-2 2m2-2h3m-3 0h-3m-2-7a2 2 0 00-2 2v1m2-3h3m-3 0h-3m-2 7a2 2 0 012 2v1m-2-3h3m-3 0h-3"></path>
             </svg>
           </div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-3">
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] dark:from-gray-100 dark:to-[#26c6da] bg-clip-text text-transparent mb-3">
             Mot de passe oublié
           </h1>
-          <p class="text-gray-600 text-lg">
+          <p class="text-gray-600 dark:text-gray-300 text-lg">
             Entrez votre adresse email pour recevoir un lien de réinitialisation
           </p>
         </div>
 
         <!-- Formulaire -->
         <div class="relative group">
-          <div class="absolute -inset-1 bg-gradient-to-r from-[#0097b2] to-[#008699] rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
-          <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white border-opacity-50 p-8">
+          <div class="absolute -inset-1 bg-gradient-to-r from-[#0097b2] to-[#008699] dark:from-[#26c6da] dark:to-[#00acc1] rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
+          <div class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700/50 p-8 transition-colors duration-300">
             
             <!-- Bouton retour -->
             <div class="mb-6 flex justify-start">
-              <NuxtLink to="/login" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 text-[#0097b2] border border-gray-200 hover:bg-cyan-50 text-sm font-semibold shadow-sm transition-all duration-200">
+              <NuxtLink to="/login" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-[#0097b2] dark:text-[#26c6da] border border-gray-200 dark:border-gray-600 hover:bg-cyan-50 dark:hover:bg-gray-600 text-sm font-semibold shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -80,10 +80,7 @@
             </form>
 
             <!-- Message de succès/erreur -->
-            <div v-if="message" class="mt-6 p-4 rounded-xl" :class="{
-              'bg-green-50 text-green-800 border border-green-200': success,
-              'bg-red-50 text-red-800 border border-red-200': !success
-            }">
+            <div v-if="message" class="mt-6 p-4 rounded-xl" :class="{ 'bg-green-50 text-green-800 border border-green-200': success, 'bg-red-50 text-red-800 border-red-200': !success }">
               <div class="flex">
                 <svg v-if="success" class="w-5 h-5 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -114,6 +111,9 @@
     title: 'Mot de passe oublié - Gestion Entreprise de Résidence'
   })
 
+  // Import du système de thème
+  const { initTheme } = useTheme()
+
   const email = ref('')
   const loading = ref(false)
   const message = ref('')
@@ -137,6 +137,11 @@
       loading.value = false
     }
   }
+
+  // Initialiser le thème au montage
+  onMounted(() => {
+    initTheme()
+  })
 </script>
 
 

@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 dark:from-gray-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
     <div class="flex-1 flex items-center justify-center p-2 sm:p-4">
       <div class="max-w-md w-full">
         <!-- Card principale -->
-        <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-8 border border-white/20">
+        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-8 border border-white/20 dark:border-gray-700/20 transition-colors duration-300">
         <!-- Header -->
         <div class="text-center mb-6">
           <div v-if="appSettings.logoUrl" class="mx-auto h-16 w-16 mb-4 rounded-2xl flex items-center justify-center shadow-lg">
@@ -14,13 +14,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ appSettings.appName || 'Gestion Résidence' }} - Connexion Invité</h1>
-          <p class="text-gray-600 text-sm">{{ appSettings.app_tagline || 'Connectez-vous avec votre compte invité' }}</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">{{ appSettings.appName || 'Gestion Résidence' }} - Connexion Invité</h1>
+          <p class="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">{{ appSettings.app_tagline || 'Connectez-vous avec votre compte invité' }}</p>
         </div>
 
         <!-- Bouton retour à l'accueil -->
         <div class="mb-6 flex justify-start">
-          <NuxtLink to="/" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 text-[#0097b2] border border-gray-200 hover:bg-cyan-50 text-sm font-semibold shadow-sm transition-all duration-200">
+          <NuxtLink to="/" class="inline-flex items-center px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-[#0097b2] dark:text-[#26c6da] border border-gray-200 dark:border-gray-600 hover:bg-cyan-50 dark:hover:bg-gray-600 text-sm font-semibold shadow-sm transition-all duration-200">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
@@ -146,13 +146,15 @@
   import { ref } from 'vue'
   import { useAppSettings } from '~/composables/useAppSettings'
   import { useAssets } from '~/composables/useAssets'
+  import { useTheme } from '~/composables/useTheme'
 
-  import AppFooter from '~/components/AppFooter.vue'
+import AppFooter from '~/components/AppFooter.vue'
   import ContactAdminModal from '../components/ContactAdminModal.vue'
 
   const showContactModal = ref(false)
   const { settings, fetchSettings } = useAppSettings()
   const { getLogoUrl } = useAssets()
+  const { initTheme } = useTheme()
   
   const appSettings = computed(() => settings.value)
 
@@ -263,6 +265,7 @@
 
   // Vérifier si l'utilisateur est déjà connecté
   onMounted(async () => {
+    initTheme() // Initialiser le thème
     await fetchSettings()
     authStore.initAuth()
     

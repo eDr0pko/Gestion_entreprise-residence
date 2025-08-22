@@ -42,7 +42,7 @@
             :style="overlayStyle"
           ></div>
           <!-- Container principal -->
-          <div class="sidebar-container" @click.stop role="dialog" :aria-label="t('notifications.title')" :style="sidebarInnerStyle">
+          <div class="sidebar-container" @click.stop @wheel="onContentWheel" role="dialog" :aria-label="t('notifications.title')" :style="sidebarInnerStyle">
           <!-- Header avec gradient moderne -->
           <div class="sidebar-header refined">
             <div class="flex items-start justify-between">
@@ -81,10 +81,7 @@
             <div class="flex gap-2">
               <button 
                 @click="showTrash = false" 
-                :class="[
-                  'filter-btn',
-                  !showTrash ? 'filter-btn-active' : 'filter-btn-inactive'
-                ]"
+                :class="[ 'filter-btn', !showTrash ? 'filter-btn-active' : 'filter-btn-inactive' ]"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v1a1 1 0 001 1h2m-2 8h11M5 12h14"/>
@@ -93,10 +90,7 @@
               </button>
               <button 
                 @click="showTrash = true" 
-                :class="[
-                  'filter-btn',
-                  showTrash ? 'filter-btn-active' : 'filter-btn-inactive'
-                ]"
+                :class="[ 'filter-btn', showTrash ? 'filter-btn-active' : 'filter-btn-inactive' ]"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -111,7 +105,7 @@
             <!-- État de chargement -->
             <div v-if="loading" class="loading-state">
               <div class="loading-spinner"></div>
-              <span class="text-gray-500">{{ t('notifications.loading') }}</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ t('notifications.loading') }}</span>
             </div>
 
             <!-- Message d'erreur -->
@@ -134,10 +128,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </div>
-              <h3 class="text-gray-600 font-semibold">
+              <h3 class="text-gray-600 dark:text-gray-400 font-semibold">
                 {{ showTrash ? t('notifications.empty.rejected') : t('notifications.empty.pending') }}
               </h3>
-              <p class="text-gray-400 text-sm">
+              <p class="text-gray-400 dark:text-gray-500 text-sm">
                 {{ showTrash ? t('notifications.empty.rejectedDescription') : t('notifications.empty.pendingDescription') }}
               </p>
             </div>
@@ -229,10 +223,13 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
   import { useAuthStore } from '@/stores/auth'
   import { useI18n } from 'vue-i18n'
-  
+  import { useTheme } from '@/composables/useTheme'
+
+// Import du système de thème
+  const { initTheme } = useTheme()
   const authStore = useAuthStore()
   const config = useRuntimeConfig()
   // Grab both t and current locale for dynamic date/time formatting
@@ -240,7 +237,7 @@
 
   const props = defineProps({
     placement: { type: String, default: 'top-right' }, // 'top-right' | 'bottom-right' | 'inline'
-    dimLevel: { type: String, default: 'light' } // 'none' | 'light' | 'medium'
+    dimLevel: { type: String, default: 'none' } // 'none' | 'light' | 'medium'
   })
 
   // State
@@ -426,7 +423,7 @@
       'programmee': 'bg-blue-500',
       'en_attente': 'bg-yellow-500',
       'en_cours': 'bg-green-500',
-      'terminee': 'bg-gray-500',
+      'terminee': 'bg-gray-50 dark:bg-gray-9000',
       'annulee': 'bg-red-500',
       'refusee': 'bg-red-600',
       'banni': 'bg-black'
@@ -487,12 +484,6 @@
 
   // Auto-refresh
   let refreshInterval
-  onMounted(() => {
-    if (open.value) fetchNotifications()
-    refreshInterval = setInterval(fetchNotifications, 30000) // Refresh every 30 seconds
-    window.addEventListener('keydown', handleKey)
-  })
-
   onUnmounted(() => {
     if (refreshInterval) clearInterval(refreshInterval)
     window.removeEventListener('keydown', handleKey)
@@ -556,11 +547,15 @@
   const onContentWheel = (e) => {
     const el = e.currentTarget
     if (!el) return
+    
+    // Toujours empêcher le scroll du planning quand on est sur le menu
     e.stopPropagation()
-    const atTop = el.scrollTop === 0
-    const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight
-    if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
-      // Empêche le scroll de la page quand on atteint une extrémité
+    
+    const isAtTop = el.scrollTop === 0
+    const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1
+    
+    // Permettre le scroll interne du menu sauf si on est aux extrémités
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
       e.preventDefault()
     }
   }
@@ -592,16 +587,23 @@
     }
   })
 
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+    window.removeEventListener('scroll', updateAtBottom)
+  })
+
+  // Initialisation du thème
+  
+  // Initialisation unifiée
   onMounted(() => {
+    if (open.value) fetchNotifications()
+    refreshInterval = setInterval(fetchNotifications, 30000) // Refresh every 30 seconds
+    window.addEventListener('keydown', handleKey)
     measureLayout()
     updateAtBottom()
     window.addEventListener('resize', handleResize)
     window.addEventListener('scroll', updateAtBottom, { passive: true })
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('scroll', updateAtBottom)
+    initTheme()
   })
 </script>
 

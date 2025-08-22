@@ -3,17 +3,17 @@
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-[60] overflow-y-auto">
         <!-- Overlay -->
-        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="closeModal"></div>
+        <div class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 transition-opacity" @click="closeModal"></div>
         
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
-          <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
             <!-- Header -->
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900">{{ t('components.addMembersModal.title') }}</h3>
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('components.addMembersModal.title') }}</h3>
               <button 
                 @click="closeModal"
-                class="p-1 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-lg transition-colors"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -25,8 +25,8 @@
             <form @submit.prevent="addMembers" class="flex flex-col flex-1 min-h-0">
               <!-- Sélection des nouveaux membres -->
               <div class="flex-1 min-h-0 flex flex-col">
-                <div class="p-4 border-b border-gray-100">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('components.addMembersModal.selectMembers') }} – {{ selectedUsers.length }} {{ t('components.addMembersModal.selected', { count: selectedUsers.length }) }}
                   </label>
                   
@@ -36,9 +36,9 @@
                       v-model="searchQuery"
                       type="text"
                       :placeholder="t('components.addMembersModal.searchPlaceholder')"
-                      class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
+                      class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
-                    <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                   </div>
@@ -49,13 +49,13 @@
                       <div
                         v-for="user in selectedUsers"
                         :key="user.email"
-                        class="inline-flex items-center px-2 py-1 bg-[#0097b2] text-white text-xs rounded-full"
+                        class="inline-flex items-center px-2 py-1 bg-[#0097b2] dark:bg-[#007a94] text-white text-xs rounded-full"
                       >
                         <span>{{ user.nom_complet }}</span>
                         <button
                           type="button"
                           @click="removeUser(user)"
-                          class="ml-1 p-0.5 hover:bg-[#007a94] rounded-full transition-colors"
+                          class="ml-1 p-0.5 hover:bg-[#007a94] dark:hover:bg-[#006880] rounded-full transition-colors"
                         >
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -68,7 +68,7 @@
 
                 <!-- Liste des utilisateurs disponibles -->
                 <div class="flex-1 overflow-y-auto">
-                  <div v-if="loadingUsers" class="p-4 text-center text-gray-500">
+                  <div v-if="loadingUsers" class="p-4 text-center text-gray-500 dark:text-gray-400">
                     <svg class="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -76,9 +76,9 @@
                     <span class="text-sm">{{ t('components.addMembersModal.loading') }}</span>
                   </div>
 
-                  <div v-else-if="error" class="p-4 text-center text-red-500">
+                  <div v-else-if="error" class="p-4 text-center text-red-500 dark:text-red-400">
                     <p class="text-sm">{{ error }}</p>
-                    <button @click="loadAvailableUsers" class="text-xs text-[#0097b2] hover:text-[#007a94] mt-2">
+                    <button @click="loadAvailableUsers" class="text-xs text-[#0097b2] hover:text-[#007a94] dark:text-[#00b3d1] dark:hover:text-[#0097b2] mt-2">
                       {{ t('components.addMembersModal.retry') }}
                     </button>
                   </div>
@@ -88,13 +88,13 @@
                       v-for="user in filteredAvailableUsers"
                       :key="user.email"
                       @click="toggleUser(user)"
-                      class="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      :class="{ 'bg-blue-50': isSelected(user) }"
+                      class="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                      :class="{ 'bg-blue-50 dark:bg-blue-900/30': isSelected(user) }"
                     >
                       <!-- Checkbox -->
                       <div class="flex-shrink-0 mr-3">
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center transition-colors"
-                             :class="isSelected(user) ? 'bg-[#0097b2] border-[#0097b2]' : ''">
+                        <div class="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded flex items-center justify-center transition-colors"
+                             :class="isSelected(user) ? 'bg-[#0097b2] border-[#0097b2] dark:bg-[#007a94] dark:border-[#007a94]' : ''">
                           <svg v-if="isSelected(user)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                           </svg>
@@ -102,20 +102,20 @@
                       </div>
 
                       <!-- Avatar -->
-                      <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 mr-3">
-                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+                        <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                       </div>
 
                       <!-- Informations utilisateur -->
                       <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{{ user.nom_complet }}</p>
-                        <p class="text-xs text-gray-500 truncate">{{ t('components.addMembersModal.role', { role: user.role }) }}</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user.nom_complet }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ t('components.addMembersModal.role', { role: user.role }) }}</p>
                       </div>
                     </div>
 
-                    <div v-if="filteredAvailableUsers.length === 0" class="p-4 text-center text-gray-500">
+                    <div v-if="filteredAvailableUsers.length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400">
                       <p class="text-sm">
                         {{
                           availableUsers.length === 0
@@ -129,18 +129,18 @@
               </div>
 
               <!-- Footer -->
-              <div class="p-4 border-t border-gray-200 flex justify-end space-x-3">
+              <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
                   :disabled="adding"
                 >
                   {{ t('components.addMembersModal.cancel') }}
                 </button>
                 <button
                   type="submit"
-                  class="px-4 py-2 bg-[#0097b2] text-white rounded-lg hover:bg-[#007a94] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                  class="px-4 py-2 bg-[#0097b2] dark:bg-[#007a94] text-white rounded-lg hover:bg-[#007a94] dark:hover:bg-[#006880] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
                   :disabled="selectedUsers.length === 0 || adding"
                 >
                   <svg v-if="adding" class="w-4 h-4 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
@@ -159,7 +159,11 @@
 </template>
 
 <script setup lang="ts">
+  import { onMounted } from 'vue'
   import { useI18n } from 'vue-i18n'
+
+// Import du système de thème
+  const { initTheme } = useTheme()
 
   const { t } = useI18n()
 
@@ -371,6 +375,11 @@
     if (newShow) {
       loadAvailableUsers()
     }
+  })
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
   })
 </script>
 

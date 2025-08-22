@@ -3,15 +3,15 @@
     <!-- En-tête et statistiques -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div>
-        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">{{ t('badges.title') }}</h1>
-        <p class="text-gray-600 mt-1">{{ t('badges.subtitle') }}</p>
+        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{{ t('badges.title') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">{{ t('badges.subtitle') }}</p>
       </div>
       <div class="flex flex-col sm:flex-row gap-3">
         <button
           @click="showCreateModal = true"
           class="btn-primary inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200"
         >
-          <PlusIcon class="w-5 h-5" />
+                          <Icon name="plus" class="w-4 h-4 mr-2" />
           {{ t('badges.actions.create') }}
         </button>
         <button
@@ -19,85 +19,97 @@
           :disabled="loading"
           class="btn-secondary inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200"
         >
-          <RefreshIcon class="w-5 h-5" :class="{ 'animate-spin': loading }" />
+          <Icon name="refresh" class="w-5 h-5" :class="{ 'animate-spin': loading }" />
           {{ t('badges.actions.refresh') }}
         </button>
       </div>
     </div>
 
     <!-- Statistiques rapides -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">{{ t('badges.stats.total') }}</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.total_badges || 0 }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('badges.stats.total') }}</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total_badges || 0 }}</p>
           </div>
           <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-            <IdentificationIcon class="w-6 h-6 text-blue-600" />
+            <Icon name="identification" class="w-6 h-6 text-blue-600" />
           </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">{{ t('badges.stats.active') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('badges.stats.active') }}</p>
             <p class="text-2xl font-bold text-green-600">{{ stats.badges_actifs || 0 }}</p>
           </div>
           <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-            <CheckCircleIcon class="w-6 h-6 text-green-600" />
+            <Icon name="check-circle" class="w-6 h-6 text-green-600" />
           </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">{{ t('badges.stats.inactive') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('badges.stats.inactive') }}</p>
             <p class="text-2xl font-bold text-red-600">{{ stats.badges_inactifs || 0 }}</p>
           </div>
           <div class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
-            <XCircleIcon class="w-6 h-6 text-red-600" />
+            <Icon name="x-circle" class="w-6 h-6 text-red-600" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('badges.stats.assigned') }}</p>
+            <p class="text-2xl font-bold text-purple-600">{{ stats.badges_affectes || 0 }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+            <Icon name="user-group" class="w-6 h-6 text-purple-600" />
           </div>
         </div>
       </div>
       
-      <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">{{ t('badges.stats.today') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('badges.stats.today') }}</p>
             <p class="text-2xl font-bold text-blue-600">{{ stats.utilisations_aujourd_hui || 0 }}</p>
           </div>
           <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-            <ClockIcon class="w-6 h-6 text-blue-600" />
+            <Icon name="clock" class="w-6 h-6 text-blue-600" />
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filtres et recherche -->
-    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
       <div class="flex flex-col lg:flex-row gap-4">
         <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('badges.search.label') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('badges.search.label') }}</label>
           <div class="relative">
-            <SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               v-model="searchTerm"
               type="text"
               :placeholder="t('badges.search.placeholder')"
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               @input="debouncedSearch"
             />
           </div>
         </div>
         
         <div class="lg:w-48">
-          <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('badges.filter.status') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('badges.filter.status') }}</label>
           <select
             v-model="statusFilter"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             @change="loadBadges"
           >
             <option value="">{{ t('badges.filter.allStatus') }}</option>
@@ -109,52 +121,53 @@
     </div>
 
     <!-- Liste des badges -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-semibold text-gray-900">{{ t('badges.list.title') }}</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('badges.list.title') }}</h3>
       </div>
       
       <div v-if="loading" class="p-8 text-center">
-        <div class="inline-flex items-center gap-2 text-gray-600">
-          <RefreshIcon class="w-5 h-5 animate-spin" />
+        <div class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <Icon name="refresh" class="w-5 h-5 animate-spin" />
           {{ t('common.loading') }}
         </div>
       </div>
       
-      <div v-else-if="badges.length === 0" class="p-8 text-center text-gray-500">
-        <IdentificationIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
+      <div v-else-if="badges.length === 0" class="p-8 text-center text-gray-500 dark:text-gray-400">
+        <Icon name="identification" class="w-12 h-12 mx-auto mb-4 text-gray-300" />
         <p>{{ t('badges.list.empty') }}</p>
       </div>
       
       <div v-else class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
+          <thead class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.number') }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.user') }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.rights') }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.status') }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.lastUse') }}
               </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ t('badges.table.actions') }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
             <tr
               v-for="badge in badges"
               :key="badge.numero"
-              class="hover:bg-gray-50 transition-colors duration-150"
+              class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150"
+              @click="viewBadge(badge)"
             >
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
@@ -162,25 +175,25 @@
                     <span class="text-white font-bold text-sm">{{ badge.numero }}</span>
                   </div>
                   <div>
-                    <div class="font-medium text-gray-900">#{{ badge.numero }}</div>
+                    <div class="font-medium text-gray-900 dark:text-white">#{{ badge.numero }}</div>
                   </div>
                 </div>
               </td>
               
               <td class="px-6 py-4">
                 <div>
-                  <div class="font-medium text-gray-900">
+                  <div class="font-medium text-gray-900 dark:text-white">
                     {{ badge.utilisateur?.nom_complet || (badge.utilisateur_id ? t('badges.assignedUnknown') : t('badges.unassigned')) }}
                   </div>
-                  <div class="text-sm text-gray-500">{{ badge.utilisateur?.email || '-' }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ badge.utilisateur?.email || '-' }}</div>
                   <div v-if="!badge.utilisateur_id" class="text-xs text-blue-600 font-medium">{{ t('badges.availableForAssignment') }}</div>
                 </div>
               </td>
               
               <td class="px-6 py-4">
                 <div>
-                  <div class="font-medium text-gray-900">{{ badge.droit }}</div>
-                  <div v-if="badge.commentaire" class="text-sm text-gray-500">{{ badge.commentaire }}</div>
+                  <div class="font-medium text-gray-900 dark:text-white">{{ badge.droit }}</div>
+                  <div v-if="badge.commentaire" class="text-sm text-gray-500 dark:text-gray-400">{{ badge.commentaire }}</div>
                 </div>
               </td>
               
@@ -193,43 +206,43 @@
                 </span>
               </td>
               
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ badge.derniere_utilisation ? formatDate(badge.derniere_utilisation) : t('common.never') }}
               </td>
               
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
-                    @click="viewBadge(badge)"
+                    @click.stop="viewBadge(badge)"
                     class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-150"
                     :title="t('badges.actions.view')"
                   >
-                    <EyeIcon class="w-4 h-4" />
+                    <Icon name="eye" class="w-4 h-4" />
                   </button>
                   
                   <button
-                    @click="editBadge(badge)"
-                    class="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    @click.stop="editBadge(badge)"
+                    class="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150"
                     :title="t('badges.actions.edit')"
                   >
-                    <PencilIcon class="w-4 h-4" />
+                    <Icon name="pencil" class="w-4 h-4" />
                   </button>
                   
                   <button
-                    @click="toggleStatus(badge)"
+                    @click.stop="toggleStatus(badge)"
                     :class="badge.statut_actuel === 'actif' ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'"
                     class="p-2 rounded-lg transition-colors duration-150"
                     :title="badge.statut_actuel === 'actif' ? t('badges.actions.deactivate') : t('badges.actions.activate')"
                   >
-                    <component :is="badge.statut_actuel === 'actif' ? StopIcon : PlayIcon" class="w-4 h-4" />
+                    <Icon :name="badge.statut_actuel === 'actif' ? 'stop' : 'play'" class="w-4 h-4" />
                   </button>
                   
                   <button
-                    @click="deleteBadge(badge)"
+                    @click.stop="deleteBadge(badge)"
                     class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150"
                     :title="t('badges.actions.delete')"
                   >
-                    <TrashIcon class="w-4 h-4" />
+                    <Icon name="trash" class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -240,37 +253,37 @@
     </div>
 
     <!-- Activités récentes -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-semibold text-gray-900">{{ t('badges.activities.title') }}</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('badges.activities.title') }}</h3>
       </div>
       
       <div v-if="stats.dernieres_activites && stats.dernieres_activites.length > 0" class="divide-y divide-gray-200">
         <div
           v-for="activite in stats.dernieres_activites"
           :key="activite.id"
-          class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150"
+          class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors duration-150"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div :class="getActivityColorClass(activite.action_color)" class="w-3 h-3 rounded-full"></div>
               <div>
-                <p class="font-medium text-gray-900">
+                <p class="font-medium text-gray-900 dark:text-white">
                   {{ activite.action_libelle }} - Badge #{{ activite.badge_numero }}
                 </p>
-                <p class="text-sm text-gray-600">{{ activite.utilisateur_nom }}</p>
-                <p v-if="activite.message" class="text-sm text-gray-500">{{ activite.message }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ activite.utilisateur_nom }}</p>
+                <p v-if="activite.message" class="text-sm text-gray-500 dark:text-gray-400">{{ activite.message }}</p>
               </div>
             </div>
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               {{ formatDate(activite.date_heure) }}
             </div>
           </div>
         </div>
       </div>
       
-      <div v-else class="p-8 text-center text-gray-500">
-        <ClockIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
+      <div v-else class="p-8 text-center text-gray-500 dark:text-gray-400">
+        <Icon name="clock" class="w-12 h-12 mx-auto mb-4 text-gray-300" />
         <p>{{ t('badges.activities.empty') }}</p>
       </div>
     </div>
@@ -297,100 +310,16 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { useI18n } from 'vue-i18n'
-  import { useApiClient } from '~/composables/useApiClient'
-  import { useNotifications } from '~/composables/useNotifications'
-
-  // Import proper icon components
-  import PlusIcon from '~/components/icons/PlusIcon.vue'
-  import RefreshIcon from '~/components/icons/RefreshIcon.vue'
-  import SearchIcon from '~/components/icons/SearchIcon.vue'
-  import PencilIcon from '~/components/icons/PencilIcon.vue'
-  import TrashIcon from '~/components/icons/TrashIcon.vue'
-  import EyeIcon from '~/components/icons/EyeIcon.vue'
-  import PlayIcon from '~/components/icons/PlayIcon.vue'
-  import StopIcon from '~/components/icons/StopIcon.vue'
-  import CheckCircleIcon from '~/components/icons/CheckCircleIcon.vue'
-  import XCircleIcon from '~/components/icons/XCircleIcon.vue'
-  import ClockIcon from '~/components/icons/ClockIcon.vue'
-  import IdentificationIcon from '~/components/icons/IdentificationIcon.vue'
-
-  // Function debounce simple
-  const debounce = (func: Function, wait: number) => {
-    let timeout: NodeJS.Timeout
-    return function executedFunction(...args: any[]) {
-      const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-    }
-  }
-
-  // Composants
-  import BadgeFormModal from './BadgeFormModal.vue'
-  import BadgeDetailModal from './BadgeDetailModal.vue'
-
-  const { t } = useI18n()
-  const { showNotification, showSuccess, showError } = useNotifications()
-
-
-
-  // Composable pour les appels API
-  const { apiCall } = useApiClient()
-
-  // Recherche avec debounce
-  const debouncedSearch = debounce(() => {
-    loadBadges()
-  }, 300)
-
-  // Méthodes
-  const loadBadges = async () => {
-    loading.value = true
-    try {
-      const params = new URLSearchParams()
-      if (searchTerm.value) params.append('search', searchTerm.value)
-      if (statusFilter.value) params.append('statut', statusFilter.value)
-
-      const response = await apiCall(`/badges?${params.toString()}`)
-      if (response.success) {
-        badges.value = response.data
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des badges:', error)
-      showError(t('badges.errors.loadFailed'))
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const loadStats = async () => {
-    try {
-      const response = await apiCall('/badges/stats')
-      if (response.success) {
-  // IMPORTANT: stats est un ref -> il faut modifier stats.value
-  // L'ancien code faisait Object.assign(stats, ...) ce qui ajoutait
-  // des propriétés sur l'objet ref lui-même (non visibles après unwrap en template)
-  // Résultat : counters restaient à 0. On corrige ici.
-  Object.assign(stats.value, response.data)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error)
-    }
-  }
-
-  const refreshData = async () => {
-    await Promise.all([loadBadges(), loadStats()])
-  }
-
+  // Import des composants modals
+  import BadgeFormModal from '~/components/badge/BadgeFormModal.vue'
+  import BadgeDetailModal from '~/components/dashboard/BadgeDetailModal.vue'
+  
   // Types
   interface Badge {
     id: number
     numero: string
     statut: 'actif' | 'inactif' | 'inconnu' | 'suspendu' | 'en_attente'
-    statut_actuel: 'actif' | 'inactif' | 'inconnu' | 'suspendu' | 'en_attente'
+    statut_actuel?: 'actif' | 'inactif' | 'inconnu' | 'suspendu' | 'en_attente'
     utilisateur_id?: number | null
     personne?: {
       nom: string
@@ -404,7 +333,7 @@
     commentaire?: string
     zone_acces?: string
     niveau_securite?: string
-    attributions_count: number
+    attributions_count?: number
     dernier_acces?: string | null
     derniere_utilisation?: string | null
     date_derniere_utilisation?: string | null
@@ -422,10 +351,42 @@
     date_heure: string
   }
 
-  // État réactif
+  interface Stats {
+    total: number
+    actifs: number
+    inactifs: number
+    assignes: number
+    total_badges: number
+    badges_actifs: number
+    badges_inactifs: number
+    badges_suspendus: number
+    badges_affectes: number
+    utilisations_aujourd_hui: number
+    dernieres_activites: Activity[]
+  }
+
+  // Nuxt auto-imports
+  const { t } = useI18n()
+  const { showNotification, showSuccess, showError } = useNotifications()
+  const { initTheme } = useTheme()
+  const { apiCall } = useApiClient()
+
+  // Function debounce simple
+  const debounce = (func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout)
+        func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+    }
+  }
+
+  // États réactifs
   const badges = ref<Badge[]>([])
-  const filteredBadges = ref<Badge[]>([])
-  const stats = ref({
+  const stats = ref<Stats>({
     total: 0,
     actifs: 0,
     inactifs: 0,
@@ -434,10 +395,11 @@
     badges_actifs: 0,
     badges_inactifs: 0,
     badges_suspendus: 0,
+    badges_affectes: 0,
     utilisations_aujourd_hui: 0,
-    dernieres_activites: [] as Activity[]
+    dernieres_activites: []
   })
-
+  
   const loading = ref(false)
   const searchTerm = ref('')
   const statusFilter = ref('')
@@ -448,6 +410,47 @@
   const showDetailModal = ref(false)
   const editingBadge = ref<Badge | null>(null)
   const viewingBadge = ref<Badge | null>(null)
+
+  // Recherche avec debounce
+  const debouncedSearch = debounce(() => {
+    loadBadges()
+  }, 300)
+
+  // Méthodes
+  const loadBadges = async () => {
+    loading.value = true
+    try {
+      const params = new URLSearchParams()
+      if (searchTerm.value) params.append('search', searchTerm.value)
+      if (statusFilter.value) params.append('statut', statusFilter.value)
+
+      const response = await apiCall(`/api/badges?${params.toString()}`)
+      if (response.success) {
+        badges.value = response.data
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des badges:', error)
+      showError(t('badges.errors.loadFailed'))
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const loadStats = async () => {
+    try {
+      const response = await apiCall('/api/badges/stats')
+      if (response.success) {
+        // Mise à jour correcte des stats réactives
+        Object.assign(stats.value, response.data)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error)
+    }
+  }
+
+  const refreshData = async () => {
+    await Promise.all([loadBadges(), loadStats()])
+  }
 
   const viewBadge = (badge: Badge) => {
     viewingBadge.value = badge
@@ -466,7 +469,7 @@
     }
 
     try {
-      const response = await apiCall(`/badges/${badge.numero}`, 'DELETE')
+      const response = await apiCall(`/api/badges/${badge.numero}`, 'DELETE')
 
       if (response.success) {
         showSuccess(t('badges.deleteSuccess'))
@@ -482,7 +485,7 @@
 
   const toggleStatus = async (badge: Badge) => {
     try {
-      const response = await apiCall(`/badges/${badge.numero}/toggle-status`, 'POST')
+      const response = await apiCall(`/api/badges/${badge.numero}/toggle`, 'POST')
 
       if (response.success) {
         const action = response.data.nouveau_statut === 'actif' ? 'activated' : 'deactivated'
@@ -511,11 +514,11 @@
   // Utilitaires
   const getStatusClass = (status: string) => {
     const classes = {
-      'actif': 'bg-green-100 text-green-800',
-      'inactif': 'bg-red-100 text-red-800',
-      'inconnu': 'bg-gray-100 text-gray-800',
-      'suspendu': 'bg-yellow-100 text-yellow-800',
-      'en_attente': 'bg-blue-100 text-blue-800'
+      'actif': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      'inactif': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      'inconnu': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+      'suspendu': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      'en_attente': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
     }
     return (classes as any)[status] || classes['inconnu']
   }
@@ -554,9 +557,10 @@
     })
   }
 
-  // Initialisation
-  onMounted(() => {
-    refreshData()
+  // Lifecycle
+  onMounted(async () => {
+    initTheme()
+    await refreshData()
   })
 </script>
 

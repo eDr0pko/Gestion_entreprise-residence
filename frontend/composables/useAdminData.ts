@@ -21,21 +21,18 @@ export function useAdminData() {
   const incidents = ref<any[]>([])
   const logs = ref<any[]>([])
   const residents = ref<PersonData[]>([])
-  const conversations = ref<any[]>([])
   const guests = ref<any[]>([])
   const stats = ref<any>({})
 
   const loadingIncidents = ref(false)
   const loadingLogs = ref(false)
   const loadingResidents = ref(false)
-  const loadingConversations = ref(false)
   const loadingGuests = ref(false)
   const loadingStats = ref(false)
 
   const errorIncidents = ref<any>(null)
   const errorLogs = ref<any>(null)
   const errorResidents = ref<any>(null)
-  const errorConversations = ref<any>(null)
   const errorGuests = ref<any>(null)
   const errorStats = ref<any>(null)
 
@@ -43,14 +40,8 @@ export function useAdminData() {
   function getAuthHeaders() {
     const authStore = useAuthStore()
     
-    console.log('[useAdminData] Auth check - isAuthenticated:', authStore.isAuthenticated)
-    console.log('[useAdminData] Auth check - token exists:', !!authStore.token)
-    console.log('[useAdminData] Auth check - process.client:', process.client)
-    
     if (process.client && !authStore.isAuthenticated) {
-      console.log('[useAdminData] Initializing auth from localStorage...')
       authStore.initAuth()
-      console.log('[useAdminData] After initAuth - isAuthenticated:', authStore.isAuthenticated)
       console.log('[useAdminData] After initAuth - token exists:', !!authStore.token)
     }
     
@@ -59,7 +50,6 @@ export function useAdminData() {
       throw new Error('Token d\'authentification manquant. Veuillez vous reconnecter.')
     }
     
-    console.log('[useAdminData] Token available, creating headers')
     return {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -72,45 +62,30 @@ export function useAdminData() {
     errorIncidents.value = null
     
     try {
-      console.log('[useAdminData] Fetching incidents...')
-      
       const headers = getAuthHeaders()
       const config = useRuntimeConfig()
       const rawResponse: any = await $fetch(`${config.public.apiBase}/admin/incidents`, { headers })
-      
-      console.log('[useAdminData] Raw response type:', typeof rawResponse)
-      console.log('[useAdminData] Raw response:', rawResponse)
       
       // Parse the response if it's a string
       let response: any
       if (typeof rawResponse === 'string') {
         try {
           response = JSON.parse(rawResponse)
-          console.log('[useAdminData] Parsed string response to object')
         } catch (parseError) {
-          console.error('[useAdminData] Failed to parse response string:', parseError)
           response = rawResponse
         }
       } else {
         response = rawResponse
       }
       
-      console.log('[useAdminData] Final response.success:', response?.success)
-      console.log('[useAdminData] Final response.data type:', typeof response?.data)
-      console.log('[useAdminData] Array.isArray(response.data):', Array.isArray(response?.data))
-      console.log('[useAdminData] response.data length:', response?.data?.length)
-      
       if (response && response.success && response.data) {
         if (Array.isArray(response.data)) {
           incidents.value = response.data
-          console.log('[useAdminData] ✅ Successfully updated incidents with', incidents.value.length, 'items')
         } else {
           // Fallback si ce n'est pas un tableau
           incidents.value = []
-          console.warn('[useAdminData] ⚠️ Data is not an array:', typeof response.data)
         }
       } else {
-        console.warn('[useAdminData] ❌ Response not successful or no data:', { success: response?.success, hasData: !!response?.data })
         incidents.value = []
       }
     } catch (error) {
@@ -221,58 +196,6 @@ export function useAdminData() {
       residents.value = []
     } finally {
       loadingResidents.value = false
-    }
-  }
-
-  async function fetchConversations() {
-    loadingConversations.value = true
-    errorConversations.value = null
-    
-    try {
-      console.log('[useAdminData] Fetching conversations...')
-      
-      const headers = getAuthHeaders()
-      const config = useRuntimeConfig()
-      const rawResponse: any = await $fetch(`${config.public.apiBase}/admin/messages`, { headers })
-      
-      // Parse the response if it's a string
-      let response: any
-      if (typeof rawResponse === 'string') {
-        try {
-          response = JSON.parse(rawResponse)
-        } catch (parseError) {
-          console.error('[useAdminData] Failed to parse conversations response string:', parseError)
-          response = rawResponse
-        }
-      } else {
-        response = rawResponse
-      }
-      
-      console.log('[useAdminData] Conversations response:', response)
-      
-      if (response && response.success) {
-        if (Array.isArray(response.messages)) {
-          conversations.value = response.messages
-          console.log('[useAdminData] ✅ Successfully updated conversations with', conversations.value.length, 'items')
-        } 
-        else if (Array.isArray(response.data)) {
-          conversations.value = response.data
-          console.log('[useAdminData] ✅ Successfully updated conversations from data field:', conversations.value.length, 'items')
-        }
-        else {
-          conversations.value = []
-          console.warn('[useAdminData] ⚠️ No valid conversations array found in response')
-        }
-      } else {
-        console.warn('[useAdminData] ❌ Conversations response not successful:', response)
-        conversations.value = []
-      }
-    } catch (error) {
-      console.error('[useAdminData] ❌ Error fetching conversations:', error)
-      errorConversations.value = error
-      conversations.value = []
-    } finally {
-      loadingConversations.value = false
     }
   }
 
@@ -468,7 +391,6 @@ export function useAdminData() {
     incidents,
     logs,
     residents,
-    conversations,
     guests,
     stats,
     
@@ -476,7 +398,6 @@ export function useAdminData() {
     loadingIncidents,
     loadingLogs,
     loadingResidents,
-    loadingConversations,
     loadingGuests,
     loadingStats,
     
@@ -484,7 +405,6 @@ export function useAdminData() {
     errorIncidents,
     errorLogs,
     errorResidents,
-    errorConversations,
     errorGuests,
     errorStats,
     
@@ -492,7 +412,6 @@ export function useAdminData() {
     fetchIncidents,
     fetchLogs,
     fetchResidents,
-    fetchConversations,
     fetchGuests,
     fetchStats,
     

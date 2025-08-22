@@ -27,17 +27,17 @@
   =====================================================================
   -->
 
-  <header class="bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-200 px-6 lg:px-10 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm min-h-[56px]">
+  <header class="bg-gradient-to-r from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 border-b border-gray-200 dark:border-gray-600 px-6 lg:px-10 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm min-h-[56px] transition-colors duration-300">
     
     <!-- Effet de glassmorphisme subtil -->
-    <div class="absolute inset-0 bg-gradient-to-r from-[#0097b2]/3 via-transparent to-[#00b4d8]/3 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0097b2]/3 via-transparent to-[#00b4d8]/3 dark:from-[#26c6da]/3 dark:via-transparent dark:to-[#4dd0e1]/3 pointer-events-none"></div>
     <div class="relative flex items-center gap-6 w-full min-h-[40px]">
 
       <!-- Bouton retour planning (gauche, partout sauf sur /planning) -->
       <NuxtLink
         v-if="$route.path !== '/planning'"
         to="/planning"
-        class="flex items-center gap-3 text-[#0097b2] hover:text-[#007a94] hover:bg-white/80 backdrop-blur-sm rounded-xl px-5 py-3 transition-all duration-200 shadow-md mr-6 text-lg"
+        class="flex items-center gap-3 text-[#0097b2] dark:text-[#26c6da] hover:text-[#007a94] dark:hover:text-[#1e88e5] hover:bg-white/80 dark:hover:bg-gray-800/80 backdrop-blur-sm rounded-xl px-5 py-3 transition-all duration-200 shadow-md mr-6 text-lg"
         :title="t('header.backToPlanning')"
         style="min-width: 0;"
       >
@@ -50,9 +50,9 @@
       <!-- Titre et badges + logo personnalisé -->
       <div class="flex items-center gap-5 flex-1 min-w-0">
         <div v-if="appSettings.logoUrl" class="flex items-center gap-3">
-          <img :src="getLogoUrl(appSettings.logoUrl)" alt="Logo" class="h-10 w-10 rounded-xl object-contain border border-gray-200 shadow" />
+          <img :src="getLogoUrl(appSettings.logoUrl)" alt="Logo" class="h-10 w-10 rounded-xl object-contain border border-gray-200 dark:border-gray-600 shadow" />
         </div>
-        <h1 class="truncate text-xl lg:text-2xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">{{ appSettings.appName || title }}</h1>
+        <h1 class="truncate text-xl lg:text-2xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">{{ appSettings.appName || title }}</h1>
         <!-- Badge global (ex: messages non lus) -->
         <Transition name="badge">
           <div 
@@ -148,7 +148,13 @@
 </template>
 
 <script setup lang="ts">
-  /*
+  import { useAuthStore } from '~/stores/auth'
+  import { ref, computed, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
+
+/*
   ==========================================================================
   | Script principal du composant AppHeader
   |--------------------------------------------------------------------------
@@ -158,19 +164,19 @@
   ==========================================================================
   */
 
-  import { useAuthStore } from '~/stores/auth'
-  import { ref, computed, onMounted } from 'vue'
-  import { useI18n } from 'vue-i18n'
   import ReportIncidentModal from '~/components/ReportIncidentModal.vue'
-  import { useAppSettings } from '~/composables/useAppSettings'
-  import { useAssets } from '~/composables/useAssets'
-
   const { t } = useI18n()
   const { settings, fetchSettings } = useAppSettings()
   const { getLogoUrl } = useAssets()
+  
+  // Import du système de thème
+  const { initTheme } = useTheme()
   const appSettings = computed(() => settings.value)
 
   onMounted(() => {
+    // Initialiser le thème
+    initTheme()
+    
     fetchSettings()
   })
 

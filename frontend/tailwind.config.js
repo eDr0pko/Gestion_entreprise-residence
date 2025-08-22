@@ -5,10 +5,21 @@ export default {
     './components/**/*.{vue,js,ts}',
     './app.vue',
   ],
+  darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+          }
+        }
+      }
+    },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
 
 

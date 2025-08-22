@@ -3,7 +3,7 @@
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
       <!-- Overlay -->
       <div 
-        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        class="fixed inset-0 bg-gray-50 dark:bg-gray-9000 bg-opacity-75 transition-opacity"
         @click="$emit('close')"
       ></div>
 
@@ -11,27 +11,27 @@
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
       <!-- Modal panel -->
-      <div class="relative inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div class="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
         <div class="absolute top-0 right-0 pt-4 pr-4">
           <button
             type="button"
-            class="bg-white rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            class="bg-white dark:bg-gray-800 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             @click="$emit('close')"
           >
             <span class="sr-only">Fermer</span>
-            <XMarkIcon class="h-6 w-6" />
+            <Icon name="x-mark" class="h-6 w-6" />
           </button>
         </div>
 
         <div class="sm:flex sm:items-start">
           <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-            <BadgeIcon class="h-6 w-6 text-blue-600" />
+            <Icon name="identification" class="h-6 w-6 text-blue-600" />
           </div>
           <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
               {{ isEditing ? 'Modifier le badge' : 'Créer un badge' }}
             </h3>
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {{ isEditing ? 'Modifiez les informations du badge' : 'Attribuez un badge d\'accès à un utilisateur' }}
             </p>
           </div>
@@ -40,7 +40,7 @@
         <form @submit.prevent="handleSubmit" class="mt-6 space-y-6">
           <!-- Sélection utilisateur -->
           <div>
-            <label for="user" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="user" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Utilisateur
             </label>
             <div class="relative">
@@ -49,23 +49,23 @@
                 type="text"
                 id="user"
                 placeholder="Rechercher un utilisateur..."
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 @input="searchUsers"
                 autocomplete="off"
               />
               
               <!-- Liste des utilisateurs -->
-              <div v-if="showUserList && users.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-auto">
+              <div v-if="showUserList && users.length > 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-auto">
                 <button
                   v-for="user in users"
                   :key="user.id_personne"
                   type="button"
-                  class="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center gap-3"
+                  class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:bg-gray-50 focus:outline-none flex items-center gap-3"
                   @click="selectUser(user)"
                 >
                   <div class="flex-1">
-                    <div class="font-medium text-gray-900">{{ user.nom_complet }}</div>
-                    <div class="text-sm text-gray-500">{{ user.email }}</div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ user.nom_complet }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</div>
                   </div>
                   <div v-if="user.badges_count > 0" class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
                     {{ user.badges_count }} badge(s)
@@ -73,8 +73,8 @@
                 </button>
               </div>
               
-              <div v-else-if="showUserList && searchUser && users.length === 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg">
-                <div class="px-4 py-3 text-sm text-gray-500">
+              <div v-else-if="showUserList && searchUser && users.length === 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg">
+                <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                   Aucun utilisateur trouvé
                 </div>
               </div>
@@ -92,7 +92,7 @@
                   @click="form.selectedUser = null; searchUser = ''"
                   class="text-blue-600 hover:text-blue-800"
                 >
-                  <XMarkIcon class="w-5 h-5" />
+                  <Icon name="x-mark" class="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -100,7 +100,7 @@
 
           <!-- Droits d'accès -->
           <div>
-            <label for="rights" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="rights" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Droits d'accès
             </label>
             <input
@@ -108,14 +108,14 @@
               type="text"
               id="rights"
               placeholder="Ex: Accès bâtiment A, Bureaux..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
 
           <!-- Commentaire -->
           <div>
-            <label for="comment" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="comment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Commentaire
             </label>
             <textarea
@@ -123,7 +123,7 @@
               id="comment"
               rows="3"
               placeholder="Informations supplémentaires sur ce badge..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             ></textarea>
           </div>
 
@@ -132,7 +132,7 @@
             <button
               type="button"
               @click="$emit('close')"
-              class="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="w-full sm:w-auto px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Annuler
             </button>
@@ -152,12 +152,11 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+  import { onMounted, ref, reactive, computed, watch, onUnmounted } from 'vue'
   import { useAuthenticatedFetch } from '~/composables/useAuthenticatedFetch'
 
-  // Import des icônes
-  import BadgeIcon from '~/components/icons/BadgeIcon.vue'
-  import XMarkIcon from '~/components/icons/XMarkIcon.vue'
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   const { fetchWithAuth } = useAuthenticatedFetch()
 
@@ -278,12 +277,16 @@
     }
   }
 
-  onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-  })
-
   onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
+  })
+
+    // Initialisation du thème
+  
+  // Initialisation unifiée
+  onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+    initTheme()
   })
 </script>
 

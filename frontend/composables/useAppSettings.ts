@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { useFetch } from '#app'
 
 export function useAppSettings() {
 	type AppSettings = {
@@ -41,12 +40,11 @@ export function useAppSettings() {
 		loading.value = true
 		error.value = ''
 		try {
-			const { data, error: fetchError } = await useFetch('/api/settings', {
+			const data = await $fetch('/api/settings', {
 				baseURL: 'http://localhost:8000'
 			})
-			if (fetchError.value) throw fetchError.value
-			if (data.value) {
-				const apiData = data.value as any
+			if (data) {
+				const apiData = data as any
 				settings.value.appName = apiData.app_name || 'Gestion Résidence'
 				settings.value.logoUrl = apiData.logo_url || null
 				settings.value.primary_color = apiData.primary_color
@@ -70,7 +68,7 @@ export function useAppSettings() {
 		loading.value = true
 		error.value = ''
 		try {
-			const { data, error: updateError } = await useFetch('/api/settings', {
+			const data = await $fetch('/api/settings', {
 				method: 'POST',
 				baseURL: 'http://localhost:8000',
 				body: {
@@ -86,8 +84,7 @@ export function useAppSettings() {
 					welcome_message: newSettings.welcome_message
 				},
 			})
-			if (updateError.value) throw updateError.value
-			if (data.value) {
+			if (data) {
 				// Recharger les paramètres après mise à jour
 				await fetchSettings()
 			}

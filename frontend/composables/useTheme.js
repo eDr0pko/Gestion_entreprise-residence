@@ -37,12 +37,12 @@ export const useTheme = () => {
   const initTheme = () => {
     if (process.client) {
       const savedTheme = localStorage.getItem('theme')
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       
       if (savedTheme) {
         isDark.value = savedTheme === 'dark'
       } else {
-        isDark.value = prefersDark
+        // Mode clair par défaut
+        isDark.value = false
       }
       
       updateDocument()

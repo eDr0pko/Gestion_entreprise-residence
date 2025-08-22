@@ -39,7 +39,7 @@
             :disabled="currentPage <= 1"
             class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronLeftIcon class="h-5 w-5" />
+            <Icon name="chevron-left" class="h-5 w-5" />
           </button>
           
           <!-- Page numbers -->
@@ -66,7 +66,7 @@
             :disabled="currentPage >= totalPages"
             class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronRightIcon class="h-5 w-5" />
+            <Icon name="chevron-right" class="h-5 w-5" />
           </button>
         </nav>
       </div>
@@ -77,7 +77,6 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 
   interface Props {
     currentPage: number

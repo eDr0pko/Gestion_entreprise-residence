@@ -1,11 +1,11 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-4xl border border-white/20 animate-fadeIn overflow-hidden">
+    <div class="bg-white dark:bg-gray-800/95 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-4xl border border-white/20 animate-fadeIn overflow-hidden">
       <!-- Header -->
       <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 pt-6 pb-4">
         <div class="flex items-center justify-between text-white">
           <h2 class="text-2xl font-bold flex items-center gap-3">
-            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+            <div class="w-8 h-8 bg-white dark:bg-gray-800/20 rounded-xl flex items-center justify-center">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
@@ -14,7 +14,7 @@
           </h2>
           <button 
             @click="$emit('close')" 
-            class="text-white/80 hover:text-white text-2xl font-bold p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none"
+            class="text-white/80 hover:text-white text-2xl font-bold p-2 rounded-xl hover:bg-white dark:bg-gray-800/10 transition-colors focus:outline-none"
           >
             ×
           </button>
@@ -37,7 +37,7 @@
                   v-model="residentQuery" 
                   @input="searchResidents" 
                   type="text" 
-                  class="w-full bg-white border border-blue-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                  class="w-full bg-white dark:bg-gray-800 border border-blue-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                   :placeholder="t('planning.createVisit.searchPlaceholder', 'Nom, prénom ou email...')" 
                   autocomplete="off" 
                 />
@@ -46,15 +46,15 @@
                 </svg>
               </div>
               
-              <ul v-if="residentResults.length > 0" class="mt-2 bg-white border border-blue-200 rounded-xl shadow-lg max-h-32 overflow-auto">
+              <ul v-if="residentResults.length > 0" class="mt-2 bg-white dark:bg-gray-800 border border-blue-200 rounded-xl shadow-lg max-h-32 overflow-auto">
                 <li 
                   v-for="person in residentResults" 
                   :key="person.id_personne" 
                   @click="selectResident(person)" 
                   class="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-blue-100 last:border-b-0 transition-colors"
                 >
-                  <div class="font-medium text-gray-900">{{ person.prenom }} {{ person.nom }}</div>
-                  <div class="text-sm text-gray-500">{{ person.email }}</div>
+                  <div class="font-medium text-gray-900 dark:text-white">{{ person.prenom }} {{ person.nom }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ person.email }}</div>
                 </li>
               </ul>
               
@@ -83,7 +83,7 @@
                   v-model="visitorQuery" 
                   @input="searchVisitors" 
                   type="text" 
-                  class="w-full bg-white border border-green-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                  class="w-full bg-white dark:bg-gray-800 border border-green-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
                   :placeholder="t('planning.createVisit.searchPlaceholder', 'Nom, prénom ou email...')" 
                   autocomplete="off" 
                 />
@@ -92,15 +92,15 @@
                 </svg>
               </div>
               
-              <ul v-if="visitorResults.length > 0" class="mt-2 bg-white border border-green-200 rounded-xl shadow-lg max-h-32 overflow-auto">
+              <ul v-if="visitorResults.length > 0" class="mt-2 bg-white dark:bg-gray-800 border border-green-200 rounded-xl shadow-lg max-h-32 overflow-auto">
                 <li 
                   v-for="person in visitorResults" 
                   :key="person.id_personne" 
                   @click="selectVisitor(person)" 
                   class="px-4 py-3 hover:bg-green-50 cursor-pointer border-b border-green-100 last:border-b-0 transition-colors"
                 >
-                  <div class="font-medium text-gray-900">{{ person.prenom }} {{ person.nom }}</div>
-                  <div class="text-sm text-gray-500">{{ person.email }}</div>
+                  <div class="font-medium text-gray-900 dark:text-white">{{ person.prenom }} {{ person.nom }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ person.email }}</div>
                 </li>
               </ul>
               
@@ -132,7 +132,7 @@
                   <input 
                     v-model="inviteNom" 
                     type="text" 
-                    class="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
                     :required="showInviteFields" 
                   />
                 </div>
@@ -143,7 +143,7 @@
                   <input 
                     v-model="invitePrenom" 
                     type="text" 
-                    class="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
                     :required="showInviteFields" 
                   />
                 </div>
@@ -154,7 +154,7 @@
                   <input 
                     v-model="inviteEmail" 
                     type="email" 
-                    class="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
                     :required="showInviteFields" 
                   />
                 </div>
@@ -166,7 +166,7 @@
                     v-model="inviteTel" 
                     type="tel"
                     placeholder="+33 6 12 34 56 78"
-                    class="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
                   />
                 </div>
               </div>
@@ -175,41 +175,41 @@
 
           <!-- Visit details -->
           <div class="space-y-4">
-            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900 mb-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
                 {{ t('planning.createVisit.visitDetails', 'Détails de la visite') }}
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-1">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('planning.createVisit.purpose', 'Motif') }}
                   </label>
                   <input 
                     v-model="motif" 
                     type="text" 
-                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                     required 
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('planning.createVisit.startTime', 'Début') }}
                   </label>
                   <input 
                     v-model="start" 
                     type="datetime-local" 
-                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                     required 
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('planning.createVisit.endTime', 'Fin') }}
                   </label>
                   <input 
                     v-model="end" 
                     type="datetime-local" 
-                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                     required 
                   />
                 </div>
@@ -222,7 +222,7 @@
             <button 
               type="button" 
               @click="$emit('close')" 
-              class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+              class="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               {{ t('planning.createVisit.cancel', 'Annuler') }}
             </button>
@@ -243,10 +243,12 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
+  import { onMounted, ref, computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useAuthStore } from '@/stores/auth'
 
+// Import du système de thème
+  const { initTheme } = useTheme()
   const { t } = useI18n()
   const authStore = useAuthStore()
   const config = useRuntimeConfig()
@@ -321,10 +323,10 @@
     }
     
     try {
-      const res = await fetch(`${config.public.apiBase}/visitors/search?q=${encodeURIComponent(visitorQuery.value)}`, {
+      const response = await fetch(`${runtimeConfig.public.apiBase}/visitors/search?q=${visitorQuery.value}`, {
         headers: { 'Authorization': `Bearer ${authStore.token}` }
       })
-      const data = await res.json()
+      const data = await response.json()
       visitorResults.value = data.visitors || []
     } catch (error) {
       console.error('Error searching visitors:', error)
@@ -419,6 +421,11 @@
       alert(t('planning.createVisit.errors.requestFailed', 'Erreur lors de la requête'))
     }
   }
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
+  })
 </script>
 
 <style scoped>

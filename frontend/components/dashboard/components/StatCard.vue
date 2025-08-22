@@ -3,7 +3,7 @@
     <div class="flex items-center">
       <div class="flex-shrink-0">
         <div :class="iconClasses">
-          <component :is="iconComponent" class="w-6 h-6" />
+          <Icon :name="iconName" class="w-6 h-6" />
         </div>
       </div>
       <div class="ml-4 flex-1">
@@ -27,15 +27,6 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import { 
-    UserIcon,
-    CheckCircleIcon,
-    XCircleIcon,
-    PauseCircleIcon,
-    ExclamationTriangleIcon,
-    ChartBarIcon
-  } from '@heroicons/vue/24/outline'
-  import BadgeIcon from '~/components/icons/BadgeIcon.vue'
 
   interface Props {
     title: string
@@ -53,22 +44,22 @@
     trend: 'neutral'
   })
 
-  const iconComponent = computed(() => {
+  const iconName = computed(() => {
     switch (props.icon) {
       case 'badge':
-        return BadgeIcon
+        return 'badge'
       case 'user':
-        return UserIcon
+        return 'user'
       case 'check-circle':
-        return CheckCircleIcon
+        return 'check-circle'
       case 'x-circle':
-        return XCircleIcon
+        return 'x-circle'
       case 'pause-circle':
-        return PauseCircleIcon
+        return 'pause-circle'
       case 'warning':
-        return ExclamationTriangleIcon
+        return 'exclamation-triangle'
       default:
-        return ChartBarIcon
+        return 'chart-bar'
     }
   })
 

@@ -43,7 +43,7 @@
                     class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
                   >
                     <div v-if="loadingUsers" class="p-3 text-center text-gray-500">
-                      <ArrowPathIcon class="w-4 h-4 animate-spin inline mr-2" />
+                      <Icon name="arrow-path" class="w-4 h-4 animate-spin inline mr-2" />
                       {{ t('common.searching') }}
                     </div>
                     
@@ -81,7 +81,7 @@
                       @click="clearUser"
                       class="text-blue-600 hover:text-blue-800"
                     >
-                      <XMarkIcon class="w-5 h-5" />
+                      <Icon name="x-mark" class="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -133,7 +133,7 @@
               :disabled="loading || !isFormValid"
               class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ArrowPathIcon v-if="loading" class="w-4 h-4 animate-spin mr-2" />
+              <Icon name="arrow-path" v-if="loading" class="w-4 h-4 animate-spin mr-2" />
               {{ isEditing ? t('badges.actions.update') : t('badges.actions.create') }}
             </button>
             <button
@@ -168,9 +168,6 @@ const debounce = (func: Function, wait: number) => {
     timeout = setTimeout(later, wait)
   }
 }
-
-// Icônes
-import { ArrowPathIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 // Props et émissions
 const props = defineProps<{

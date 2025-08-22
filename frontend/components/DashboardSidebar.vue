@@ -12,7 +12,7 @@
                 @click="$emit('select', section.key)"
                 >
                 <span class="mr-3">
-                    <component :is="section.icon" class="w-5 h-5" />
+                    <Icon :name="section.icon" class="w-5 h-5" />
                 </span>
                 {{ section.label }}
                 </button>

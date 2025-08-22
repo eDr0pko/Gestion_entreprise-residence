@@ -10,18 +10,19 @@
   -->
   <div class="space-y-8 animate-fadeInUp">
     <!-- Header moderne -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8 card-shadow">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8 card-shadow">
       <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div class="animate-slideInLeft">
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('adminResidents.title') }}</h2>
-          <p class="text-gray-500">Gérez les utilisateurs de votre résidence en toute simplicité</p>
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('adminResidents.title') }}</h2>
+          <p class="text-gray-500 dark:text-gray-400">Gérez les utilisateurs de votre résidence en toute simplicité</p>
         </div>
         <div class="flex items-center gap-3">
-          <button @click="toggleView" class="px-4 py-2.5 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 font-medium hover:card-shadow">
+          <button @click="toggleView" class="px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 transition-all duration-200 font-medium hover:card-shadow">
             {{ isListView ? $t('adminResidents.cardView') : $t('adminResidents.listView') }}
           </button>
-          <button @click="openAddUserStep1" class="px-6 py-2.5 rounded-xl gradient-modern text-white hover:opacity-90 transition-all duration-200 font-medium shadow-lg hover:card-shadow-hover">
-            Ajouter un utilisateur
+          <button @click="openAddUserStep1" class="px-6 py-2.5 rounded-xl gradient-modern text-white hover:opacity-90 transition-all duration-200 font-medium shadow-lg hover:card-shadow-hover flex items-center gap-2">
+            <Icon name="plus" class="w-4 h-4" />
+            {{ $t('adminResidents.addUser') }}
           </button>
         </div>
       </div>
@@ -29,19 +30,19 @@
       <!-- Filtres modernes -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">{{ $t('adminResidents.globalSearch') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('adminResidents.globalSearch') }}</label>
           <div class="relative">
             <input v-model="searchQuery" @input="filterPersons" type="text" :placeholder="$t('adminResidents.searchPlaceholder')" 
-              class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 focus:bg-white" />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 dark:bg-gray-800 focus:bg-white" />
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">{{ $t('adminResidents.filterRole') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('adminResidents.filterRole') }}</label>
           <select v-model="filterRole" @change="filterPersons" 
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 focus:bg-white">
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 dark:bg-gray-800 focus:bg-white">
             <option value="">{{ $t('adminResidents.allRoles') }}</option>
             <option value="admin">{{ $t('profile.role.admin') }}</option>
             <option value="gardien">{{ $t('profile.role.gardien') }}</option>
@@ -52,8 +53,8 @@
     </div>
   <!-- Modal ajout utilisateur - étape 1 : choix des rôles -->
   <div v-if="addUserStep === 1" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
-      <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" @click="closeAddUser">✕</button>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md relative">
+      <button class="absolute top-2 right-2 text-gray-400 dark:text-gray-400 hover:text-gray-600" @click="closeAddUser">✕</button>
       <h3 class="text-lg font-bold mb-4">{{ $t('adminResidents.addUserTitle') }}</h3>
       <div class="mb-3">
         <label class="block text-sm font-medium mb-1">{{ $t('adminResidents.roles') }} <span class="text-red-500">*</span></label>
@@ -74,7 +75,7 @@
         <div v-if="addUserForm.roles.length === 0" class="text-xs text-red-500 mt-1">{{ $t('adminResidents.roleRequired') }}</div>
       </div>
       <div class="flex justify-end gap-2 mt-4">
-        <button type="button" @click="closeAddUser" class="px-3 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
+        <button type="button" @click="closeAddUser" class="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
         <button type="button" @click="proceedAddUserStep2" :disabled="addUserForm.roles.length === 0" class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">{{ $t('adminResidents.next') }}</button>
       </div>
     </div>
@@ -82,8 +83,8 @@
 
   <!-- Modal ajout utilisateur - étape 2 : formulaire -->
   <div v-if="addUserStep === 2" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
-      <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" @click="closeAddUser">✕</button>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md relative">
+      <button class="absolute top-2 right-2 text-gray-400 dark:text-gray-400 hover:text-gray-600" @click="closeAddUser">✕</button>
       <h3 class="text-lg font-bold mb-4">{{ $t('adminResidents.userInfoTitle') }}</h3>
       <form @submit.prevent="submitAddUser">
         <div class="mb-3">
@@ -114,27 +115,27 @@
           <input v-model="addUserForm.password" class="input w-full" type="password" required />
         </div>
         <div class="flex justify-end gap-2 mt-4">
-        <button type="button" @click="closeAddUser" class="px-3 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
+        <button type="button" @click="closeAddUser" class="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
         <button type="submit" class="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 text-sm">{{ $t('components.button.add') }}</button>
         </div>
       </form>
     </div>
   </div>
-    <div v-if="adminPersonsLoading" class="text-center py-8 text-gray-500">{{ $t('components.table.loading') }}</div>
+    <div v-if="adminPersonsLoading" class="text-center py-8 text-gray-500 dark:text-gray-400">{{ $t('components.table.loading') }}</div>
     <div v-else>
       <!-- Affichage par cartes modernes -->
       <div v-if="!isListView">
         <div v-for="cat in categories" :key="cat.key" class="mb-12">
           <div class="flex items-center gap-3 mb-6">
-            <h3 class="text-2xl font-bold text-gray-900">{{ $t('adminResidents.categories.' + cat.key) }}</h3>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('adminResidents.categories.' + cat.key) }}</h3>
             <div class="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
           </div>
-          <div v-if="filteredPersons[cat.key].length === 0" class="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <div class="text-gray-400 text-lg font-medium">{{ $t('adminResidents.noPerson', { type: $t('adminResidents.categories.' + cat.key).toLowerCase() }) }}</div>
+          <div v-if="filteredPersons[cat.key].length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100">
+            <div class="text-gray-400 dark:text-gray-500 text-lg font-medium">{{ $t('adminResidents.noPerson', { type: $t('adminResidents.categories.' + cat.key).toLowerCase() }) }}</div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="person in filteredPersons[cat.key]" :key="person.id_personne" 
-              class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 p-6 relative overflow-hidden card-shadow hover:card-shadow-hover animate-fadeInUp">
+              class="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 dark:border-gray-700 transition-all duration-300 p-6 relative overflow-hidden card-shadow hover:card-shadow-hover animate-fadeInUp">
               <!-- Indicateur de rôle -->
               <div class="absolute top-0 right-0 w-20 h-20 opacity-5">
                 <div class="w-full h-full gradient-modern rotate-45 transform translate-x-8 -translate-y-8"></div>
@@ -145,14 +146,14 @@
                 <div class="relative">
                   <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                     class="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300" alt="avatar" />
-                  <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
+                  <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-400 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
                     {{ person.prenom[0] }}{{ person.nom[0] }}
                   </div>
                   <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <h4 class="font-bold text-xl text-gray-900 mb-1 truncate">{{ person.prenom }} {{ person.nom }}</h4>
-                  <p class="text-sm text-gray-500 mb-2 truncate">{{ person.email }}</p>
+                  <h4 class="font-bold text-xl text-gray-900 dark:text-white mb-1 truncate">{{ person.prenom }} {{ person.nom }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 truncate">{{ person.email }}</p>
                   <div class="flex flex-wrap gap-1.5">
                     <span v-for="role in person.roles" :key="role" :class="roleBadgeClass(role)" 
                       class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium">
@@ -168,28 +169,28 @@
                   <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-3a1 1 0 011-1h2.586l6.414-6.414A6 6 0 0119 9z"/>
                   </svg>
-                  <span class="text-gray-600">Niveau accès : <span class="font-semibold text-blue-600">{{ person.niveau_acces }}</span></span>
+                  <span class="text-gray-600 dark:text-gray-400">Niveau accès : <span class="font-semibold text-blue-600">{{ person.niveau_acces }}</span></span>
                 </div>
                 
                 <div v-if="person.adresse_logement" class="flex items-center gap-2 text-sm">
                   <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6"/>
                   </svg>
-                  <span class="text-gray-600">Logement : <span class="font-semibold text-green-600">{{ person.adresse_logement }}</span></span>
+                  <span class="text-gray-600 dark:text-gray-400">Logement : <span class="font-semibold text-green-600">{{ person.adresse_logement }}</span></span>
                 </div>
                 
                 <div class="flex items-center gap-2 text-sm">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                   </svg>
-                  <span class="text-gray-600">{{ formatPhoneNumber(person.numero_telephone || '') }}</span>
+                  <span class="text-gray-600 dark:text-gray-400">{{ formatPhoneNumber(person.numero_telephone || '') }}</span>
                 </div>
                 
                 <div v-if="person.date_nomination" class="flex items-center gap-2 text-sm">
                   <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
-                  <span class="text-gray-500">Nommé le {{ formatDate(person.date_nomination) }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">Nommé le {{ formatDate(person.date_nomination) }}</span>
                 </div>
               </div>
 
@@ -209,29 +210,29 @@
         </div>
       </div>
       <!-- Affichage par liste moderne -->
-      <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+      <div v-else class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table class="min-w-full w-full">
-          <thead class="bg-gray-50">
+          <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ $t('profile.fields.lastName') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ $t('profile.fields.firstName') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ $t('login.email') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ $t('profile.fields.phone') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">{{ $t('adminResidents.roles') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ $t('profile.fields.lastName') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ $t('profile.fields.firstName') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ $t('login.email') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ $t('profile.fields.phone') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">{{ $t('adminResidents.roles') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            <tr v-for="person in filteredList" :key="person.id_personne" class="hover:bg-gray-50 transition-colors duration-200">
-              <td class="px-4 py-3 font-medium text-gray-900 break-words truncate min-w-[120px]">{{ person.nom }}</td>
-              <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[120px]">{{ person.prenom }}</td>
-              <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[180px]">{{ person.email }}</td>
-              <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[140px]">{{ formatPhoneNumber(person.numero_telephone || '') }}</td>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100">
+            <tr v-for="person in filteredList" :key="person.id_personne" class="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors duration-200">
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white break-words truncate min-w-[120px]">{{ person.nom }}</td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[120px]">{{ person.prenom }}</td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[180px]">{{ person.email }}</td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[140px]">{{ formatPhoneNumber(person.numero_telephone || '') }}</td>
               <td class="px-4 py-3 min-w-[120px]">
                 <div class="flex flex-wrap gap-1">
                   <span v-if="person.role" :class="roleBadgeClass(person.role)" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium">{{ roleLabel(person.role) }}</span>
                   <span v-else-if="person.roles && person.roles.length" v-for="role in person.roles" :key="role" :class="roleBadgeClass(role)" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium">{{ roleLabel(role) }}</span>
-                  <span v-else class="text-gray-500">{{ $t('adminResidents.noRole') }}</span>
+                  <span v-else class="text-gray-500 dark:text-gray-400">{{ $t('adminResidents.noRole') }}</span>
                 </div>
               </td>
               <td class="px-4 py-3 min-w-[120px]">
@@ -248,8 +249,8 @@
 
     <!-- Modal édition -->
     <div v-if="editModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
-        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" @click="editModal = false">✕</button>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md relative">
+        <button class="absolute top-2 right-2 text-gray-400 dark:text-gray-400 hover:text-gray-600" @click="editModal = false">✕</button>
         <h3 class="text-lg font-bold mb-4">{{ $t('adminResidents.editUserTitle', { name: editingPerson?.prenom + ' ' + editingPerson?.nom }) }}</h3>
         <form @submit.prevent="submitEdit">
           <div class="mb-3">
@@ -305,7 +306,7 @@
             </div>
           </div>
           <div class="flex justify-end gap-2 mt-4">
-            <button type="button" @click="editModal = false" class="px-3 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
+            <button type="button" @click="editModal = false" class="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-200 text-sm">{{ $t('components.button.cancel') }}</button>
             <button type="submit" class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">{{ $t('components.button.save') }}</button>
           </div>
         </form>
@@ -315,7 +316,10 @@
 </template>
 
 <script setup lang="ts">
-  /*
+  import { onMounted, ref, reactive, computed, watch } from 'vue'
+  import { useAvatarUrl } from '@/composables/useAvatarUrl'
+
+/*
     =====================================================================
     Script principal de gestion des administrateurs, gardiens et résidents
     ---------------------------------------------------------------------
@@ -323,11 +327,11 @@
     - Toutes les fonctions sont commentées pour une meilleure compréhension
     =====================================================================
   */
-  import { ref, reactive, computed, onMounted, watch } from 'vue'
   import type { PersonData } from '~/composables/useAdminData'
-  import { useAvatarUrl } from '@/composables/useAvatarUrl'
-  
   // Utilisation du composable unifié
+  // Import du système de thème
+  const { initTheme } = useTheme()
+
   const { residents, loadingResidents, errorResidents, fetchResidents, addPerson, updatePersonData, deletePersonData, deleteAvatar } = useAdminData()
   
   // Alias pour compatibilité
@@ -417,10 +421,10 @@
 
   // Filtre les personnes selon les critères et remplit filteredPersons
   function filterPersons() {
-    const q = searchQuery.value.trim().toLowerCase()
     const filtered = allPersons.value.filter((p: PersonData) => {
       let match = true
       // Recherche globale
+      const q = searchQuery.value.toLowerCase()
       if (q && !(
         p.nom.toLowerCase().includes(q) ||
         p.prenom.toLowerCase().includes(q) ||
@@ -429,8 +433,7 @@
       )) match = false
       // Filtre rôle
       if (filterRole.value) {
-        const hasRole = (p.role === filterRole.value) || 
-                       (p.roles && p.roles.includes(filterRole.value as any))
+        const hasRole = (p.role === filterRole.value) || (p.roles && p.roles.includes(filterRole.value as any))
         if (!hasRole) match = false
       }
       return match
@@ -540,7 +543,6 @@
       if (editForm.new_password) {
         body.new_password = editForm.new_password
       }
-      console.log('Submitting edit for person ID:', editingPerson.value.id_personne, 'with data:', body)
       await updatePersonData(editingPerson.value.id_personne, body);
       editModal.value = false;
     } catch (e) {
@@ -571,8 +573,9 @@
     }
   }
 
-  // Récupération des personnes à l'initialisation
+  // Récupération des personnes et initialisation à l'initialisation
   onMounted(async () => {
+    initTheme()
     await fetchResidents()
     filterPersons()
   })
@@ -594,5 +597,6 @@
     border-color: #0097b2;
   }
 </style>
+
 
 

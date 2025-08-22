@@ -37,7 +37,7 @@
                   @click="$emit('close')"
                   class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                 >
-                  <XMarkIcon class="w-5 h-5" />
+                  <Icon name="x-mark" class="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -123,7 +123,7 @@
                       @click="$emit('edit', badge)"
                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
                     >
-                      <PencilIcon class="w-4 h-4" />
+                      <Icon name="pencil" class="w-4 h-4" />
                       {{ t('badges.actions.edit') }}
                     </button>
                     
@@ -132,7 +132,7 @@
                       :class="badge.statut_actuel === 'actif' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
                       class="inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors duration-150"
                     >
-                      <component :is="badge.statut_actuel === 'actif' ? StopIcon : PlayIcon" class="w-4 h-4" />
+                      <Icon :name="badge.statut_actuel === 'actif' ? 'stop' : 'play'" class="w-4 h-4" />
                       {{ badge.statut_actuel === 'actif' ? t('badges.actions.deactivate') : t('badges.actions.activate') }}
                     </button>
                     
@@ -140,7 +140,7 @@
                       @click="$emit('delete', badge)"
                       class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-150"
                     >
-                      <TrashIcon class="w-4 h-4" />
+                      <Icon name="trash" class="w-4 h-4" />
                       {{ t('badges.actions.delete') }}
                     </button>
                   </div>
@@ -176,7 +176,7 @@
                   </div>
                   
                   <div v-else class="text-center text-gray-500 py-8">
-                    <ClockIcon class="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <Icon name="clock" class="w-8 h-8 mx-auto mb-2 text-gray-300" />
                     <p>{{ t('badges.detail.noHistory') }}</p>
                   </div>
                 </div>
@@ -202,16 +202,6 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
-
-  // Icônes
-  import {
-    XMarkIcon,
-    PencilIcon,
-    TrashIcon,
-    PlayIcon,
-    StopIcon,
-    ClockIcon
-  } from '@heroicons/vue/24/outline'
 
   // Props
   const props = defineProps<{

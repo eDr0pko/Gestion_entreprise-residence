@@ -11,7 +11,7 @@
         </div>
       </div>
       <div :class="iconClass">
-        <component :is="iconComponent" class="w-6 h-6" />
+        <Icon :name="iconName" class="w-6 h-6" />
       </div>
     </div>
   </div>
@@ -19,12 +19,6 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import BadgeIcon from '~/components/icons/BadgeIcon.vue'
-  import RefreshIcon from '~/components/icons/RefreshIcon.vue'
-  import PauseIcon from '~/components/icons/PauseIcon.vue'
-  import PlusIcon from '~/components/icons/PlusIcon.vue'
-  import TrashIcon from '~/components/icons/TrashIcon.vue'
-  // Ajoute les icônes manquantes
 
   interface Props {
       title: string
@@ -40,19 +34,19 @@
       color: 'blue'
   })
 
-  const iconComponent = computed(() => {
+  const iconName = computed(() => {
       switch (props.icon) {
           case 'check-circle':
-          return RefreshIcon
+          return 'refresh'
           case 'x-circle':
-          return TrashIcon
+          return 'trash'
           case 'pause-circle':
-          return PauseIcon
+          return 'pause'
           case 'plus':
-          return PlusIcon
+          return 'plus'
           case 'badge':
           default:
-          return BadgeIcon
+          return 'badge'
       }
       })
 

@@ -24,9 +24,9 @@
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+            <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
               <!-- En-tête -->
-              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 mb-6">
+              <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-6">
                 {{ isEdit ? t('badges.editBadge') : t('badges.createBadge') }}
               </DialogTitle>
 
@@ -35,7 +35,7 @@
                 
                 <!-- Recherche et sélection de personne -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('badges.form.person') }} <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
@@ -43,25 +43,25 @@
                       v-model="personSearch"
                       type="text"
                       :placeholder="t('badges.form.searchPersonPlaceholder')"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       @input="searchPersonnes"
                       @focus="showPersonSuggestions = true"
                     />
-                    <SearchIcon class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Icon name="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                     
                     <!-- Suggestions de personnes -->
                     <div 
                       v-if="showPersonSuggestions && personSuggestions.length > 0"
-                      class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                      class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     >
                       <div
                         v-for="person in personSuggestions"
                         :key="person.id_personne"
                         @click="selectPerson(person)"
-                        class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700 cursor-pointer border-b border-gray-100 last:border-b-0"
                       >
                         <div class="font-medium">{{ person.prenom }} {{ person.nom }}</div>
-                        <div class="text-sm text-gray-500">{{ person.email }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ person.email }}</div>
                       </div>
                     </div>
                   </div>
@@ -80,7 +80,7 @@
                         @click="clearSelectedPerson"
                         class="text-blue-600 hover:text-blue-800"
                       >
-                        <XMarkIcon class="w-4 h-4" />
+                        <Icon name="x-mark" class="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -92,12 +92,12 @@
 
                 <!-- Droits d'accès -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('badges.form.accessRights') }} <span class="text-red-500">*</span>
                   </label>
                   <select
                     v-model="form.droit"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="">{{ t('badges.form.selectRights') }}</option>
@@ -118,17 +118,17 @@
 
                 <!-- Commentaire -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ t('badges.form.comment') }}
                   </label>
                   <textarea
                     v-model="form.commentaire"
                     rows="3"
                     :placeholder="t('badges.form.commentPlaceholder')"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     maxlength="512"
                   ></textarea>
-                  <div class="mt-1 text-sm text-gray-500">
+                  <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {{ commentLength }}/512
                   </div>
                   <div v-if="errors.commentaire" class="mt-1 text-sm text-red-600">
@@ -137,11 +137,11 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     type="button"
                     @click="$emit('close')"
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     {{ t('common.cancel') }}
                   </button>
@@ -164,21 +164,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { onMounted, ref, computed, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useNotification } from '~/composables/useNotification'
   import { useApiClient } from '~/composables/useApiClient'
   import { debounce } from 'lodash-es'
-  // @ts-ignore
-  import {
-    Dialog,
-    DialogPanel,
-    DialogTitle,
-    TransitionChild,
-    TransitionRoot,
-  } from '@headlessui/vue'
-  import SearchIcon from '~/components/icons/SearchIcon.vue'
-  import XMarkIcon from '~/components/icons/XMarkIcon.vue'
+  import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,  } from '@headlessui/vue'
+
   import LoadingSpinner from '../components/LoadingSpinner.vue'
 
   interface Badge {
@@ -205,6 +197,9 @@
     isEdit: boolean
     badge?: Badge | null
   }
+
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   const props = withDefaults(defineProps<Props>(), {
     badge: null
@@ -355,8 +350,10 @@
     }
   }
 
-  // Cycle de vie
+  // Cycle de vie et initialisation
   onMounted(() => {
+    initTheme()
+    
     if (props.isEdit && props.badge) {
       form.value.id_utilisateur = props.badge.id_utilisateur.toString()
       form.value.droit = props.badge.droit

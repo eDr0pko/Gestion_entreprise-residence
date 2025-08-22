@@ -3,10 +3,10 @@
     <!-- En-tête -->
     <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight lg:text-3xl">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight lg:text-3xl">
           {{ t('badges.title') }}
         </h1>
-        <p class="mt-1 text-sm text-gray-600 lg:mt-2 lg:text-base">
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 lg:mt-2 lg:text-base">
           {{ t('badges.description') }}
         </p>
       </div>
@@ -14,16 +14,16 @@
         <button
           @click="refreshBadges"
           :disabled="loading"
-          class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
         >
-          <RefreshIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': loading }" />
+          <Icon name="refresh" class="w-4 h-4 mr-2" :class="{ 'animate-spin': loading }" />
           {{ t('common.refresh') }}
         </button>
         <button
           @click="openCreateModal"
           class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
         >
-          <PlusIcon class="w-4 h-4 mr-2" />
+          <Icon name="plus" class="w-4 h-4 mr-2" />
           {{ t('badges.newBadge') }}
         </button>
       </div>
@@ -62,31 +62,31 @@
     </div>
 
     <!-- Filtres et recherche -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('common.search') }}
           </label>
           <div class="relative">
-            <SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               v-model="filters.search"
               type="text"
               :placeholder="t('badges.searchPlaceholder')"
-              class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              class="pl-10 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               @input="debouncedSearch"
             />
           </div>
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('badges.statusLabel') }}
           </label>
           <select
             v-model="filters.statut"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             @change="() => loadBadges()"
           >
             <option value="">{{ t('badges.allStatuses') }}</option>
@@ -98,12 +98,12 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('badges.sortBy') }}
           </label>
           <select
             v-model="filters.sort_by"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             @change="() => loadBadges()"
           >
             <option value="numero">{{ t('badges.sortOptions.number') }}</option>
@@ -113,12 +113,12 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('common.order') }}
           </label>
           <select
             v-model="filters.sort_order"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             @change="() => loadBadges()"
           >
             <option value="desc">{{ t('common.descending') }}</option>
@@ -129,26 +129,26 @@
     </div>
 
     <!-- Liste des badges -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h2 class="text-lg font-semibold text-gray-900">{{ t('badges.badgesList') }}</h2>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('badges.badgesList') }}</h2>
       </div>
       
       <div v-if="loading" class="p-8 text-center">
         <LoadingSpinner />
-        <p class="mt-2 text-sm text-gray-600 lg:text-base">{{ t('common.loading') }}</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 lg:text-base">{{ t('common.loading') }}</p>
       </div>
 
       <div v-else-if="badges.length === 0" class="p-8 text-center">
-        <BadgeIcon class="mx-auto w-12 h-12 text-gray-400" />
-        <p class="mt-2 text-sm text-gray-600 lg:text-base">{{ t('badges.noBadges') }}</p>
+        <Icon name="identification" class="mx-auto w-12 h-12 text-gray-400 dark:text-gray-500" />
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 lg:text-base">{{ t('badges.noBadges') }}</p>
       </div>
 
       <div v-else class="divide-y divide-gray-200">
         <div
           v-for="badge in badges"
           :key="badge.numero"
-          class="p-4 hover:bg-gray-50 transition-colors cursor-pointer lg:p-6"
+          class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors cursor-pointer lg:p-6"
           @click="openBadgeDetails(badge)"
         >
           <div class="flex items-center justify-between">
@@ -160,14 +160,14 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex flex-col space-y-1 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-2">
-                  <h3 class="text-sm font-medium text-gray-900 truncate lg:text-lg">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-white truncate lg:text-lg">
                     {{ badge.utilisateur ? badge.utilisateur.nom_complet : (badge.utilisateur_id ? t('badges.assignedUnknown') : t('badges.unassigned')) }}
                   </h3>
                   <StatusBadge :status="badge.statut" />
                 </div>
-                <p class="text-xs text-gray-600 truncate lg:text-sm">{{ badge.utilisateur?.email || (badge.utilisateur_id ? '-' : t('badges.availableForAssignment')) }}</p>
-                <p class="text-xs text-gray-500 mt-1 lg:text-sm">{{ badge.droit }}</p>
-                <p v-if="badge.commentaire" class="text-xs text-gray-500 italic mt-1 lg:text-sm">{{ badge.commentaire }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 truncate lg:text-sm">{{ badge.utilisateur?.email || (badge.utilisateur_id ? '-' : t('badges.availableForAssignment')) }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 lg:text-sm">{{ badge.droit }}</p>
+                <p v-if="badge.commentaire" class="text-xs text-gray-500 dark:text-gray-400 italic mt-1 lg:text-sm">{{ badge.commentaire }}</p>
               </div>
             </div>
             <div class="flex items-center space-x-1 lg:space-x-2 ml-2">
@@ -177,7 +177,7 @@
                 class="inline-flex items-center px-2 py-1.5 lg:px-3 lg:py-2 text-xs lg:text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                 :title="t('badges.actions.view')"
               >
-                <EyeIcon class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                <Icon name="eye" class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                 <span class="hidden sm:inline">{{ t('badges.actions.view') }}</span>
               </button>
               
@@ -188,7 +188,7 @@
                 class="inline-flex items-center px-2 py-1.5 lg:px-3 lg:py-2 text-xs lg:text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
                 :title="t('badges.actions.activate')"
               >
-                <PlayIcon class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                <Icon name="play" class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                 <span class="hidden md:inline">{{ t('badges.actions.activate') }}</span>
               </button>
               <button
@@ -197,7 +197,7 @@
                 class="inline-flex items-center px-2 py-1.5 lg:px-3 lg:py-2 text-xs lg:text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 hover:border-orange-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
                 :title="t('badges.actions.deactivate')"
               >
-                <PauseIcon class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                <Icon name="pause" class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                 <span class="hidden md:inline">{{ t('badges.actions.deactivate') }}</span>
               </button>
               
@@ -207,7 +207,7 @@
                 class="inline-flex items-center px-2 py-1.5 lg:px-3 lg:py-2 text-xs lg:text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:border-indigo-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                 :title="t('badges.actions.edit')"
               >
-                <PencilIcon class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                <Icon name="pencil" class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                 <span class="hidden lg:inline">{{ t('badges.actions.edit') }}</span>
               </button>
               
@@ -217,7 +217,7 @@
                 class="inline-flex items-center px-2 py-1.5 lg:px-3 lg:py-2 text-xs lg:text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
                 :title="t('badges.actions.delete')"
               >
-                <TrashIcon class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+                <Icon name="trash" class="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                 <span class="hidden lg:inline">{{ t('badges.actions.delete') }}</span>
               </button>
             </div>
@@ -226,7 +226,7 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination.total > pagination.per_page" class="px-4 py-4 border-t border-gray-200 lg:px-6">
+      <div v-if="pagination.total > pagination.per_page" class="px-4 py-4 border-t border-gray-200 dark:border-gray-700 lg:px-6">
         <Pagination
           :current-page="pagination.current_page"
           :total-pages="pagination.last_page"
@@ -263,12 +263,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue'
+  import { onMounted, ref, computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useNotification } from '~/composables/useNotification'
   import { useApiClient } from '~/composables/useApiClient'
 
-  // Import des composants
+// Import des composants
   import StatCard from '~/components/ui/StatCard.vue'
   import StatusBadge from '~/components/ui/StatusBadge.vue'
   import LoadingSpinner from '~/components/ui/LoadingSpinner.vue'
@@ -276,16 +276,8 @@
   import BadgeFormModal from '~/components/badge/BadgeFormModal.vue'
   import BadgeDetailsModal from '~/components/badge/BadgeDetailsModal.vue'
 
-  // Import des icônes
-  import PlusIcon from '~/components/icons/PlusIcon.vue'
-  import RefreshIcon from '~/components/icons/RefreshIcon.vue'
-  import SearchIcon from '~/components/icons/SearchIcon.vue'
-  import EyeIcon from '~/components/icons/EyeIcon.vue'
-  import PencilIcon from '~/components/icons/PencilIcon.vue'
-  import TrashIcon from '~/components/icons/TrashIcon.vue'
-  import PlayIcon from '~/components/icons/PlayIcon.vue'
-  import PauseIcon from '~/components/icons/PauseIcon.vue'
-  import BadgeIcon from '~/components/icons/BadgeIcon.vue'
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   const { t } = useI18n()
   const { showNotification } = useNotification()
@@ -365,7 +357,8 @@
   const loadStats = async () => {
     try {
       loadingStats.value = true
-      const response = await apiCall('/badges/stats')
+      
+      const response = await apiCall('/badges/stats', 'GET')
       
       if (response.success) {
         stats.value = response.data
@@ -376,7 +369,7 @@
       console.error('Erreur lors du chargement des statistiques:', error)
       // Essayer l'endpoint alternatif
       try {
-        const response = await apiCall('/badges/statistiques')
+        const response = await apiCall('/dashboard/badges-stats', 'GET')
         if (response.success) {
           stats.value = response.data
         }
@@ -404,7 +397,7 @@
   // Actions sur les badges
   const activerBadge = async (badge: any) => {
     try {
-      const response = await apiCall(`/badges/${badge.numero}/toggle-status`, 'POST')
+      const response = await apiCall(`/badges/${badge.numero}/activate`, 'PUT')
       
       if (response.success) {
         showNotification(t('badges.messages.activated'), 'success')
@@ -418,7 +411,7 @@
 
   const desactiverBadge = async (badge: any) => {
     try {
-      const response = await apiCall(`/badges/${badge.numero}/toggle-status`, 'POST')
+      const response = await apiCall(`/badges/${badge.numero}/deactivate`, 'PUT')
       
       if (response.success) {
         showNotification(t('badges.messages.deactivated'), 'success')
@@ -485,8 +478,9 @@
     refreshBadges()
   }
 
-  // Lifecycle
+  // Lifecycle et initialisation
   onMounted(async () => {
+    initTheme()
     console.log('🔍 Chargement initial des badges et statistiques...')
     await Promise.all([loadBadges(), loadStats()])
     console.log('📊 Stats chargées:', stats.value)

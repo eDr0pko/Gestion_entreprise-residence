@@ -1,34 +1,34 @@
 <template>
   <div class="phone-input-container">
-    <label v-if="label" class="block text-sm font-semibold text-gray-800 mb-2">
+    <label v-if="label" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
       {{ $t(label) }}
     </label>
     
     <div class="relative">
-      <div class="flex rounded-xl border border-gray-300 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all duration-200 bg-gray-50 focus-within:bg-white">
+      <div class="flex rounded-xl border border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all duration-200 bg-gray-50 dark:bg-gray-900 focus-within:bg-white dark:bg-gray-800">
         <!-- Sélecteur de pays -->
         <div class="relative">
           <button
             type="button"
             @click="toggleCountrySelector"
-            class="flex items-center px-3 py-3 border-r border-gray-300 rounded-l-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors duration-200"
+            class="flex items-center px-3 py-3 border-r border-gray-300 dark:border-gray-600 rounded-l-xl hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors duration-200"
             :disabled="disabled"
           >
             <span class="text-lg mr-2">{{ selectedCountry.flag }}</span>
-            <span class="text-sm font-medium text-gray-600">{{ selectedCountry.code }}</span>
-            <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ selectedCountry.code }}</span>
+            <svg class="w-4 h-4 ml-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
           
           <!-- Liste déroulante des pays -->
-          <div v-if="showCountrySelector" class="absolute top-full left-0 z-50 w-72 mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-80 overflow-hidden">
+          <div v-if="showCountrySelector" class="absolute top-full left-0 z-50 w-72 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-80 overflow-hidden">
             <div class="p-2 border-b border-gray-100">
               <input
                 v-model="countrySearch"
                 type="text"
                 :placeholder="$t('components.phoneInput.country') + '...'"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div class="max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -37,12 +37,12 @@
                 :key="country.code + country.name"
                 type="button"
                 @click="selectCountry(country)"
-                class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors duration-150 border-b border-gray-50 last:border-b-0 country-item"
+                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center space-x-3 transition-colors duration-150 border-b border-gray-50 last:border-b-0 country-item"
               >
                 <span class="text-lg flex-shrink-0">{{ country.flag }}</span>
                 <div class="flex-1 min-w-0">
-                  <div class="text-sm font-medium text-gray-900 truncate">{{ $t('components.phoneInput.country') }}: {{ country.name }}</div>
-                  <div class="text-xs text-gray-500">{{ country.code }}</div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $t('components.phoneInput.country') }}: {{ country.name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ country.code }}</div>
                 </div>
               </button>
             </div>
@@ -56,7 +56,7 @@
           type="tel"
           :placeholder="$t('components.phoneInput.placeholder')"
           :disabled="disabled"
-          class="flex-1 px-4 py-3 bg-transparent border-0 rounded-r-xl focus:outline-none text-gray-900 placeholder-gray-500"
+          class="flex-1 px-4 py-3 bg-transparent border-0 rounded-r-xl focus:outline-none text-gray-900 dark:text-white placeholder-gray-500"
           @input="handlePhoneInput"
           @focus="handleFocus"
           @blur="handleBlur"
@@ -64,7 +64,7 @@
       </div>
       
       <!-- Message d'aide -->
-      <p v-if="helpText" class="text-xs text-gray-500 mt-1 ml-1">{{ $t(helpText) }}</p>
+      <p v-if="helpText" class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1 ml-1">{{ $t(helpText) }}</p>
       
       <!-- Message d'erreur -->
       <p v-if="error" class="text-xs text-red-600 mt-1 ml-1">{{ $t(error) }}</p>
@@ -76,9 +76,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+  import { onMounted, ref, computed, onUnmounted, nextTick, watch } from 'vue'
 
-  interface Country {
+interface Country {
     name: string
     code: string
     flag: string
@@ -100,6 +100,9 @@
     (e: 'update:modelValue', value: string): void
     (e: 'country-change', country: Country): void
   }
+
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   const props = withDefaults(defineProps<Props>(), {
     helpText: 'Format international requis',
@@ -1235,8 +1238,8 @@
   const initializeFromModelValue = () => {
     if (!props.modelValue) return
     
-    // Essayer de détecter le pays depuis le numéro
     const value = props.modelValue
+    // Essayer de détecter le pays depuis le numéro
     if (value.startsWith('+')) {
       for (const country of countries) {
         if (value.startsWith(country.code)) {
@@ -1267,6 +1270,7 @@
 
   // Watchers et lifecycle
   onMounted(() => {
+    initTheme()
     initializeFromModelValue()
     
     // Fermer le sélecteur avec Escape

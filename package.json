@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@heroicons/vue": "^2.2.0",
+    "vue": "^3.5.19",
+    "vue-i18n": "^11.1.11"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "^4.0.3",
+    "nuxt": "^4.0.3"
+  }
+}

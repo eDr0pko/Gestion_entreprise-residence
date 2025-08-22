@@ -1,16 +1,16 @@
 <template>
   <div>
     <NavBar />
-    <div class="min-h-screen bg-gray-50 pt-16">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Gestion des Invités</h1>
-          <p class="text-gray-600">Gérer les invités de la résidence</p>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestion des Invités</h1>
+          <p class="text-gray-600 dark:text-gray-400">Gérer les invités de la résidence</p>
         </div>
 
         <!-- Statistiques des invités -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -20,13 +20,13 @@
                 </div>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Invités Actifs</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ activeGuests.length }}</p>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Invités Actifs</p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ activeGuests.length }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
@@ -36,13 +36,13 @@
                 </div>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Invités Inactifs</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ inactiveGuests.length }}</p>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Invités Inactifs</p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ inactiveGuests.length }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -52,18 +52,18 @@
                 </div>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">Total Invités</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ guests.length }}</p>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Invités</p>
+                <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ guests.length }}</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Liste des invités -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center">
-              <h2 class="text-lg font-medium text-gray-900">Liste des Invités</h2>
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">Liste des Invités</h2>
               <button 
                 @click="refreshGuests"
                 :disabled="loading"
@@ -80,47 +80,47 @@
           
           <div v-if="loading" class="p-6 text-center">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p class="mt-2 text-gray-600">Chargement des invités...</p>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement des invités...</p>
           </div>
 
           <div v-else-if="error" class="p-6 text-center text-red-600">
             <p>Erreur: {{ error }}</p>
           </div>
 
-          <div v-else-if="guests.length === 0" class="p-6 text-center text-gray-500">
+          <div v-else-if="guests.length === 0" class="p-6 text-center text-gray-500 dark:text-gray-400">
             <p>Aucun invité trouvé</p>
           </div>
 
           <div v-else class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
+              <thead class="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Email
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Nom Complet
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Téléphone
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Statut
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                 <tr v-for="guest in guests" :key="guest.email">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ guest.email }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ guest.prenom }} {{ guest.nom }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {{ guest.numero_telephone || 'Non renseigné' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -137,7 +137,7 @@
                     >
                       Désactiver
                     </button>
-                    <span v-else class="text-gray-400">Inactif</span>
+                    <span v-else class="text-gray-400 dark:text-gray-500">Inactif</span>
                   </td>
                 </tr>
               </tbody>
@@ -153,6 +153,9 @@
   import { ref, computed, onMounted } from 'vue'
   import { useAuthStore } from '~/stores/auth'
   import { useRuntimeConfig } from '#app'
+
+// Import du système de thème
+  const { initTheme } = useTheme()
 
   // Protection de page admin
   definePageMeta({
@@ -237,8 +240,9 @@
     fetchGuests()
   }
 
-  // Vérifier que l'utilisateur est admin
+  // Vérifier que l'utilisateur est admin et initialiser le thème
   onMounted(async () => {
+    initTheme()
     await authStore.checkAuth()
     
     if (!authStore.isAuthenticated) {

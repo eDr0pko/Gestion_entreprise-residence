@@ -33,6 +33,7 @@
         "allRoles": "All",
         "roles": "Roles",
         "roleRequired": "At least one role must be selected.",
+        "addUser": "Add User",
         "addUserTitle": "Add a user",
         "userInfoTitle": "User information",
         "address": "Housing address",
@@ -53,6 +54,9 @@
         "listView": "List view",
         "globalSearch": "Global search",
         "searchPlaceholder": "Search...",
+        "addUser": "Add Visitor",
+        "addUserTitle": "Add Guest",
+        "addButton": "Add",
         "filterActif": "Filter by status",
         "allStatus": "All",
         "active": "Active",
@@ -340,28 +344,6 @@
         "noIncidents": "No reported incidents.",
         "attachments": "Attachments:"
     },
-    "adminConversations": {
-        "searchPlaceholder": "Search content...",
-        "allAuthors": "All authors",
-        "allGroups": "All groups",
-        "sortRecent": "Most recent first",
-        "sortOld": "Oldest first",
-        "refresh": "Refresh",
-        "groupsTitle": "Conversations / Groups",
-        "groupName": "Group name",
-        "groupId": "ID",
-        "groupMembers": "Members",
-        "groupMessages": "Messages",
-        "groupActions": "Actions",
-        "deleteGroup": "Delete conversation",
-        "allMessagesTitle": "All messages",
-        "date": "Date",
-        "author": "Author",
-        "content": "Content",
-        "loading": "Loading...",
-        "deleteConfirm": "Delete conversation '{group}' (ID {id})? This action is irreversible and will delete all messages in the group.",
-        "noDate": "-"
-    },
     "messages": {
     "title": "Messages",
     "pageTitle": "Messaging - Residence Management",
@@ -377,6 +359,19 @@
       "noConversationSelected": "No conversation selected",
       "downloadFile": "Error downloading file"
     }
+  },
+  "conversationsList": {
+    "title": "Messages",
+    "searchPlaceholder": "Search conversations...",
+    "refresh": "Refresh",
+    "newConversation": "New conversation",
+    "yesterday": "Yesterday",
+    "noMessage": "No messages yet",
+    "unreadBadge": "{count} unread messages"
+  },
+  "conversationHeader": {
+    "member": "member",
+    "members": "members"
   },
     "planning": {
         "title": "Planning",
@@ -635,8 +630,8 @@
         },
         "notifications": {
             "title": "Notifications",
-            "subtitle": "Visit requests",
-            "loading": "Loading...",
+            "subtitle": "Manage your visit notifications",
+            "loading": "Loading notifications...",
             "retry": "Retry",
             "defaultVisitReason": "Visit",
             "upcomingVisit": "Visit scheduled in {time}",
@@ -671,12 +666,14 @@
                 "pending": "No pending requests",
                 "rejected": "No rejected visits",
                 "pendingDescription": "New requests will appear here",
-                "rejectedDescription": "Rejected visits will appear here"
+                "rejectedDescription": "Rejected visits will appear here",
+                "title": "No notifications",
+                "description": "You have no notifications at the moment"
             },
             "errors": {
-                "fetchFailed": "Error fetching notifications",
+                "fetchFailed": "Failed to load notifications",
                 "invalidResponse": "Invalid server response",
-                "statusChangeFailed": "Error changing status"
+                "statusChangeFailed": "Failed to change status"
             },
             "success": {
                 "statusChanged": "Status changed successfully"
@@ -1021,6 +1018,7 @@
             "active": "Active badges",
             "inactive": "Inactive badges",
             "suspended": "Suspended badges",
+            "assigned": "Assigned badges",
             "today": "Today's usage"
         },
         "search": {
@@ -1163,7 +1161,16 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone"
-    }
+    },
+  "theme": {
+    "toggle": "Toggle theme",
+    "lightMode": "Switch to light mode",
+    "darkMode": "Switch to dark mode",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "light": "Light",
+    "dark": "Dark"
+  }
 }
 
 

@@ -1,18 +1,19 @@
 <template>
   <div class="space-y-8 animate-fadeInUp">
     <!-- Header moderne -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8 card-shadow">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8 card-shadow">
       <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div class="animate-slideInLeft">
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('gestionVisiteurs.title') }}</h2>
-          <p class="text-gray-500">Gérez les visiteurs et leurs accès en toute sécurité</p>
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('gestionVisiteurs.title') }}</h2>
+          <p class="text-gray-500 dark:text-gray-400">Gérez les visiteurs et leurs accès en toute sécurité</p>
         </div>
         <div class="flex items-center gap-3">
-          <button @click="toggleView" class="px-4 py-2.5 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 font-medium hover:card-shadow">
+          <button @click="toggleView" class="px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 transition-all duration-200 font-medium hover:card-shadow">
             {{ isListView ? $t('gestionVisiteurs.cardView') : $t('gestionVisiteurs.listView') }}
           </button>
-          <button @click="openAddGuestModal" class="px-6 py-2.5 rounded-xl gradient-modern text-white hover:opacity-90 transition-all duration-200 font-medium shadow-lg hover:card-shadow-hover">
-            Ajouter un invité
+          <button @click="openAddGuestModal" class="px-6 py-2.5 rounded-xl gradient-modern text-white hover:opacity-90 transition-all duration-200 font-medium shadow-lg hover:card-shadow-hover flex items-center gap-2">
+            <Icon name="plus" class="w-4 h-4" />
+            {{ $t('gestionVisiteurs.addUser') }}
           </button>
         </div>
       </div>
@@ -20,42 +21,42 @@
       <!-- Filtres modernes -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">{{ $t('gestionVisiteurs.globalSearch') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('gestionVisiteurs.globalSearch') }}</label>
           <div class="relative">
             <input v-model="searchQuery" @input="filterPersons" type="text" :placeholder="$t('gestionVisiteurs.searchPlaceholder')" 
-              class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 focus:bg-white" />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 dark:bg-gray-800 focus:bg-white" />
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">{{ $t('gestionVisiteurs.filterActif') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('gestionVisiteurs.filterActif') }}</label>
           <select v-model="filterActif" @change="filterPersons" 
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 focus:bg-white">
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 dark:bg-gray-800 focus:bg-white">
             <option value="">{{ $t('gestionVisiteurs.allStatus') }}</option>
             <option value="true">{{ $t('gestionVisiteurs.active') }}</option>
             <option value="false">{{ $t('gestionVisiteurs.banned') }}</option>
           </select>
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">{{ $t('gestionVisiteurs.filterDate') }}</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('gestionVisiteurs.filterDate') }}</label>
           <input v-model="filterDate" @input="filterPersons" type="date" 
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 focus:bg-white" />
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-gray-50 dark:bg-gray-800 focus:bg-white" />
         </div>
       </div>
     </div>
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p class="text-gray-500 font-medium">{{ $t('gestionVisiteurs.loading') }}</p>
+        <p class="text-gray-500 dark:text-gray-400 font-medium">{{ $t('gestionVisiteurs.loading') }}</p>
       </div>
     </div>
     <div v-else class="space-y-8">
       <!-- Visiteurs actifs -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8">
         <div class="flex items-center gap-3 mb-6">
-          <h3 class="text-2xl font-bold text-gray-900">{{ $t('gestionVisiteurs.visitorsTitle') }}</h3>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('gestionVisiteurs.visitorsTitle') }}</h3>
           <div class="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
           <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
             {{ (persons ?? []).length }} visiteur{{ (persons ?? []).length > 1 ? 's' : '' }}
@@ -66,12 +67,12 @@
           <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
           </svg>
-          <p class="text-gray-500 text-lg font-medium">{{ $t('gestionVisiteurs.noVisitor') }}</p>
+          <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">{{ $t('gestionVisiteurs.noVisitor') }}</p>
         </div>
         
         <div v-if="!isListView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="person in (persons ?? [])" :key="person.id" 
-            class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 p-6 relative overflow-hidden card-shadow hover:card-shadow-hover animate-fadeInUp">
+            class="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 dark:border-gray-700 transition-all duration-300 p-6 relative overflow-hidden card-shadow hover:card-shadow-hover animate-fadeInUp">
             <!-- Indicateur de statut -->
             <div class="absolute top-0 right-0 w-20 h-20 opacity-5">
               <div :class="person.actif ? 'gradient-success' : 'gradient-danger'" 
@@ -83,17 +84,17 @@
               <div class="relative">
                 <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                   class="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300" alt="avatar" />
-                <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
+                <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-400 border-2 border-gray-100 group-hover:border-blue-200 transition-colors duration-300">
                   {{ person.prenom[0] }}{{ person.nom[0] }}
                 </div>
                 <div :class="person.actif ? 'bg-green-500' : 'bg-red-500'" class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white"></div>
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <h4 class="font-bold text-xl text-gray-900 truncate">{{ person.prenom }} {{ person.nom }}</h4>
+                  <h4 class="font-bold text-xl text-gray-900 dark:text-white truncate">{{ person.prenom }} {{ person.nom }}</h4>
                   <span v-if="!person.actif" class="px-2 py-0.5 rounded-lg bg-red-100 text-red-700 text-xs font-semibold">Banni</span>
                 </div>
-                <p class="text-sm text-gray-500 mb-2 truncate">{{ person.email }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 truncate">{{ person.email }}</p>
                 <div class="flex flex-wrap gap-1.5">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">
                     {{ $t('gestionVisiteurs.visitor') }}
@@ -109,38 +110,38 @@
             <!-- Informations détaillées -->
             <div class="space-y-3 mb-6">
               <div class="flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
-                <span class="text-gray-600">{{ formatPhoneNumber(person.numero_telephone) }}</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ formatPhoneNumber(person.numero_telephone) }}</span>
               </div>
               
               <div v-if="person.date_inscription" class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span class="text-gray-600">Inscrit le {{ formatDate(person.date_inscription ?? '') }}</span>
+                <span class="text-gray-600 dark:text-gray-400">Inscrit le {{ formatDate(person.date_inscription ?? '') }}</span>
               </div>
               
               <div v-if="person.date_expiration" class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-gray-600">Expire le {{ formatDate(person.date_expiration ?? '') }}</span>
+                <span class="text-gray-600 dark:text-gray-400">Expire le {{ formatDate(person.date_expiration ?? '') }}</span>
               </div>
               
               <div v-if="person.invite_par && getInviterName(person.invite_par)" class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span class="text-gray-600">Invité par <span class="font-semibold text-green-600">{{ getInviterName(person.invite_par) }}</span></span>
+                <span class="text-gray-600 dark:text-gray-400">Invité par <span class="font-semibold text-green-600">{{ getInviterName(person.invite_par) }}</span></span>
               </div>
               
               <div v-if="person.commentaire" class="flex items-start gap-2 text-sm">
                 <svg class="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                 </svg>
-                <span class="text-gray-600">{{ person.commentaire }}</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ person.commentaire }}</span>
               </div>
             </div>
 
@@ -170,34 +171,34 @@
           </div>
         </div>
         <!-- Vue liste moderne -->
-        <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+        <div v-else class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
           <table class="min-w-full w-full">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[120px]">{{ $t('gestionVisiteurs.lastName') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[120px]">{{ $t('gestionVisiteurs.firstName') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[180px]">{{ $t('gestionVisiteurs.email') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[140px]">{{ $t('gestionVisiteurs.phone') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[100px]">{{ $t('gestionVisiteurs.activeLabel') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[140px]">{{ $t('gestionVisiteurs.registeredOn') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[140px]">{{ $t('gestionVisiteurs.invitedBy') }}</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 min-w-[120px]">Actions</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[120px]">{{ $t('gestionVisiteurs.lastName') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[120px]">{{ $t('gestionVisiteurs.firstName') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[180px]">{{ $t('gestionVisiteurs.email') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[140px]">{{ $t('gestionVisiteurs.phone') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[100px]">{{ $t('gestionVisiteurs.activeLabel') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[140px]">{{ $t('gestionVisiteurs.registeredOn') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[140px]">{{ $t('gestionVisiteurs.invitedBy') }}</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900 dark:text-white min-w-[120px]">Actions</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-              <tr v-for="person in (persons ?? [])" :key="person.id" class="hover:bg-gray-50 transition-colors duration-200">
-                <td class="px-4 py-3 font-medium text-gray-900 break-words truncate min-w-[120px]">{{ person.nom }}</td>
-                <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[120px]">{{ person.prenom }}</td>
-                <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[180px]">{{ person.email }}</td>
-                <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[140px]">{{ person.numero_telephone }}</td>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100">
+              <tr v-for="person in (persons ?? [])" :key="person.id" class="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors duration-200">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white break-words truncate min-w-[120px]">{{ person.nom }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[120px]">{{ person.prenom }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[180px]">{{ person.email }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[140px]">{{ person.numero_telephone }}</td>
                 <td class="px-4 py-3">
                   <span :class="person.actif ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'" 
                     class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border">
                     {{ person.actif ? $t('gestionVisiteurs.yes') : $t('gestionVisiteurs.no') }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[140px]">{{ formatDate(person.date_inscription ?? '') }}</td>
-                <td class="px-4 py-3 text-gray-700 break-words truncate min-w-[140px]">{{ getInviterName(person.invite_par) }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[140px]">{{ formatDate(person.date_inscription ?? '') }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300 break-words truncate min-w-[140px]">{{ getInviterName(person.invite_par) }}</td>
                 <td class="px-4 py-3 min-w-[120px]">
                   <div class="flex gap-2 flex-wrap">
                     <template v-if="person.actif">
@@ -229,7 +230,7 @@
       </div>
       
       <!-- Visiteurs bannis -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-6 lg:p-8">
         <div class="flex items-center gap-3 mb-6">
           <h3 class="text-2xl font-bold text-red-700">{{ $t('gestionVisiteurs.bannedVisitorsTitle') }}</h3>
           <div class="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
@@ -242,7 +243,7 @@
           <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
           </svg>
-          <p class="text-gray-500 text-lg font-medium">{{ $t('gestionVisiteurs.noBannedVisitor') }}</p>
+          <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">{{ $t('gestionVisiteurs.noBannedVisitor') }}</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -258,7 +259,7 @@
               <div class="relative">
                 <img v-if="person.photo_profil" :src="getAvatarUrl(person.photo_profil) || ''" 
                   class="w-16 h-16 rounded-2xl object-cover border-2 border-red-100 grayscale" alt="avatar" />
-                <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xl font-bold text-gray-500 border-2 border-red-100">
+                <div v-else class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xl font-bold text-gray-500 dark:text-gray-400 border-2 border-red-100">
                   {{ person.prenom[0] }}{{ person.nom[0] }}
                 </div>
                 <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white">
@@ -268,8 +269,8 @@
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <h4 class="font-bold text-xl text-gray-900 mb-1 truncate">{{ person.prenom }} {{ person.nom }}</h4>
-                <p class="text-sm text-gray-500 mb-2 truncate">{{ person.email }}</p>
+                <h4 class="font-bold text-xl text-gray-900 dark:text-white mb-1 truncate">{{ person.prenom }} {{ person.nom }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 truncate">{{ person.email }}</p>
                 <div class="flex flex-wrap gap-1.5">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 border border-red-200">
                     {{ $t('gestionVisiteurs.banned') }}
@@ -281,38 +282,38 @@
             <!-- Informations -->
             <div class="space-y-3 mb-6">
               <div class="flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
-                <span class="text-gray-600">{{ person.numero_telephone }}</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ person.numero_telephone }}</span>
               </div>
               
               <div v-if="person.date_inscription" class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span class="text-gray-600">Inscrit le {{ formatDate(person.date_inscription ?? '') }}</span>
+                <span class="text-gray-600 dark:text-gray-400">Inscrit le {{ formatDate(person.date_inscription ?? '') }}</span>
               </div>
               
               <div v-if="person.date_expiration" class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-gray-600">Expirait le {{ formatDate(person.date_expiration ?? '') }}</span>
+                <span class="text-gray-600 dark:text-gray-400">Expirait le {{ formatDate(person.date_expiration ?? '') }}</span>
               </div>
               
               <div v-if="person.invite_par" class="flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span class="text-gray-600">Invité par {{ person.invite_par }}</span>
+                <span class="text-gray-600 dark:text-gray-400">Invité par {{ person.invite_par }}</span>
               </div>
               
               <div v-if="person.commentaire" class="flex items-start gap-2 text-sm">
                 <svg class="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                 </svg>
-                <span class="text-gray-600">{{ person.commentaire }}</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ person.commentaire }}</span>
               </div>
             </div>
 
@@ -329,7 +330,7 @@
     </div>
     <!-- Place le modal ici, AVANT la fermeture du template -->
     <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-lg relative">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-lg relative">
         <h3 class="text-xl font-bold mb-4">{{ $t('gestionVisiteurs.editVisitorTitle') }}</h3>
         <form @submit.prevent="saveEditPerson">
           <div class="mb-3">
@@ -357,7 +358,7 @@
             <textarea v-model="editForm.commentaire" class="input w-full" rows="2"></textarea>
           </div>
           <div class="flex gap-2 justify-end mt-4">
-            <button type="button" @click="closeEditModal" class="px-4 py-1 rounded bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200">{{ $t('gestionVisiteurs.cancel') }}</button>
+            <button type="button" @click="closeEditModal" class="px-4 py-1 rounded bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-200">{{ $t('gestionVisiteurs.cancel') }}</button>
             <button type="submit" class="px-4 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">{{ $t('gestionVisiteurs.save') }}</button>
           </div>
         </form>
@@ -366,8 +367,8 @@
 
     <!-- Modal d'ajout d'invité -->
     <div v-if="showAddGuestModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-lg relative">
-        <h3 class="text-xl font-bold mb-4">Ajouter un invité</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-lg relative">
+        <h3 class="text-xl font-bold mb-4">{{ $t('gestionVisiteurs.addUserTitle') }}</h3>
         <form @submit.prevent="saveAddGuest">
           <div class="mb-3">
             <label class="block text-sm font-medium mb-1">{{ $t('gestionVisiteurs.lastName') }}</label>
@@ -392,9 +393,14 @@
             <label class="block text-sm font-medium mb-1">{{ $t('gestionVisiteurs.comment') }}</label>
             <textarea v-model="addGuestForm.commentaire" class="input w-full" rows="2"></textarea>
           </div>
-          <div class="flex gap-2 justify-end mt-4">
-            <button type="button" @click="closeAddGuestModal" class="px-4 py-1 rounded bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200">{{ $t('gestionVisiteurs.cancel') }}</button>
-            <button type="submit" class="px-4 py-1 rounded bg-green-600 text-white hover:bg-green-700">Ajouter</button>
+          <div class="flex gap-3 justify-end mt-6">
+            <button type="button" @click="closeAddGuestModal" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+              {{ $t('cancel') }}
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2">
+              <Icon name="plus" class="w-4 h-4" />
+              {{ $t('gestionVisiteurs.addButton') }}
+            </button>
           </div>
         </form>
       </div>
@@ -403,8 +409,14 @@
 </template>
 
 <script setup lang="ts">
-  // Filtres avancés
-  import { computed } from 'vue'
+  import { onMounted, computed, ref } from 'vue'
+  import { useAuthStore } from '~/stores/auth'
+  import { useAvatarUrl } from '@/composables/useAvatarUrl'
+
+// Filtres avancés
+  // Import du système de thème
+  const { initTheme } = useTheme()
+
   const filterActif = ref('')
   const filterMail = ref('')
   const filterDate = ref('')
@@ -455,10 +467,7 @@
     return null
   }
 
-  import { ref, onMounted } from 'vue'
   import type { InvitePerson } from '~/types/invitePerson'
-  import { useAuthStore } from '~/stores/auth'
-
   // Utilisation du nouveau composable
   const {
     guests: rawGuests,
@@ -475,7 +484,6 @@
   const bannedPersons = ref<InvitePerson[]>([])
 
   // Remplace fonction locale par composable centralisé
-  import { useAvatarUrl } from '@/composables/useAvatarUrl'
   const { build: getAvatarUrl } = useAvatarUrl()
 
   function formatDate(date: string) {
@@ -673,7 +681,11 @@
     }
   }
 
-  onMounted(fetchPersons)
+  // Initialisation du composant
+  onMounted(async () => {
+    initTheme()
+    await fetchPersons()
+  })
 </script>
 
 <style scoped>

@@ -206,8 +206,6 @@ Gestion_entreprise-residence/
 │   │   └── ApiController.php (NHS)
 │   └── routes/api.php      # Routes métier
 ├── final.sql               # Base de données avec données de test
-├── ARCHITECTURE.md         # Documentation architecture
-├── VALIDATION_COMPLETE.md  # Validation fonctionnelle
 ├── start-architecture.ps1  # Script de démarrage
 └── test-architecture.ps1   # Script de test
 ```
@@ -232,10 +230,12 @@ Gestion_entreprise-residence/
 
 ## 📚 Documentation
 
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) - Architecture détaillée
-- [`VALIDATION_COMPLETE.md`](VALIDATION_COMPLETE.md) - Validation fonctionnelle
-- [Documentation API Backend-Client](http://localhost:8000/api/health)
-- [Documentation API Backend-NHS](http://localhost:8001/api/health)
+La documentation complète est disponible sur le repository dédié :
+- [📖 Documentation NHS](https://github.com/neostart-tech/nhs-documentation)
+
+APIs de développement :
+- [API Backend-Client](http://localhost:8000/api/health)
+- [API Backend-NHS](http://localhost:8001/api/health)
 
 ---
 

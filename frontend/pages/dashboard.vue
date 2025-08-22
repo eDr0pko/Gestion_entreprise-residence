@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-gray-50 to-white relative overflow-x-hidden">
-    <header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
-      <AppHeader :title="''" />
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-gray-50 to-white dark:from-gray-900 dark:via-slate-800 dark:to-slate-900 relative overflow-x-hidden transition-colors duration-300">
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 shadow-sm transition-colors duration-300">
+      <AppHeader :title="t('dashboard.title')" />
     </header>
     <div style="height:64px;"></div> <!-- Décalage pour le header sticky -->
     <div class="flex flex-1 z-10 relative flex-col lg:flex-row min-h-screen">
-      <aside class="dashboard-sidebar-flat w-full lg:w-auto flex-shrink-0 fixed lg:relative top-16 lg:top-0 left-0 h-[calc(100vh-64px)] lg:h-auto overflow-y-auto lg:overflow-visible z-40 bg-white/95 backdrop-blur-sm border-r border-gray-100">
+      <aside class="dashboard-sidebar-flat w-full lg:w-auto flex-shrink-0 fixed top-16 left-0 h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] overflow-y-auto z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-r border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <DashboardSidebar
           :sections="sidebarSections"
           :selectedSection="selectedSection"
@@ -13,14 +13,14 @@
         >
           <template #top>
             <div class="mb-8 lg:mb-12 flex flex-col items-center px-6 py-8">
-              <div class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight mb-2">{{ t('dashboard.title') }}</div>
-              <div class="text-sm text-gray-500 font-medium">Gestion moderne</div>
+              <div class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-2 transition-colors duration-300">{{ t('dashboard.title') }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 font-medium transition-colors duration-300">Gestion moderne</div>
               <div class="h-0.5 w-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 mt-4"></div>
             </div>
           </template>
         </DashboardSidebar>
       </aside>
-      <main class="dashboard-main-flat flex-1 px-4 sm:px-6 md:px-8 lg:px-12 py-8 md:py-10 lg:py-16 w-full min-w-0 lg:ml-0 pt-[calc(100vh-64px)] lg:pt-8 md:pt-10">
+      <main class="dashboard-main-flat flex-1 px-4 sm:px-6 md:px-8 lg:px-12 py-8 md:py-10 lg:py-16 w-full min-w-0 ml-0 lg:ml-[260px] pt-8 md:pt-10">
         <transition name="fade" mode="out-in">
           <div :key="selectedSection" class="relative z-10 max-w-7xl mx-auto">
             <component :is="sectionComponent" />
@@ -33,63 +33,58 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
-  import { useAuthStore } from '~/stores/auth'
-  import { useI18n } from 'vue-i18n'
-  import AppHeader from '~/components/AppHeader.vue'
-  import AppFooter from '~/components/AppFooter.vue'
-  import DashboardSidebar from '~/components/DashboardSidebar.vue'
-
-  // Import proper icon components
-  import UserIcon from '~/components/icons/UserIcon.vue'
-  import GroupIcon from '~/components/icons/GroupIcon.vue'
-  import HomeIcon from '~/components/icons/HomeIcon.vue'
-  import FileIcon from '~/components/icons/FileIcon.vue'
-  import ChartIcon from '~/components/icons/ChartIcon.vue'
-  import CogIcon from '~/components/icons/CogIcon.vue'
-  import BanIcon from '~/components/icons/BanIcon.vue'
-  import VisitIcon from '~/components/icons/VisitIcon.vue'
-  import IdentificationIcon from '~/components/icons/IdentificationIcon.vue'
+  // Nuxt auto-imports
+  definePageMeta({
+    middleware: 'auth'
+  })
 
   const authStore = useAuthStore()
+  const { initTheme } = useTheme()
+  const { t } = useI18n()
   
   // Initialiser l'authentification au montage
   onMounted(async () => {
-    console.log('Dashboard mounted - initializing auth...')
+    initTheme() // Initialiser le thème
     if (process.client) {
       authStore.initAuth()
       
       // Vérifier que l'utilisateur est authentifié
       if (!authStore.isAuthenticated) {
-        console.log('User not authenticated, redirecting to login...')
         await navigateTo('/login')
         return
       }
-      
-      console.log('User authenticated:', authStore.user)
-      console.log('User token:', !!authStore.token)
     }
   })
   
   const roles = computed(() => authStore.userRoles || []) // userRoles: array of roles (e.g. ['admin', 'gardien'])
 
+  // Import icon components as strings since we'll use them as props
+  const iconMap = {
+    BanIcon: 'ban',
+    VisitIcon: 'visit', 
+    IdentificationIcon: 'identification',
+    UserIcon: 'user',
+    FileIcon: 'file',
+    CogIcon: 'cog',
+    ChartIcon: 'chart'
+  }
+
   // Définition des sections selon le rôle et la matrice d'accès
   // Ces deux sections sont accessibles si la personne a admin OU gardien (ou les deux)
-  const { t } = useI18n()
   
   const sharedSections = [
-    { key: 'admin-incidents', label: () => t('dashboard.sections.incidents'), icon: BanIcon },
-    { key: 'admin-visiteurs', label: () => t('dashboard.sections.visitors'), icon: VisitIcon },
-    { key: 'admin-badges', label: () => t('dashboard.sections.badges'), icon: IdentificationIcon },
+    { key: 'admin-incidents', label: () => t('dashboard.sections.incidents'), icon: 'ban' },
+    { key: 'admin-visiteurs', label: () => t('dashboard.sections.visitors'), icon: 'visit' },
+    { key: 'admin-badges', label: () => t('dashboard.sections.badges'), icon: 'identification' },
   ]
   const adminOnlySections = [
-    { key: 'admin-residents', label: () => t('dashboard.sections.residents'), icon: UserIcon },
-    { key: 'admin-logs', label: () => t('dashboard.sections.logs'), icon: FileIcon },
-    { key: 'admin-settings', label: () => t('dashboard.sections.settings'), icon: CogIcon },
-    { key: 'admin-stats', label: () => t('dashboard.sections.stats'), icon: ChartIcon },
+    { key: 'admin-residents', label: () => t('dashboard.sections.residents'), icon: 'user' },
+    { key: 'admin-logs', label: () => t('dashboard.sections.logs'), icon: 'file' },
+    { key: 'admin-settings', label: () => t('dashboard.sections.settings'), icon: 'cog' },
+    { key: 'admin-stats', label: () => t('dashboard.sections.stats'), icon: 'chart' },
   ]
   const gardienOnlySections = [
-    { key: 'gardien-stats', label: () => t('dashboard.sections.stats'), icon: ChartIcon },
+    { key: 'gardien-stats', label: () => t('dashboard.sections.stats'), icon: 'chart' },
   ]
 
   const sidebarSections = computed(() => {
@@ -145,7 +140,7 @@
   .dashboard-main-flat {
     background: linear-gradient(120deg, #fafdff 60%, #e6f6fa 100%);
     min-height: calc(100vh - 64px);
-    margin: 0;
+    margin-left: 260px;
     border-radius: 0 2.5rem 2.5rem 0;
     box-shadow: 0 2px 16px 0 rgba(0,151,178,0.06);
     border: 1.5px solid #e0e7ef;
@@ -156,6 +151,7 @@
     transition: box-shadow 0.2s, background 0.2s;
     min-width: 0;
     overflow-y: auto;
+    position: relative;
   }
 
   .dashboard-sidebar-flat {
@@ -173,7 +169,10 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    height: 100%;
+    height: calc(100vh - 64px);
+    position: fixed;
+    top: 64px;
+    left: 0;
     transition: box-shadow 0.2s, background 0.2s;
   }
 
@@ -228,9 +227,10 @@
       box-shadow: 0 2px 8px 0 rgba(0,151,178,0.08);
       position: relative;
       top: 0;
+      left: 0;
     }
     .dashboard-main-flat {
-      margin: 0;
+      margin-left: 0;
       border-radius: 0;
       padding: 1rem;
       border: none;

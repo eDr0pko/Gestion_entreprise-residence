@@ -485,6 +485,10 @@
         {
             try {
                 $totalBadges = Badge::count();
+                
+                // Badges affectés : badges avec un utilisateur assigné
+                $badgesAffectes = Badge::whereNotNull('id_utilisateur')->count();
+                
                 $badgesActifs = Badge::whereHas('dernierSuivi', function($q) {
                     $q->where('action', '!=', 'desactivation')
                     ->where('action', '!=', 'désactivation');
@@ -522,6 +526,7 @@
                     'success' => true,
                     'data' => [
                         'total_badges' => $totalBadges,
+                        'badges_affectes' => $badgesAffectes,
                         'badges_actifs' => $badgesActifs,
                         'badges_inactifs' => $badgesInactifs,
                         'utilisations_aujourd_hui' => $utilisationsAujourdhui,
@@ -635,6 +640,7 @@
             try {
                 $stats = [
                     'total_badges' => Badge::count(),
+                    'badges_affectes' => Badge::whereNotNull('id_utilisateur')->count(),
                     'badges_actifs' => Badge::whereHas('dernierSuivi', function($q) {
                         $q->where('action', '!=', 'desactivation');
                     })->orWhereDoesntHave('dernierSuivi')->count(),

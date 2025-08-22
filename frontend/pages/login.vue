@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-cyan-50 relative overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden transition-colors duration-300">
     <!-- Éléments décoratifs de fond -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
-    <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent rounded-full opacity-10 animate-pulse"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-100 to-transparent dark:from-cyan-900/30 dark:to-transparent rounded-full -translate-y-48 translate-x-48 opacity-60"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-100 to-transparent dark:from-teal-900/30 dark:to-transparent rounded-full translate-y-40 -translate-x-40 opacity-40"></div>
+    <div class="absolute top-1/3 left-1/4 w-32 h-32 bg-gradient-to-br from-[#0097b2] to-transparent dark:from-[#26c6da]/50 dark:to-transparent rounded-full opacity-10 animate-pulse"></div>
     
     <!-- Contenu principal -->
     <div class="flex-1 flex items-center justify-center py-8 px-2 sm:px-6 lg:px-8 relative z-10">
@@ -14,29 +14,29 @@
                style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
             <img :src="getLogoUrl(appSettings.logoUrl)" :alt="appSettings.appName" class="h-full w-full rounded-3xl object-contain" />
           </div>
-          <div v-else class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
+          <div v-else class="mx-auto h-20 w-20 bg-gradient-to-br from-[#0097b2] to-[#008699] dark:from-[#26c6da] dark:to-[#00acc1] rounded-3xl flex items-center justify-center mb-8 shadow-2xl transform hover:scale-105 transition-all duration-300"
                style="box-shadow: 0 25px 50px -12px rgba(0, 151, 178, 0.4);">
             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
           </div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] bg-clip-text text-transparent mb-3">
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-[#0097b2] dark:from-gray-100 dark:to-[#26c6da] bg-clip-text text-transparent mb-3">
             {{ appSettings.appName || t('login.title') }}
           </h1>
-          <p class="text-gray-600 text-lg font-medium">
+          <p class="text-gray-600 dark:text-gray-300 text-lg font-medium">
             {{ appSettings.welcome_title || t('login.subtitle') }}
           </p>
-          <p class="text-gray-500 text-base mt-2">
+          <p class="text-gray-500 dark:text-gray-400 text-base mt-2">
             {{ appSettings.welcome_message || t('login.description') }}
           </p>
         </div>
 
         <!-- Formulaire moderne avec effet glassmorphism -->
         <div class="relative group">
-          <div class="absolute -inset-1 bg-gradient-to-r from-[#0097b2] to-[#008699] rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
-          <div class="relative bg-white bg-opacity-80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white border-opacity-50 p-8 hover:shadow-3xl transition-all duration-500">
+          <div class="absolute -inset-1 bg-gradient-to-r from-[#0097b2] to-[#008699] dark:from-[#26c6da] dark:to-[#00acc1] rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur"></div>
+          <div class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700/50 p-8 hover:shadow-3xl transition-all duration-500">
             <!-- Gradient décoratif interne -->
-            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-100 to-transparent rounded-full -translate-y-12 translate-x-12"></div>
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-100 to-transparent dark:from-cyan-900/30 dark:to-transparent rounded-full -translate-y-12 translate-x-12"></div>
             
             <!-- Bouton retour à l'accueil -->
             <div class="mb-6 flex justify-start">
@@ -66,10 +66,7 @@
                     type="email"
                     required
                     class="w-full pl-10 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#0097b2] focus:border-[#0097b2] transition-all duration-300 bg-white bg-opacity-70 backdrop-blur-sm text-gray-900 placeholder-gray-500 font-medium"
-                    :class="{ 
-                      'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.email || errors.general,
-                      'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.email && !errors.general
-                    }"
+                    :class="{ 'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.email || errors.general, 'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.email && !errors.general }"
                     :placeholder="t('login.emailPlaceholder')"
                   />
                 </div>
@@ -100,10 +97,7 @@
                     :type="showPassword ? 'text' : 'password'"
                     required
                     class="w-full pl-10 pr-12 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#0097b2] focus:border-[#0097b2] transition-all duration-300 bg-white bg-opacity-70 backdrop-blur-sm text-gray-900 placeholder-gray-500 font-medium"
-                    :class="{ 
-                      'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.password || errors.general,
-                      'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.password && !errors.general
-                    }"
+                    :class="{ 'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50 bg-opacity-50': errors.password || errors.general, 'border-gray-200 hover:border-[#0097b2] hover:border-opacity-50': !errors.password && !errors.general }"
                     :placeholder="t('login.passwordPlaceholder')"
                   />
                   <button
@@ -205,19 +199,21 @@
 </template>
 
 <script setup lang="ts">
-  definePageMeta({
+  import { useI18n } from 'vue-i18n'
+  import { useAppSettings } from '~/composables/useAppSettings'
+  import { useAssets } from '~/composables/useAssets'
+
+definePageMeta({
     layout: false,
     auth: false
   })
 
-
-  import { useI18n } from 'vue-i18n'
-  import { useAppSettings } from '~/composables/useAppSettings'
-  import { useAssets } from '~/composables/useAssets'
-  
   const { t } = useI18n()
   const { settings, fetchSettings } = useAppSettings()
   const { getLogoUrl } = useAssets()
+  
+  // Import du système de thème
+  const { initTheme } = useTheme()
   
   const appSettings = computed(() => settings.value)
 
@@ -300,6 +296,9 @@
 
   // Rediriger si déjà connecté
   onMounted(async () => {
+    // Initialiser le thème
+    initTheme()
+    
     await fetchSettings()
     authStore.initAuth()
     if (authStore.isAuthenticated) {

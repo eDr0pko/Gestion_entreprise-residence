@@ -1,7 +1,7 @@
 <template>
-  <div class="flex-1 relative bg-gray-50 min-h-0">
+  <div class="flex-1 relative bg-gray-50 dark:bg-gray-800 min-h-0 transition-colors duration-300">
     <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
-      <div class="flex items-center space-x-2 text-gray-500">
+      <div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
         <svg class="w-4 h-4 lg:w-5 lg:h-5 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -17,8 +17,8 @@
       @scroll="handleScroll"
     >
       <div v-if="messages.length === 0" class="h-full flex items-center justify-center">
-        <div class="text-center text-gray-500">
-          <svg class="w-10 h-10 lg:w-12 lg:h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="text-center text-gray-500 dark:text-gray-400">
+          <svg class="w-10 h-10 lg:w-12 lg:h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
           </svg>
           <p class="text-sm">Aucun message dans cette conversation</p>
@@ -38,7 +38,7 @@
             <!-- Nom de l'expéditeur -->
             <div 
               v-if="!message.is_current_user && (index === 0 || messages[index - 1].email_auteur !== message.email_auteur)" 
-              class="text-xs text-gray-500 mb-1 ml-1"
+              class="text-xs text-gray-500 dark:text-gray-400 mb-1 ml-1"
             >
               {{ message.auteur_nom }}
             </div>
@@ -46,15 +46,10 @@
             <!-- Bulle de message -->
             <div
               class="px-3 lg:px-4 py-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative group"
-              :class="[
-                message.is_current_user 
-                  ? 'bg-[#0097b2] text-white rounded-br-sm' 
-                  : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200',
-                message.statut_lecture === 'sending' ? 'opacity-75' : ''
-              ]"
+              :class="[ message.is_current_user ? 'bg-[#0097b2] dark:bg-[#26c6da] text-white rounded-br-sm' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm border border-gray-200 dark:border-gray-600', message.statut_lecture === 'sending' ? 'opacity-75' : '' ]"
             >
               <!-- Bloc de citation -->
-              <div v-if="message.reply_to" class="mb-2 pl-2 border-l-2 text-xs lg:text-sm" :class="message.is_current_user ? 'border-white/60 text-white/80' : 'border-[#0097b2] text-gray-600'">
+              <div v-if="message.reply_to" class="mb-2 pl-2 border-l-2 text-xs lg:text-sm" :class="message.is_current_user ? 'border-white/60 text-white/80' : 'border-[#0097b2] dark:border-[#26c6da] text-gray-600 dark:text-gray-300'">
                 <div class="font-semibold truncate">{{ message.reply_to.auteur_nom }}</div>
                 <div class="truncate">{{ message.reply_to.excerpt }}</div>
               </div>
@@ -132,9 +127,7 @@
             <div class="flex items-center gap-1 mt-1">
               <button
                 class="transition-colors text-xs px-1 py-0.5 rounded focus:outline-none focus:ring-2 focus:ring-offset-1"
-                :class="message.is_current_user 
-                  ? 'text-[#0097b2] bg-white/10 hover:bg-white/20 focus:ring-white/40'
-                  : 'text-gray-500 hover:text-[#0097b2] hover:bg-gray-200 focus:ring-[#0097b2]/40'"
+                :class="message.is_current_user ? 'text-[#0097b2] bg-white/10 hover:bg-white/20 focus:ring-white/40' : 'text-gray-500 hover:text-[#0097b2] hover:bg-gray-200 focus:ring-[#0097b2]/40'"
                 :title="t('components.messageReply.reply')"
                 @click.prevent="$emit('reply', message)"
               >
@@ -171,11 +164,16 @@
 </template>
 
 <script setup lang="ts">
-  import MessageReactions from './MessageReactions.vue'
+  import { onMounted } from 'vue'
+
+import MessageReactions from './MessageReactions.vue'
   import MessageAttachment from './MessageAttachment.vue'
   import type { Message, FichierMessage } from '~/types'
   
   const { t } = useI18n()
+  
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   interface Props {
     messages: Message[]
@@ -250,6 +248,11 @@
     }
   }
 
+  // Initialiser le thème au montage
+  onMounted(() => {
+    initTheme()
+  })
+
   // Exposer la référence du container pour le scroll
   defineExpose({ messagesContainer })
 </script>
@@ -282,6 +285,27 @@
   }
 
   /* Animation pour le bouton de retour en bas */
+  .fade-enter-active, .fade-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+  }
+
   .fade-enter-active, .fade-leave-active {
     transition: all 0.3s ease;
   }

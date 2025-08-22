@@ -1,11 +1,11 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-2xl border border-white/20 relative animate-fadeIn max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="bg-white dark:bg-gray-800/95 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-2xl border border-white/20 relative animate-fadeIn max-h-[90vh] overflow-hidden flex flex-col">
       <!-- Header with gradient -->
       <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 py-4 rounded-t-3xl flex-shrink-0">
         <div class="flex items-center justify-between text-white">
           <h2 class="text-lg md:text-xl font-bold flex items-center gap-2 md:gap-3">
-            <div class="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-xl flex items-center justify-center">
+            <div class="w-6 h-6 md:w-8 md:h-8 bg-white dark:bg-gray-800/20 rounded-xl flex items-center justify-center">
               <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
@@ -15,7 +15,7 @@
           </h2>
           <button 
             @click="$emit('close')" 
-            class="text-white/80 hover:text-white text-xl md:text-2xl font-bold p-1 md:p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none"
+            class="text-white/80 hover:text-white text-xl md:text-2xl font-bold p-1 md:p-2 rounded-xl hover:bg-white dark:bg-gray-800/10 transition-colors focus:outline-none"
           >
             ×
           </button>
@@ -27,27 +27,24 @@
         <!-- Status section -->
         <div class="space-y-2 md:space-y-3">
           <div class="flex items-center justify-between flex-wrap gap-2">
-            <span :class="[
-              'inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold',
-              getStatusBadgeClass(visite.statut_visite)
-            ]">
+            <span :class="[ 'inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold', getStatusBadgeClass(visite.statut_visite) ]">
               <div :class="['w-1.5 h-1.5 md:w-2 md:h-2 rounded-full mr-1 md:mr-2', getStatusDotClass(visite.statut_visite)]"></div>
               {{ getStatutLabel(visite.statut_visite) }}
             </span>
-            <span v-if="visite.id_visite" class="text-xs md:text-sm text-gray-400 font-mono">
+            <span v-if="visite.id_visite" class="text-xs md:text-sm text-gray-400 dark:text-gray-500 font-mono">
               #{{ visite.id_visite }}
             </span>
           </div>
 
           <!-- Status modification section for admin/gardien -->
-          <div v-if="canModifyStatus" class="bg-gray-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
+          <div v-if="canModifyStatus" class="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
             <div class="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
               <div class="w-6 h-6 md:w-8 md:h-8 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center">
                 <svg class="w-3 h-3 md:w-4 md:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
               </div>
-              <span class="text-xs md:text-sm font-medium text-gray-700">{{ t('planning.visitDetails.modifyStatus', 'Modifier le statut') }}</span>
+              <span class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('planning.visitDetails.modifyStatus', 'Modifier le statut') }}</span>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -56,13 +53,7 @@
                 :key="status.value"
                 @click="changeStatus(status.value)"
                 :disabled="changingStatus || visite.statut_visite === status.value"
-                :class="[
-                  'px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200',
-                  visite.statut_visite === status.value
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-white border-2 hover:shadow-md transform hover:scale-105',
-                  status.colorClass
-                ]"
+                :class="[ 'px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200', visite.statut_visite === status.value ? 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-800 border-2 hover:shadow-md transform hover:scale-105', status.colorClass ]"
               >
                 <div class="flex items-center gap-1 md:gap-2">
                   <div :class="['w-1.5 h-1.5 md:w-2 md:h-2 rounded-full', status.dotClass]"></div>
@@ -97,7 +88,7 @@
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-xs text-blue-600 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.purpose', 'Motif') }}</p>
-              <p class="text-sm md:text-lg font-bold text-gray-900 truncate">{{ visite.motif_visite || '—' }}</p>
+              <p class="text-sm md:text-lg font-bold text-gray-900 dark:text-white truncate">{{ visite.motif_visite || '—' }}</p>
             </div>
           </div>
         </div>
@@ -106,24 +97,24 @@
         <div class="space-y-3 md:space-y-4">
           <!-- Time details -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-            <div class="bg-gray-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
               <div class="flex items-center gap-2 mb-2">
                 <svg class="w-4 h-4 md:w-5 md:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-xs text-gray-600 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.start', 'Début') }}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.start', 'Début') }}</span>
               </div>
-              <p class="font-mono text-xs md:text-sm text-gray-900 font-semibold">{{ formatDate(visite.date_visite_start) }}</p>
+              <p class="font-mono text-xs md:text-sm text-gray-900 dark:text-white font-semibold">{{ formatDate(visite.date_visite_start) }}</p>
             </div>
             
-            <div class="bg-gray-50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-3 md:p-4 border border-gray-100">
               <div class="flex items-center gap-2 mb-2">
                 <svg class="w-4 h-4 md:w-5 md:h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-xs text-gray-600 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.end', 'Fin') }}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.end', 'Fin') }}</span>
               </div>
-              <p class="font-mono text-xs md:text-sm text-gray-900 font-semibold">{{ formatDate(visite.date_visite_end) }}</p>
+              <p class="font-mono text-xs md:text-sm text-gray-900 dark:text-white font-semibold">{{ formatDate(visite.date_visite_end) }}</p>
             </div>
           </div>
 
@@ -137,7 +128,7 @@
               </div>
               <div>
                 <p class="text-xs text-purple-600 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.duration', 'Durée') }}</p>
-                <p class="text-sm md:text-lg font-bold text-gray-900">{{ getDuree(visite.date_visite_start, visite.date_visite_end) }}</p>
+                <p class="text-sm md:text-lg font-bold text-gray-900 dark:text-white">{{ getDuree(visite.date_visite_start, visite.date_visite_end) }}</p>
               </div>
             </div>
           </div>
@@ -145,16 +136,16 @@
 
         <!-- Contact details -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          <div class="bg-white rounded-xl border border-gray-200 p-3">
-            <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.visitor', 'Visiteur') }}</span>
-            <p class="font-medium text-gray-900 mt-1 text-sm md:text-base truncate">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+            <span class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.visitor', 'Visiteur') }}</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1 text-sm md:text-base truncate">
               {{ getVisitorName(visite) }}
             </p>
           </div>
           
-          <div class="bg-white rounded-xl border border-gray-200 p-3">
-            <span class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.resident', 'Résident') }}</span>
-            <p class="font-medium text-gray-900 mt-1 text-sm md:text-base">
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+            <span class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{{ t('planning.visitDetails.resident', 'Résident') }}</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1 text-sm md:text-base">
               {{ getResidentName(visite) }}
             </p>
           </div>
@@ -170,7 +161,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-xs text-yellow-600 font-medium uppercase tracking-wide mb-1">{{ t('planning.visitDetails.notes', 'Notes') }}</p>
-              <p class="text-gray-900 text-sm md:text-base break-words">{{ visite.commentaire }}</p>
+              <p class="text-gray-900 dark:text-white text-sm md:text-base break-words">{{ visite.commentaire }}</p>
             </div>
           </div>
         </div>
@@ -180,10 +171,12 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
+  import { onMounted, ref, computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useAuthStore } from '@/stores/auth'
 
+// Import du système de thème
+  const { initTheme } = useTheme()
   const { t } = useI18n()
   const authStore = useAuthStore()
   const config = useRuntimeConfig()
@@ -227,8 +220,8 @@
     {
       value: 'terminee',
       label: t('planning.status.completed', 'Terminée'),
-      colorClass: 'border-gray-200 hover:border-gray-300 text-gray-700',
-      dotClass: 'bg-gray-500'
+      colorClass: 'border-gray-200 hover:border-gray-300 text-gray-700 dark:text-gray-300',
+      dotClass: 'bg-gray-50 dark:bg-gray-9000'
     },
     {
       value: 'annulee',
@@ -315,24 +308,24 @@
     const classes = {
       'programmee': 'bg-blue-100 text-blue-800 border border-blue-200',
       'en_cours': 'bg-green-100 text-green-800 border border-green-200',
-      'terminee': 'bg-gray-100 text-gray-800 border border-gray-200',
+      'terminee': 'bg-gray-100 text-gray-800 border border-gray-200 dark:border-gray-700',
       'en_attente': 'bg-yellow-100 text-yellow-800 border border-yellow-200',
       'annule': 'bg-red-100 text-red-800 border border-red-200',
       'annulee': 'bg-red-100 text-red-800 border border-red-200'
     }
-    return classes[statut] || 'bg-gray-100 text-gray-800 border border-gray-200'
+    return classes[statut] || 'bg-gray-100 text-gray-800 border border-gray-200 dark:border-gray-700'
   }
 
   function getStatusDotClass(statut) {
     const classes = {
       'programmee': 'bg-blue-500',
       'en_cours': 'bg-green-500',
-      'terminee': 'bg-gray-500',
+      'terminee': 'bg-gray-50 dark:bg-gray-9000',
       'en_attente': 'bg-yellow-500',
       'annule': 'bg-red-500',
       'annulee': 'bg-red-500'
     }
-    return classes[statut] || 'bg-gray-500'
+    return classes[statut] || 'bg-gray-50 dark:bg-gray-9000'
   }
 
   function getVisitorName(visite) {
@@ -358,6 +351,11 @@
     // Fallback vers l'ID si les noms ne sont pas disponibles
     return visite.id_invite ? `ID: ${visite.id_invite}` : '—'
   }
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
+  })
 </script>
 
 <style scoped>

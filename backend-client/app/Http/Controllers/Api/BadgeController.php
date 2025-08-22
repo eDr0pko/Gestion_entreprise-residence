@@ -487,6 +487,9 @@
             try {
                 $totalBadges = Badge::count();
                 
+                // Badges affectés : badges avec un utilisateur assigné
+                $badgesAffectes = Badge::whereNotNull('id_utilisateur')->count();
+                
                 // Badges actifs : dernier statut = activation ou utilisation
                 $badgesActifs = Badge::whereExists(function($q) {
                     $q->select(DB::raw(1))
@@ -544,6 +547,7 @@
                     'success' => true,
                     'data' => [
                         'total_badges' => $totalBadges,
+                        'badges_affectes' => $badgesAffectes,
                         'badges_actifs' => $badgesActifs,
                         'badges_inactifs' => $badgesInactifs,
                         'badges_suspendus' => $badgesSuspendus,

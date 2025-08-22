@@ -298,7 +298,7 @@
                   <div class="font-semibold text-gray-900">{{ stats?.date_inscription ? formatDate(stats?.date_inscription) : t('profile.notAvailable') }}</div>
                   <div v-if="stats?.anciennete_jours !== undefined" class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
                     {{ stats.anciennete_jours }}
-                    <span v-if="stats.anciennete_jours > 1">{{ t('profile.common.days') }}</span>
+                    <span v-if="stats.anciennete_jours > 1">{{ t('common.days') }}</span>
                   </div>
                 </div>
               </div>
@@ -503,38 +503,12 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n'
-  const { t } = useI18n()
-  // Formate le numéro selon l'indicatif international
-  function formatPhoneNumber(num: string) {
-    if (!num) return ''
-    if (num.startsWith('+')) {
-      const match = num.match(/^(\+\d{1,3})(\d+)$/)
-      if (match) {
-        const indicatif = match[1]
-        const reste = match[2]
-        if (indicatif === '+33' && reste.length === 9) {
-          return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
-        }
-        if (indicatif === '+228' && reste.length === 8) {
-          return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
-        }
-        return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
-      }
-    }
-    if (num.startsWith('0') && num.length === 10) {
-      return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
-    }
-    return num
-  }
+  // Nuxt auto-imports
   definePageMeta({
     middleware: 'auth'
   })
 
-  useHead({
-    title: computed(() => t('profile.pageTitle'))
-  })
-
+  const { t } = useI18n()
   const authStore = useAuthStore()
   const config = useRuntimeConfig()
 
@@ -595,9 +569,8 @@
   // Gestion d'erreur pour l'avatar
   const avatarError = ref(false)
   // Computed pour déterminer l'URL de l'avatar
-  import { useAvatarUrl } from '@/composables/useAvatarUrl'
   const { url: avatarUrl, set: setAvatarSource, markError: markAvatarError } = useAvatarUrl()
-  watch(() => user.value?.photo_profil, (val) => setAvatarSource(val || null), { immediate: true })
+  watch(() => user.value?.photo_profil, (val: string | null | undefined) => setAvatarSource(val || null), { immediate: true })
 
   // Computed pour déterminer le rôle correct de l'utilisateur
   const userRole = computed(() => {
@@ -692,7 +665,7 @@
     // Attente pour l'hydratation côté client
     await nextTick()
     
-    if (process.client) {
+    if (import.meta.client) {
       // Force l'initialisation de l'auth
       authStore.initAuth()
       
@@ -715,7 +688,7 @@
   })
 
   // Watcher pour surveiller les changements de token
-  watch(() => authStore.token, async (newToken, oldToken) => {
+  watch(() => authStore.token, async (newToken: any, oldToken: any) => {
     if (newToken && !oldToken && !stats.value) {
       await loadStats()
     }
@@ -829,10 +802,32 @@
   }
 
   // Si l'utilisateur change d'avatar, on reset l'erreur
-  import { watch } from 'vue'
   watch(() => user.value?.photo_profil, () => {
     avatarError.value = false
   })
+
+  // Formate le numéro selon l'indicatif international
+  function formatPhoneNumber(num: string) {
+    if (!num) return ''
+    if (num.startsWith('+')) {
+      const match = num.match(/^(\+\d{1,3})(\d+)$/)
+      if (match) {
+        const indicatif = match[1]
+        const reste = match[2]
+        if (indicatif === '+33' && reste.length === 9) {
+          return `${indicatif}  ${reste[0]} ${reste.slice(1,3)} ${reste.slice(3,5)} ${reste.slice(5,7)} ${reste.slice(7,9)}`
+        }
+        if (indicatif === '+228' && reste.length === 8) {
+          return `${indicatif}  ${reste.slice(0,2)} ${reste.slice(2,4)} ${reste.slice(4,6)} ${reste.slice(6,8)}`
+        }
+        return indicatif + '  ' + reste.replace(/(\d{2})/g, '$1 ').trim()
+      }
+    }
+    if (num.startsWith('0') && num.length === 10) {
+      return `${num.slice(0,2)} ${num.slice(2,4)} ${num.slice(4,6)} ${num.slice(6,8)} ${num.slice(8,10)}`
+    }
+    return num
+  }
 
   // Mettre à jour le profil
   const updateProfile = async () => {
@@ -895,8 +890,6 @@
       updatingPassword.value = true
       passwordError.value = ''
       
-      console.log('🔐 Vérification du mot de passe actuel:', currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]')
-      
       // Faire une vraie vérification du mot de passe actuel
       const response = await $fetch(`${config.public.apiBase}/profile/verify-password`, {
         method: 'POST',
@@ -910,7 +903,6 @@
       }) as ApiResponse
       
       if (response.success) {
-        console.log('✅ Mot de passe actuel vérifié avec succès')
         // Passer à l'étape suivante
         showCurrentPasswordModal.value = false
         passwordForm.value = {
@@ -954,21 +946,6 @@
         new_password_confirmation: passwordForm.value.new_password_confirmation
       }
       
-      console.log('🔐 Changement de mot de passe - Données envoyées:', {
-        current_password: currentPasswordForm.value.current_password ? `[${currentPasswordForm.value.current_password.length} caractères]` : '[VIDE]',
-        new_password: passwordForm.value.new_password ? `[${passwordForm.value.new_password.length} caractères]` : '[VIDE]',
-        new_password_confirmation: passwordForm.value.new_password_confirmation ? `[${passwordForm.value.new_password_confirmation.length} caractères]` : '[VIDE]'
-      })
-      
-      console.log('🔐 Vérification avant envoi:')
-      console.log('  - current_password rempli:', !!currentPasswordForm.value.current_password)
-      console.log('  - new_password rempli:', !!passwordForm.value.new_password)
-      console.log('  - new_password_confirmation rempli:', !!passwordForm.value.new_password_confirmation)
-      console.log('  - Les mots de passe correspondent:', passwordForm.value.new_password === passwordForm.value.new_password_confirmation)
-      
-      console.log('🔐 URL de l\'API:', `${config.public.apiBase}/profile/password`)
-      console.log('🔐 Token présent:', !!authStore.token)
-      
       const response = await $fetch(`${config.public.apiBase}/profile/password`, {
         method: 'PUT',
         headers: {
@@ -979,7 +956,6 @@
       }) as ApiResponse
       
       if (response.success) {
-        console.log('✅ Changement de mot de passe réussi')
         closePasswordModal()
         showSuccessMessage('profile.success.passwordUpdated')
         // Reset forms
@@ -987,44 +963,26 @@
         passwordForm.value = { new_password: '', new_password_confirmation: '' }
       }
     } catch (error: any) {
-      console.error('❌ Erreur lors du changement de mot de passe:', error)
-      console.error('❌ Status d\'erreur:', error.response?.status)
-      console.error('❌ Headers de réponse:', error.response?.headers)
-      console.error('❌ Données d\'erreur complètes:', error.response?._data || error.data)
-      
       if (error.response?.status === 422) {
         // Analyser l'erreur plus précisément
         const errorData = error.response._data || error.data
-        console.log('🔍 Analyse des erreurs 422:', {
-          errorData,
-          hasErrors: !!errorData?.errors,
-          hasMessage: !!errorData?.message,
-          errorsKeys: errorData?.errors ? Object.keys(errorData.errors) : [],
-          message: errorData?.message
-        })
         
         if (errorData?.errors) {
           const errors = errorData.errors
-          console.log('🔍 Erreurs spécifiques:', errors)
           
           if (errors.current_password) {
-            console.log('❌ Erreur sur current_password:', errors.current_password)
             // Retourner au premier modal pour corriger le mot de passe actuel
             showPasswordModal.value = false
             passwordError.value = Array.isArray(errors.current_password) ? errors.current_password[0] : errors.current_password
             showCurrentPasswordModal.value = true
           } else if (errors.new_password) {
-            console.log('❌ Erreur sur new_password:', errors.new_password)
             newPasswordError.value = Array.isArray(errors.new_password) ? errors.new_password[0] : errors.new_password
           } else if (errors.new_password_confirmation) {
-            console.log('❌ Erreur sur new_password_confirmation:', errors.new_password_confirmation)
             newPasswordError.value = Array.isArray(errors.new_password_confirmation) ? errors.new_password_confirmation[0] : errors.new_password_confirmation
           } else {
-            console.log('❌ Erreur générale de validation')
             newPasswordError.value = 'Les données saisies ne sont pas valides'
           }
         } else if (errorData?.message) {
-          console.log('❌ Message d\'erreur direct:', errorData.message)
           if (errorData.message.includes('actuel incorrect') || errorData.message.includes('current password')) {
             // Retourner au premier modal pour corriger le mot de passe actuel
             showPasswordModal.value = false
@@ -1034,11 +992,9 @@
             newPasswordError.value = errorData.message
           }
         } else {
-          console.log('❌ Erreur 422 sans structure reconnue')
           newPasswordError.value = t('profile.errors.validationError')
         }
       } else {
-        console.log('❌ Erreur non-422:', error.response?.status)
         newPasswordError.value = t('profile.errors.passwordUpdateError')
       }
     } finally {
@@ -1063,7 +1019,7 @@
   }
 
   const toggleMobileMenu = () => {
-    console.log('Toggle mobile menu')
+    // Toggle mobile menu functionality if needed
   }
 
   const logout = async () => {

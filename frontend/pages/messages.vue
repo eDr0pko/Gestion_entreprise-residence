@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-white flex flex-col">
+  <div class="h-screen bg-white dark:bg-gray-900 flex flex-col transition-colors duration-300">
     <!-- Header responsive -->
     <AppHeader 
       title=""
@@ -8,7 +8,7 @@
     >
       <template #default>
         <div class="w-full flex justify-center items-center">
-          <span class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#0097b2] via-[#00b4d8] to-[#43e6ff] bg-clip-text text-transparent tracking-tight drop-shadow animate-fadein">
+          <span class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-[#0097b2] via-[#00b4d8] to-[#43e6ff] dark:from-[#26c6da] dark:via-[#4dd0e1] dark:to-[#64f0ff] bg-clip-text text-transparent tracking-tight drop-shadow animate-fadein">
             {{ t('messages.title') }}
           </span>
         </div>
@@ -19,7 +19,7 @@
           <button
             v-if="!selectedConversation || !isMobile"
             @click="showCreateModal = true"
-            class="p-2 text-gray-500 hover:text-[#0097b2] hover:bg-gray-100 rounded-lg transition-all duration-200 mr-2"
+            class="p-2 text-gray-500 dark:text-gray-400 hover:text-[#0097b2] dark:hover:text-[#26c6da] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 mr-2"
             :title="t('messages.newConversation')"
           >
             <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,20 +78,16 @@
       <!-- Zone de conversation (responsive) -->
       <div 
         class="flex-1 flex flex-col min-h-0 transition-all duration-300"
-        :class="[
-          'lg:flex',
-          isMobile && selectedConversation ? 'flex' : '',
-          isMobile && !selectedConversation ? 'hidden' : ''
-        ]"
+        :class="[ 'lg:flex', isMobile && selectedConversation ? 'flex' : '', !selectedConversation ? 'hidden' : '' ]"
       >
         <!-- État vide (pas de conversation sélectionnée) -->
-        <div v-if="!selectedConversation" class="flex-1 flex items-center justify-center bg-gray-50 p-4">
+        <div v-if="!selectedConversation" class="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800 p-4 transition-colors duration-300">
           <div class="text-center">
-            <svg class="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
             </svg>
-            <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">{{ t('messages.selectConversationTitle') }}</h3>
-            <p class="text-sm text-gray-500">{{ t('messages.selectConversationHint') }}</p>
+            <h3 class="text-base lg:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ t('messages.selectConversationTitle') }}</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('messages.selectConversationHint') }}</p>
           </div>
         </div>
 
@@ -119,13 +115,13 @@
 
           <!-- Bandeau de réponse (citation) -->
           <Transition name="fade">
-            <div v-if="replyingTo" class="px-3 lg:px-4 py-2 bg-[#0097b2]/5 border-l-4 border-[#0097b2] mx-3 lg:mx-4 mt-2 rounded relative">
+            <div v-if="replyingTo" class="px-3 lg:px-4 py-2 bg-[#0097b2]/5 dark:bg-[#26c6da]/10 border-l-4 border-[#0097b2] dark:border-[#26c6da] mx-3 lg:mx-4 mt-2 rounded relative transition-colors duration-300">
               <div class="flex items-start gap-2">
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-[#0097b2] truncate">{{ replyingTo.auteur_nom }}</div>
-                  <div class="text-xs text-gray-600 truncate">{{ replyingTo.contenu_message }}</div>
+                  <div class="text-xs font-semibold text-[#0097b2] dark:text-[#26c6da] truncate">{{ replyingTo.auteur_nom }}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ replyingTo.contenu_message }}</div>
                 </div>
-                <button class="text-gray-400 hover:text-gray-600 transition-colors" @click="cancelReply" :title="t('components.messageReply.cancel')">
+                <button class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="cancelReply" :title="t('components.messageReply.cancel')">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -167,7 +163,9 @@
 </template>
 
 <script setup lang="ts">
-  // Middleware pour vérifier l'authentification
+  import { useI18n } from 'vue-i18n'
+
+// Middleware pour vérifier l'authentification
   definePageMeta({
     middleware: 'auth'
   })
@@ -178,10 +176,11 @@
     title: computed(() => t('messages.pageTitle'))
   })
 
+  // Import du système de thème
+  const { initTheme } = useTheme()
+
   // Import des composables
   import type { Conversation, Message, FichierMessage, ApiResponse } from '~/types'
-  import { useI18n } from 'vue-i18n'
-
   // Configuration et composables
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
@@ -751,19 +750,10 @@
 
   // Debug de l'authentification
   const debugAuth = async () => {
-    console.log('=== DEBUG AUTHENTIFICATION ===')
-    console.log('Store auth:', authStore)
-    console.log('Utilisateur:', authStore.user)
-    console.log('Token:', authStore.token)
-    console.log('Is authenticated:', authStore.isAuthenticated)
-    console.log('API Base:', config.public.apiBase)
-    console.log('Headers:', getAuthHeaders())
-    
     // Test de connexion au backend
     const backendOk = await testBackendConnection()
-    console.log('Backend accessible:', backendOk)
     
-    alert('Logs de debug affichés dans la console du navigateur (F12)')
+    alert(`Debug - Backend accessible: ${backendOk ? 'Oui' : 'Non'}`)
   }
 
   // Formatage du temps et taille de fichier
@@ -809,6 +799,9 @@
 
   // Lifecycle
   onMounted(async () => {
+    // Initialiser le thème
+    initTheme()
+    // Charger les conversations
     await loadConversations()
   })
 

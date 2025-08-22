@@ -2,33 +2,33 @@
 <template>
   <div class="p-4 sm:p-6">
     <h2 class="text-2xl font-bold mb-4">{{ $t('adminIncidents.title') }}</h2>
-    <p class="mb-4 text-gray-500">{{ $t('adminIncidents.subtitle') }}</p>
-    <div v-if="loading" class="text-center py-8 text-gray-400">{{ $t('adminIncidents.loading') }}</div>
+    <p class="mb-4 text-gray-500 dark:text-gray-400">{{ $t('adminIncidents.subtitle') }}</p>
+    <div v-if="loading" class="text-center py-8 text-gray-400 dark:text-gray-500">{{ $t('adminIncidents.loading') }}</div>
     <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
     <div v-else>
       <div class="mb-4">
         <div class="flex flex-wrap justify-end gap-2 mb-2 items-end">
           <div class="flex-1 min-w-[180px] max-w-xs flex flex-col">
-            <label class="block text-xs text-gray-500 mb-1">{{ $t('adminIncidents.globalSearch') }}</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('adminIncidents.globalSearch') }}</label>
             <input v-model="searchText" type="text" :placeholder="$t('adminIncidents.searchPlaceholder')" class="border rounded px-2 py-1 text-sm w-full" />
           </div>
           <button @click="refreshIncidents" class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-medium border border-blue-200 hover:bg-blue-100 transition w-full sm:w-auto">{{ $t('adminIncidents.refresh') }}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-2">
           <div>
-            <label class="block text-xs text-gray-500 mb-1">{{ $t('adminIncidents.filterDate') }}</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('adminIncidents.filterDate') }}</label>
             <input v-model="filterDate" type="date" class="border rounded px-2 py-1 text-sm w-full" />
           </div>
           <div class="hidden md:block"></div>
           <div>
-            <label class="block text-xs text-gray-500 mb-1">{{ $t('adminIncidents.filterMail') }}</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('adminIncidents.filterMail') }}</label>
             <select v-model="filterMail" class="border rounded px-2 py-1 text-sm w-full">
               <option value="">{{ $t('adminIncidents.allMails') }}</option>
               <option v-for="mail in mailsList" :key="mail" :value="mail">{{ mail }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs text-gray-500 mb-1">{{ $t('adminIncidents.filterStatus') }}</label>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('adminIncidents.filterStatus') }}</label>
             <select v-model="filterStatut" class="border rounded px-2 py-1 text-sm w-full">
               <option value="">{{ $t('adminIncidents.allStatus') }}</option>
               <option value="en_cours">{{ $t('adminIncidents.statusEnCours') }}</option>
@@ -38,19 +38,19 @@
           </div>
         </div>
       </div>
-      <div v-if="filteredIncidents.length === 0" class="text-gray-400 italic">{{ $t('adminIncidents.noIncidents') }}</div>
+      <div v-if="filteredIncidents.length === 0" class="text-gray-400 dark:text-gray-500 italic">{{ $t('adminIncidents.noIncidents') }}</div>
       <ul class="divide-y divide-gray-100">
         <li v-for="incident in filteredIncidents" :key="incident.id" class="py-2 flex flex-col gap-1 md:gap-4">
           <div class="grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-4 items-center">
-            <span class="text-xs text-gray-400 md:col-span-2">{{ formatDate(incident.details?.datetime) }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500 md:col-span-2">{{ formatDate(incident.details?.datetime) }}</span>
             <span class="text-sm md:col-span-6 col-span-1">{{ incident.details?.object }}</span>
             <span class="text-xs text-blue-600 md:col-span-2 col-span-1">
               {{ incident.details?.email_signaleur || incident.email_signaleur || incident.email || '' }}
             </span>
-            <span class="text-xs text-gray-500 md:col-span-2 col-span-2">{{ incident.details?.statut }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 md:col-span-2 col-span-2">{{ incident.details?.statut }}</span>
           </div>
           <div v-if="incident.details?.pieces_jointes && incident.details.pieces_jointes.length" class="mt-1 flex flex-wrap gap-2">
-            <span class="text-xs text-gray-400">{{ $t('adminIncidents.attachments') }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">{{ $t('adminIncidents.attachments') }}</span>
             <div class="flex flex-wrap gap-2">
               <a
                 v-for="(piece, idx) in incident.details.pieces_jointes"
@@ -73,12 +73,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+  import { onMounted, computed, ref, watch } from 'vue'
+  import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
   // Utilisation du nouveau composable
+  // Import du système de thème
+  const { initTheme } = useTheme()
+
   const {
     incidents: rawIncidents,
     loadingIncidents: loading,
@@ -212,8 +215,8 @@ const { t } = useI18n()
       }
       // Filtre mail (email_signaleur ou email)
       if (filterMail.value) {
-        const mail = (incident.details?.email_signaleur || incident.email_signaleur || incident.email || '').toLowerCase()
-        if (!mail.includes(filterMail.value.toLowerCase())) match = false
+        const mail = incident.details?.email_signaleur || incident.email_signaleur || incident.email || ''
+        if (!mail.toLowerCase().includes(filterMail.value.toLowerCase())) match = false
       }
       // Barre de recherche (object, statut, mail)
       if (searchText.value) {
@@ -232,22 +235,14 @@ const { t } = useI18n()
   function refreshIncidents() {
     fetchIncidents()
   }
-  onMounted(() => {
-    console.log('[AdminIncidents] Component mounted')
-    console.log('[AdminIncidents] Initial rawIncidents:', rawIncidents.value)
-    console.log('[AdminIncidents] Initial loading:', loading.value)
-    console.log('[AdminIncidents] Initial error:', error.value)
-    fetchIncidents()
-  })
 
-  // Watcher pour debugger les changements
-  watch([rawIncidents, loading, error], ([newIncidents, newLoading, newError]) => {
-    console.log('[AdminIncidents] State changed:')
-    console.log('  - rawIncidents:', newIncidents)
-    console.log('  - rawIncidents length:', Array.isArray(newIncidents) ? newIncidents.length : 'not array')
-    console.log('  - loading:', newLoading)
-    console.log('  - error:', newError)
-  }, { immediate: true })
+  // Initialisation du thème
+  
+  // Initialisation unifiée
+  onMounted(() => {
+    fetchIncidents()
+    initTheme()
+  })
 </script>
 
 

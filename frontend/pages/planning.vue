@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden transition-colors duration-300">
     <!-- Fixed header wrapper -->
     <div class="fixed top-0 inset-x-0 z-50">
-      <AppHeader />
+      <AppHeader :title="t('planning.title')" />
     </div>
     <!-- Add top padding equal to header height to prevent overlap -->
     <div class="pt-[72px]"></div>
     
     <!-- Background decorative elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-1/4 -right-32 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-cyan-600/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-1/4 -left-32 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-600/20 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/4 -right-32 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-cyan-600/20 dark:from-blue-500/10 dark:to-cyan-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-1/4 -left-32 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-600/20 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-full blur-3xl"></div>
     </div>
 
     <!-- Modern header with stats and controls -->
@@ -18,35 +18,35 @@
       <!-- Stats bar -->
       <div class="mb-6">
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-lg hover:shadow-xl transition-shadow">
+          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
               </div>
               <div>
-                <p class="text-sm text-gray-600">{{ t('planning.stats.totalVisits') }}</p>
-                <p class="text-xl font-bold text-gray-900">{{ visites.length }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-300">{{ t('planning.stats.totalVisits') }}</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">{{ visites.length }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-lg hover:shadow-xl transition-shadow">
+          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
               <div>
-                <p class="text-sm text-gray-600">{{ t('planning.stats.todayVisits') }}</p>
-                <p class="text-xl font-bold text-gray-900">{{ todayVisitesCount }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-300">{{ t('planning.stats.todayVisits') }}</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">{{ todayVisitesCount }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-lg hover:shadow-xl transition-shadow">
+          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
                 <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,12 +87,7 @@
                 v-for="view in availableViews" 
                 :key="view.key"
                 @click="currentView = view.key"
-                :class="[
-                  'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
-                  currentView === view.key 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                ]"
+                :class="[ 'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200', currentView === view.key ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50' ]"
               >
                 <svg :class="['w-4 h-4 mr-2 inline-block']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="view.icon"></path>
@@ -226,18 +221,10 @@
                 <th class="w-20 p-2"></th>
                 <th v-for="(date, idx) in weekDates" :key="idx" class="py-4 px-3 w-36 text-center border-r border-gray-100 last:border-r-0">
                   <div class="flex flex-col items-center">
-                    <div :class="[
-                      'text-sm font-medium mb-1',
-                      dateIsToday(date) ? 'text-blue-600' : 'text-gray-600'
-                    ]">
+                    <div :class="[ 'text-sm font-medium mb-1', dateIsToday(date) ? 'text-blue-600' : 'text-gray-600' ]">
                       {{ days[idx] }}
                     </div>
-                    <div :class="[
-                      'w-8 h-8 rounded-xl flex items-center justify-center text-sm font-semibold transition-colors',
-                      dateIsToday(date) 
-                        ? 'bg-blue-600 text-white shadow-lg' 
-                        : 'text-gray-700 hover:bg-gray-100'
-                    ]">
+                    <div :class="[ 'w-8 h-8 rounded-xl flex items-center justify-center text-sm font-semibold transition-colors', dateIsToday(date) ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100' ]">
                       {{ date.getDate() }}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
@@ -251,11 +238,7 @@
               <tr
                 v-for="i in 288"
                 :key="i"
-                :class="[
-                  'group transition-colors duration-150',
-                  (i % 24 === 0) ? 'bg-blue-50/30' : (Math.floor((i-1)/12) % 2 === 0 ? 'bg-gray-50/30' : 'bg-white/30'),
-                  'hover:bg-blue-50/50'
-                ]"
+                :class="[ 'group transition-colors duration-150', (i % 24 === 0) ? 'bg-blue-50/30' : (Math.floor((i-1)/12) % 2 === 0 ? 'bg-gray-50/30' : 'bg-white/30'), 'hover:bg-blue-50/50' ]"
               >
                 <td
                   v-if="(i-1) % 12 === 0"
@@ -269,13 +252,7 @@
                 <td
                   v-for="(date, idx) in weekDates"
                   :key="idx"
-                  :class="[
-                    'h-1 w-36 border-r border-gray-100 last:border-r-0 transition-all duration-150 relative cursor-pointer',
-                    dateIsToday(date) ? 'bg-blue-50/40' : '',
-                    (i) % 12 === 0 ? 'border-b border-gray-200' : 'border-b border-gray-50',
-                    'hover:bg-blue-100/40 group-hover:bg-blue-100/40',
-                    isCellInDragSelection(date, Math.floor((i-1)/12), ((i-1)%12)*5) ? 'bg-blue-200/60 border-blue-300' : ''
-                  ]"
+                  :class="[ 'h-1 w-36 border-r border-gray-100 last:border-r-0 transition-all duration-150 relative cursor-pointer', dateIsToday(date) ? 'bg-blue-50/40' : '', (i) % 12 === 0 ? 'border-b border-gray-200' : 'border-gray-50', 'hover:bg-blue-100/40 group-hover:bg-blue-100/40', isCellInDragSelection(date, Math.floor((i-1)/12), ((i-1)%12)*5) ? 'bg-blue-200/60 border-blue-300' : '' ]"
                   @mousedown="handleCellMouseDown(date, Math.floor((i-1)/12), ((i-1)%12)*5, $event)"
                   @mouseenter="handleCellMouseEnter(date, Math.floor((i-1)/12), ((i-1)%12)*5)"
                   @mouseup="handleCellMouseUp"
@@ -336,10 +313,7 @@
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                  <div :class="[
-                    'w-4 h-4 rounded-full',
-                    getVisiteColorClass(visite.statut_visite)
-                  ]"></div>
+                  <div :class="[ 'w-4 h-4 rounded-full', getVisiteColorClass(visite.statut_visite) ]"></div>
                   <div>
                     <h3 class="font-semibold text-gray-900">{{ visite.motif_visite }}</h3>
                     <p class="text-sm text-gray-600">{{ getVisitorDisplayName(visite) }}</p>
@@ -477,12 +451,7 @@
               <!-- CSV Option -->
               <button 
                 @click="downloadFormat = 'csv'"
-                :class="[
-                  'p-3 rounded-xl border-2 transition-all text-left',
-                  downloadFormat === 'csv' 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                ]"
+                :class="[ 'p-3 rounded-xl border-2 transition-all text-left', downloadFormat === 'csv' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-700' ]"
               >
                 <div class="flex items-center">
                   <span class="text-lg mr-2">📊</span>
@@ -496,12 +465,7 @@
               <!-- PDF Downloadable Option -->
               <button 
                 @click="downloadFormat = 'pdf-download'"
-                :class="[
-                  'p-3 rounded-xl border-2 transition-all text-left',
-                  downloadFormat === 'pdf-download' 
-                    ? 'border-green-500 bg-green-50 text-green-700' 
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                ]"
+                :class="[ 'p-3 rounded-xl border-2 transition-all text-left', downloadFormat === 'pdf-download' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300 text-gray-700' ]"
               >
                 <div class="flex items-center">
                   <span class="text-lg mr-2">💾</span>
@@ -515,12 +479,7 @@
               <!-- PDF Printable Option -->
               <button 
                 @click="downloadFormat = 'pdf-print'"
-                :class="[
-                  'p-3 rounded-xl border-2 transition-all text-left',
-                  downloadFormat === 'pdf-print' 
-                    ? 'border-purple-500 bg-purple-50 text-purple-700' 
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                ]"
+                :class="[ 'p-3 rounded-xl border-2 transition-all text-left', downloadFormat === 'pdf-print' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:border-gray-300 text-gray-700' ]"
               >
                 <div class="flex items-center">
                   <span class="text-lg mr-2">🖨️</span>
@@ -569,20 +528,21 @@
 
 <script setup>
   import { useI18n } from 'vue-i18n'
-  const { t } = useI18n()
+  import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
+  import { useTheme } from '~/composables/useTheme'
+  import { useAuthStore } from '@/stores/auth'
+
+const { t } = useI18n()
 
   useHead({
     title: computed(() => t('planning.pageTitle'))
   })
 
-  import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
   import AppHeader from '~/components/AppHeader.vue'
   import AppFooter from '~/components/AppFooter.vue'
   import Notif from '@/components/notif.vue'
   import VisitePopup from '@/components/VisitePopup.vue'
   import CreateVisitePopup from '@/components/CreateVisitePopup.vue'
-  import { useAuthStore } from '@/stores/auth'
-
   // Fonction de filtrage centralisée
   function applyFilters(visitesArray) {
     let filtered = visitesArray
@@ -1042,7 +1002,6 @@
 
   // Handle status change from VisitePopup
   function handleStatusChanged(event) {
-    console.log('Visit status changed:', event)
     // Refresh visits to get updated data
     fetchVisites()
     // You could also update the local visites array directly:
@@ -1367,8 +1326,6 @@
         URL.revokeObjectURL(pdfUrl)
       }
       
-      console.log('PDF ouvert dans un nouvel onglet:', filename)
-      
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error)
       // Fallback to print method if PDF generation fails
@@ -1437,6 +1394,10 @@
 
   // Lifecycle
   onMounted(async () => {
+    // Initialisation du thème
+    const { initTheme } = useTheme()
+    initTheme()
+    
     await fetchVisites()
     
     nextTick(() => {

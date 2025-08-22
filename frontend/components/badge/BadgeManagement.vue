@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
     <div class="max-w-7xl mx-auto space-y-8">
       <!-- En-tête moderne -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
+      <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div class="space-y-2">
             <div class="flex items-center gap-3">
@@ -13,7 +13,7 @@
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                   {{ t('badges.title') }}
                 </h1>
-                <p class="text-gray-600 font-medium">{{ t('badges.description') }}</p>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('badges.description') }}</p>
               </div>
             </div>
           </div>
@@ -22,7 +22,7 @@
             <button
               @click="refreshData"
               :disabled="loading"
-              class="group px-6 py-3 bg-white border border-gray-200 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-sm flex items-center gap-2"
+              class="group px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm flex items-center gap-2"
             >
               <RefreshIcon class="w-5 h-5 transition-transform group-hover:rotate-180" :class="{ 'animate-spin': loading }" />
               {{ t('common.refresh') }}
@@ -31,7 +31,7 @@
               @click="openCreateModal"
               class="group px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
             >
-              <PlusIcon class="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
+              <Icon name="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
               {{ t('badges.newBadge') }}
             </button>
           </div>
@@ -40,10 +40,10 @@
 
       <!-- Statistiques modernes -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div class="group bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="text-sm font-medium text-gray-600">{{ t('badges.stats.total') }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('badges.stats.total') }}</p>
               <p class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {{ stats.total_badges || 0 }}
               </p>
@@ -53,62 +53,62 @@
             </div>
           </div>
           <div class="mt-4 flex items-center gap-2">
-            <div class="h-2 bg-gray-200 rounded-full flex-1">
+            <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full flex-1">
               <div class="h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full w-full"></div>
             </div>
           </div>
         </div>
 
-        <div class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div class="group bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="text-sm font-medium text-gray-600">{{ t('badges.stats.active') }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('badges.stats.active') }}</p>
               <p class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {{ stats.badges_actifs || 0 }}
               </p>
             </div>
             <div class="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
-              <CheckCircleIcon class="w-7 h-7 text-green-600" />
+              <Icon name="check-circle" class="w-7 h-7 text-green-600" />
             </div>
           </div>
           <div class="mt-4 flex items-center gap-2">
-            <div class="h-2 bg-gray-200 rounded-full flex-1">
+            <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full flex-1">
               <div class="h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" 
                    :style="{ width: getPercentage(stats.badges_actifs, stats.total_badges) + '%' }"></div>
             </div>
-            <span class="text-xs text-gray-500 font-medium">
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {{ getPercentage(stats.badges_actifs, stats.total_badges) }}%
             </span>
           </div>
         </div>
 
-        <div class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div class="group bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="text-sm font-medium text-gray-600">{{ t('badges.stats.inactive') }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('badges.stats.inactive') }}</p>
               <p class="text-3xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                 {{ stats.badges_inactifs || 0 }}
               </p>
             </div>
             <div class="p-3 bg-gradient-to-br from-red-100 to-rose-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
-              <XCircleIcon class="w-7 h-7 text-red-600" />
+              <Icon name="x-circle" class="w-7 h-7 text-red-600" />
             </div>
           </div>
           <div class="mt-4 flex items-center gap-2">
-            <div class="h-2 bg-gray-200 rounded-full flex-1">
+            <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full flex-1">
               <div class="h-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-full" 
                    :style="{ width: getPercentage(stats.badges_inactifs, stats.total_badges) + '%' }"></div>
             </div>
-            <span class="text-xs text-gray-500 font-medium">
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {{ getPercentage(stats.badges_inactifs, stats.total_badges) }}%
             </span>
           </div>
         </div>
 
-        <div class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div class="group bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between">
             <div class="space-y-1">
-              <p class="text-sm font-medium text-gray-600">{{ t('badges.stats.suspended') }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('badges.stats.suspended') }}</p>
               <p class="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                 {{ stats.badges_suspendus || 0 }}
               </p>
@@ -118,11 +118,11 @@
             </div>
           </div>
           <div class="mt-4 flex items-center gap-2">
-            <div class="h-2 bg-gray-200 rounded-full flex-1">
+            <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full flex-1">
               <div class="h-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" 
                    :style="{ width: getPercentage(stats.badges_suspendus, stats.total_badges) + '%' }"></div>
             </div>
-            <span class="text-xs text-gray-500 font-medium">
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {{ getPercentage(stats.badges_suspendus, stats.total_badges) }}%
             </span>
           </div>
@@ -130,27 +130,27 @@
       </div>
 
       <!-- Filtres et recherche modernes -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+      <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">{{ t('common.search') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('common.search') }}</label>
             <div class="relative">
-              <SearchIcon class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <SearchIcon class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
               <input
                 v-model="filters.search"
                 type="text"
                 :placeholder="t('badges.searchPlaceholder')"
-                class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/80"
+                class="w-full pl-12 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800/80"
                 @input="debouncedSearch"
               />
             </div>
           </div>
           
           <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">{{ t('badges.statusLabel') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('badges.statusLabel') }}</label>
             <select
               v-model="filters.statut"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/80"
+              class="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800/80"
               @change="() => loadBadges()"
             >
               <option value="">{{ t('badges.allStatuses') }}</option>
@@ -161,10 +161,10 @@
           </div>
 
           <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">{{ t('badges.sortBy') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('badges.sortBy') }}</label>
             <select
               v-model="filters.sort_by"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/80"
+              class="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800/80"
               @change="() => loadBadges()"
             >
               <option value="numero">{{ t('badges.sortOptions.number') }}</option>
@@ -174,10 +174,10 @@
           </div>
 
           <div class="space-y-2">
-            <label class="block text-sm font-semibold text-gray-700">{{ t('common.order') }}</label>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('common.order') }}</label>
             <select
               v-model="filters.sort_order"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/80"
+              class="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800/80"
               @change="() => loadBadges()"
             >
               <option value="desc">{{ t('common.descending') }}</option>
@@ -188,11 +188,11 @@
       </div>
 
       <!-- Liste des badges moderne -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
-        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+      <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">{{ t('badges.badgesList') }}</h2>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t('badges.badgesList') }}</h2>
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>{{ badges.length }}</span>
               <span>{{ t('badges.badgesList').toLowerCase() }}</span>
             </div>
@@ -200,7 +200,7 @@
         </div>
         
         <div v-if="loading" class="p-12 text-center">
-          <div class="inline-flex items-center gap-3 text-gray-600">
+          <div class="inline-flex items-center gap-3 text-gray-600 dark:text-gray-400">
             <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             <span class="font-medium">{{ t('badges.loading') }}</span>
           </div>
@@ -208,10 +208,10 @@
 
         <div v-else-if="badges.length === 0" class="p-12 text-center">
           <div class="space-y-4">
-            <div class="p-4 bg-gray-100 rounded-full w-fit mx-auto">
-              <BadgeIcon class="w-12 h-12 text-gray-400" />
+            <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full w-fit mx-auto">
+              <BadgeIcon class="w-12 h-12 text-gray-400 dark:text-gray-500" />
             </div>
-            <p class="text-gray-600 font-medium">{{ t('badges.noBadges') }}</p>
+            <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('badges.noBadges') }}</p>
           </div>
         </div>
 
@@ -236,7 +236,7 @@
                 
                 <div class="flex-1 min-w-0 space-y-1">
                   <div class="flex items-center gap-3">
-                    <h3 class="text-lg font-semibold text-gray-900 truncate">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
                       {{ badge.utilisateur?.nom_complet || t('badges.unassigned') }}
                     </h3>
                     <span 
@@ -246,18 +246,18 @@
                       {{ getStatusLabel(badge.statut_actuel) }}
                     </span>
                   </div>
-                  <p class="text-sm text-gray-600 truncate">{{ badge.utilisateur?.email || '-' }}</p>
-                  <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <p class="text-sm text-gray-600 dark:text-gray-400 truncate">{{ badge.utilisateur?.email || '-' }}</p>
+                  <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                     <span class="flex items-center gap-1">
-                      <KeyIcon class="w-4 h-4" />
+                      <Icon name="key" class="w-4 h-4" />
                       {{ badge.droit }}
                     </span>
                     <span v-if="badge.derniere_utilisation" class="flex items-center gap-1">
-                      <ClockIcon class="w-4 h-4" />
+                      <Icon name="clock" class="w-4 h-4" />
                       {{ formatDate(badge.derniere_utilisation) }}
                     </span>
-                    <span v-else class="flex items-center gap-1 text-gray-400">
-                      <ClockIcon class="w-4 h-4" />
+                    <span v-else class="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                      <Icon name="clock" class="w-4 h-4" />
                       {{ t('common.never') }}
                     </span>
                   </div>
@@ -295,7 +295,7 @@
                   class="p-2 text-blue-600 hover:bg-blue-100 rounded-xl transition-colors duration-200"
                   :title="t('badges.actions.edit')"
                 >
-                  <PencilIcon class="w-5 h-5" />
+                  <Icon name="pencil" class="w-5 h-5" />
                 </button>
                 
                 <button
@@ -303,7 +303,7 @@
                   class="p-2 text-red-600 hover:bg-red-100 rounded-xl transition-colors duration-200"
                   :title="t('badges.actions.delete')"
                 >
-                  <TrashIcon class="w-5 h-5" />
+                  <Icon name="trash" class="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -311,9 +311,9 @@
         </div>
 
         <!-- Pagination moderne -->
-        <div v-if="pagination.total > pagination.per_page" class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div v-if="pagination.total > pagination.per_page" class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-600">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
               {{ t('common.showing') }} {{ ((pagination.current_page - 1) * pagination.per_page) + 1 }} 
               {{ t('common.to') }} {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }} 
               {{ t('common.of') }} {{ pagination.total }} {{ t('common.results').toLowerCase() }}
@@ -322,7 +322,7 @@
               <button
                 @click="changePage(pagination.current_page - 1)"
                 :disabled="pagination.current_page <= 1"
-                class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ t('common.previous') }}
               </button>
@@ -332,12 +332,7 @@
                   v-for="page in getVisiblePages()"
                   :key="page"
                   @click="changePage(page)"
-                  :class="[
-                    'px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
-                    page === pagination.current_page
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-500 hover:bg-gray-100'
-                  ]"
+                  :class="[ 'px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200', page === pagination.current_page ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700' ]"
                 >
                   {{ page }}
                 </button>
@@ -346,7 +341,7 @@
               <button
                 @click="changePage(pagination.current_page + 1)"
                 :disabled="pagination.current_page >= pagination.last_page"
-                class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ t('common.next') }}
               </button>
@@ -377,31 +372,19 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, reactive, onMounted, computed } from 'vue'
-    import { useI18n } from 'vue-i18n'
-    import { useAuthenticatedFetch } from '~/composables/useAuthenticatedFetch'
-    import { useNotifications } from '~/composables/useNotifications'
+  import { onMounted, ref, reactive, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  import { useAuthenticatedFetch } from '~/composables/useAuthenticatedFetch'
+  import { useNotifications } from '~/composables/useNotifications'
 
-    // Import des icônes
-    import BadgeIcon from '~/components/icons/BadgeIcon.vue'
-    import PlusIcon from '~/components/icons/PlusIcon.vue'
-    import RefreshIcon from '~/components/icons/RefreshIcon.vue'
-    import SearchIcon from '~/components/icons/SearchIcon.vue'
-    import CheckCircleIcon from '~/components/icons/CheckCircleIcon.vue'
-    import XCircleIcon from '~/components/icons/XCircleIcon.vue'
-    import PauseCircleIcon from '~/components/icons/PauseCircleIcon.vue'
-    import PlayIcon from '~/components/icons/PlayIcon.vue'
-    import PauseIcon from '~/components/icons/PauseIcon.vue'
-    import PencilIcon from '~/components/icons/PencilIcon.vue'
-    import TrashIcon from '~/components/icons/TrashIcon.vue'
-    import KeyIcon from '~/components/icons/KeyIcon.vue'
-    import ClockIcon from '~/components/icons/ClockIcon.vue'
-
-    // Import des modals
+// Import des modals
     import BadgeFormModal from './BadgeFormModal.vue'
     import BadgeDetailsModal from './BadgeDetailsModal.vue'
 
-    const { t } = useI18n()
+    // Import du système de thème
+  const { initTheme } = useTheme()
+
+  const { t } = useI18n()
     const { fetchWithAuth } = useAuthenticatedFetch()
     const { showSuccess, showError } = useNotifications()
 
@@ -629,9 +612,9 @@
 
     const toggleStatus = async (badge: any, action: 'activate' | 'deactivate' | 'suspend') => {
     try {
-        const response = await fetchWithAuth(`/badges/${badge.numero}/toggle-status`, {
-        method: 'POST',
-        body: JSON.stringify({ action })
+        const response = await fetchWithAuth(`/badges/${badge.numero}/${action}`, {
+            method: 'POST',
+            body: JSON.stringify({ action })
         })
 
         if (response.success) {
@@ -660,7 +643,7 @@
 
     try {
         const response = await fetchWithAuth(`/badges/${badge.numero}`, {
-        method: 'DELETE'
+            method: 'DELETE'
         })
 
         if (response.success) {
@@ -683,9 +666,13 @@
     }
 
     // Lifecycle
-    onMounted(() => {
+    // Initialisation du thème
+  
+  // Initialisation unifiée
+  onMounted(() => {
     refreshData()
-    })
+    initTheme()
+  })
 </script>
 
 <style scoped>

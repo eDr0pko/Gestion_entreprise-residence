@@ -1,6 +1,6 @@
 <template>
   <div class="mt-2 space-y-2">
-    <div v-if="fichiers.length === 0" class="text-xs text-gray-500 italic">
+    <div v-if="fichiers.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
       Aucun fichier attaché
     </div>
     
@@ -12,7 +12,7 @@
       <!-- Images : affichage en tant qu'image -->
       <div v-if="isImage(fichier)" class="relative">
         <div 
-          class="relative rounded-lg overflow-hidden bg-gray-100 transition-all duration-200 hover:shadow-lg cursor-pointer image-container"
+          class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer image-container"
           :class="{ 'max-w-sm': true }"
           @click="openImageModal(fichier)"
           tabindex="0"
@@ -22,14 +22,14 @@
           <!-- Loading state -->
           <div 
             v-if="!imageDataUrls[fichier.id_fichier] && !imageErrors[fichier.id_fichier]"
-            class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-[120px]"
+            class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center min-h-[120px]"
           >
             <div class="text-center p-4">
-              <svg class="w-6 h-6 mx-auto mb-2 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 mx-auto mb-2 animate-spin text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p class="text-xs text-gray-500">Chargement...</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Chargement...</p>
             </div>
           </div>
 
@@ -46,8 +46,8 @@
             />
             
             <!-- Overlay au hover -->
-            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center rounded-lg">
-              <div class="bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-full text-sm font-medium shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
+            <div class="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center rounded-lg">
+              <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-900 dark:text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
                 </svg>
@@ -69,34 +69,34 @@
           <!-- Error state -->
           <div 
             v-else
-            class="min-h-[120px] bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center cursor-pointer rounded-lg border border-red-200"
+            class="min-h-[120px] bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 flex items-center justify-center cursor-pointer rounded-lg border border-red-200 dark:border-red-700"
           >
             <div class="text-center p-4">
-              <svg class="w-8 h-8 mx-auto mb-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 mx-auto mb-2 text-red-400 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <p class="text-sm font-medium text-red-700 mb-1">
+              <p class="text-sm font-medium text-red-700 dark:text-red-400 mb-1">
                 {{ fichier.nom_original }}
               </p>
-              <p class="text-xs text-red-600 mb-3">
+              <p class="text-xs text-red-600 dark:text-red-500 mb-3">
                 Erreur de chargement
               </p>
               <div class="space-y-2">
                 <button 
                   @click="retryImageLoad(fichier.id_fichier)"
-                  class="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors mr-2"
+                  class="text-xs bg-blue-500 dark:bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors mr-2"
                 >
                   🔄 Réessayer
                 </button>
                 <button 
                   @click="forceCanvasConversion(fichier.id_fichier)"
-                  class="text-xs bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors mr-2"
+                  class="text-xs bg-purple-500 dark:bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors mr-2"
                 >
                   🎨 Conversion forcée
                 </button>
                 <button 
                   @click="downloadImageFallback(fichier.id_fichier)"
-                  class="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors mr-2"
+                  class="text-xs bg-green-500 dark:bg-green-600 text-white px-3 py-1 rounded hover:bg-green-600 dark:hover:bg-green-700 transition-colors mr-2"
                 >
                   💾 Télécharger fichier
                 </button>
@@ -116,9 +116,7 @@
       <div v-else-if="isPDF(fichier)" 
         @click="$emit('download-file', fichier.id_fichier)"
         class="flex items-center p-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
-        :class="isCurrentUser 
-          ? 'border-white/30 bg-white/10 hover:bg-white/20' 
-          : 'border-red-200 bg-red-50 hover:bg-red-100'"
+        :class="isCurrentUser ? 'border-white/30 bg-white/10 hover:bg-white/20' : 'border-red-200 bg-red-50 hover:bg-red-100'"
       >
         <div class="flex-shrink-0 mr-3">
           <div class="w-10 h-12 bg-red-500 rounded flex items-center justify-center">
@@ -144,9 +142,7 @@
       <div v-else-if="isOfficeDoc(fichier)" 
         @click="$emit('download-file', fichier.id_fichier)"
         class="flex items-center p-3 rounded-lg border cursor-pointer transition-colors"
-        :class="isCurrentUser 
-          ? 'border-white/30 bg-white/10 hover:bg-white/20' 
-          : 'border-blue-200 bg-blue-50 hover:bg-blue-100'"
+        :class="isCurrentUser ? 'border-white/30 bg-white/10 hover:bg-white/20' : 'border-blue-200 bg-blue-50 hover:bg-blue-100'"
       >
         <div class="flex-shrink-0 mr-3">
           <div class="w-8 h-10 bg-blue-500 rounded flex items-center justify-center">
@@ -172,9 +168,7 @@
       <div v-else-if="isArchive(fichier)" 
         @click="$emit('download-file', fichier.id_fichier)"
         class="flex items-center p-3 rounded-lg border cursor-pointer transition-colors"
-        :class="isCurrentUser 
-          ? 'border-white/30 bg-white/10 hover:bg-white/20' 
-          : 'border-purple-200 bg-purple-50 hover:bg-purple-100'"
+        :class="isCurrentUser ? 'border-white/30 bg-white/10 hover:bg-white/20' : 'border-purple-200 bg-purple-50 hover:bg-purple-100'"
       >
         <div class="flex-shrink-0 mr-3">
           <div class="w-8 h-8 bg-purple-500 rounded flex items-center justify-center">
@@ -200,9 +194,7 @@
       <div v-else 
         @click="$emit('download-file', fichier.id_fichier)"
         class="flex items-center p-2 rounded cursor-pointer transition-colors"
-        :class="isCurrentUser 
-          ? 'bg-white/20 hover:bg-white/30' 
-          : 'bg-gray-50 hover:bg-gray-100'"
+        :class="isCurrentUser ? 'bg-white/20 hover:bg-white/30' : 'bg-gray-50 hover:bg-gray-100'"
       >
         <div class="flex-shrink-0 mr-2">
           <svg class="w-5 h-5" :class="isCurrentUser ? 'text-white' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,6 +295,11 @@
 </template>
 
 <script setup lang="ts">
+  import { onMounted } from 'vue'
+
+// Import du système de thème
+  const { initTheme } = useTheme()
+
   interface FichierMessage {
     id_fichier: number
     nom_original: string
@@ -796,6 +793,9 @@
 
   // Charger les images au montage du composant
   onMounted(() => {
+    // Initialisation du thème
+    initTheme()
+    
     props.fichiers.forEach(fichier => {
       if (isImage(fichier)) {
         loadImageWithAuth(fichier.id_fichier)

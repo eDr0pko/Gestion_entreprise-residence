@@ -12,23 +12,6 @@
     "create": "Créer",
     "creating": "Création..."
   },
-  "conversationsList": {
-    "title": "Vos conversations",
-  "unreadBadge": "{count} message(s) non lu(s) au total",
-    "searchPlaceholder": "Rechercher une conversation...",
-    "refresh": "Rafraîchir les conversations",
-    "newConversation": "Nouvelle conversation",
-    "loading": "Chargement...",
-    "retry": "Réessayer",
-    "debugAuth": "Debug connexion",
-    "noConversation": "Aucune conversation trouvée",
-    "unread": "Messages non lus",
-    "noMessage": "Aucun message",
-    "yesterday": "Hier"
-  },
-  "conversationHeader": {
-    "member": "{count} membre(s)"
-  },
   "adminStatsAdvanced": {
     "title": "Statistiques avancées de la résidence",
     "refresh": "Actualiser",
@@ -81,6 +64,7 @@
     "allRoles": "Tous",
     "roles": "Rôles",
     "roleRequired": "Au moins un rôle doit être sélectionné.",
+    "addUser": "Ajouter un utilisateur",
     "addUserTitle": "Ajouter un utilisateur",
     "userInfoTitle": "Informations utilisateur",
     "address": "Adresse logement",
@@ -101,6 +85,9 @@
     "listView": "Affichage par liste",
     "globalSearch": "Recherche globale",
     "searchPlaceholder": "Recherche...",
+    "addUser": "Ajouter un visiteur",
+    "addUserTitle": "Ajouter un invité",
+    "addButton": "Ajouter",
     "filterActif": "Filtrer par actif",
     "allStatus": "Tous",
     "active": "Actif",
@@ -428,6 +415,7 @@
   "adminIncidents": {
     "title": "Incidents signalés",
     "subtitle": "Liste des incidents déclarés dans la résidence.",
+    "loading": "Chargement des incidents...",
     "globalSearch": "Recherche globale",
     "searchPlaceholder": "Recherche...",
     "refresh": "Rafraîchir",
@@ -441,28 +429,6 @@
     "statusAVenir": "À venir",
     "noIncidents": "Aucun incident signalé.",
     "attachments": "Pièces jointes :"
-  },
-  "adminConversations": {
-    "searchPlaceholder": "Recherche contenu...",
-    "allAuthors": "Tous les auteurs",
-    "allGroups": "Tous les groupes",
-    "sortRecent": "Plus récents d'abord",
-    "sortOld": "Plus anciens d'abord",
-    "refresh": "Rafraîchir",
-    "groupsTitle": "Conversations / Groupes",
-    "groupName": "Nom du groupe",
-    "groupId": "ID",
-    "groupMembers": "Membres",
-    "groupMessages": "Messages",
-    "groupActions": "Actions",
-    "deleteGroup": "Supprimer la conversation",
-    "allMessagesTitle": "Tous les messages",
-    "date": "Date",
-    "author": "Auteur",
-    "content": "Contenu",
-    "loading": "Chargement...",
-    "deleteConfirm": "Supprimer la conversation « {group} » (ID {id}) ? Cette action est irréversible et supprimera tous les messages du groupe.",
-    "noDate": "-"
   },
   "messages": {
     "title": "Messages",
@@ -479,6 +445,19 @@
       "noConversationSelected": "Aucune conversation sélectionnée",
       "downloadFile": "Erreur lors du téléchargement du fichier"
     }
+  },
+  "conversationsList": {
+    "title": "Messages",
+    "searchPlaceholder": "Rechercher des conversations...",
+    "refresh": "Actualiser",
+    "newConversation": "Nouvelle conversation",
+    "yesterday": "Hier",
+    "noMessage": "Aucun message pour le moment",
+    "unreadBadge": "{count} messages non lus"
+  },
+  "conversationHeader": {
+    "member": "membre",
+    "members": "membres"
   },
   "planning": {
     "title": "Planning",
@@ -1046,6 +1025,7 @@
       "active": "Badges actifs",
       "inactive": "Badges inactifs",
       "suspended": "Badges suspendus",
+      "assigned": "Badges affectés",
       "today": "Utilisations aujourd'hui"
     },
     "search": {
@@ -1196,6 +1176,60 @@
     "success": "Modifications enregistrées avec succès !",
     "reset": "Réinitialiser par défaut",
     "resetConfirm": "Êtes-vous sûr de vouloir réinitialiser les paramètres par défaut ?"
+  },
+  "theme": {
+    "toggle": "Basculer le thème",
+    "lightMode": "Passer en mode clair",
+    "darkMode": "Passer en mode sombre",
+    "switchToLight": "Basculer vers le thème clair",
+    "switchToDark": "Basculer vers le thème sombre",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Gérez vos notifications de visites",
+    "loading": "Chargement des notifications...",
+    "stats": {
+      "total": "Total",
+      "pending": "En attente",
+      "approved": "Approuvées"
+    },
+    "filters": {
+      "pending": "En attente",
+      "rejected": "Rejetées"
+    },
+    "status": {
+      "scheduled": "Programmée",
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "completed": "Terminée",
+      "cancelled": "Annulée",
+      "rejected": "Refusée",
+      "banned": "Bannie"
+    },
+    "actions": {
+      "accept": "Accepter",
+      "reject": "Refuser"
+    },
+    "errors": {
+      "invalidResponse": "Réponse invalide du serveur",
+      "fetchFailed": "Erreur lors du chargement des notifications",
+      "statusChangeFailed": "Erreur lors du changement de statut"
+    },
+    "success": {
+      "statusChanged": "Statut modifié avec succès"
+    },
+    "empty": {
+      "title": "Aucune notification",
+      "description": "Vous n'avez aucune notification pour le moment",
+      "pending": "Aucune visite en attente",
+      "pendingDescription": "Toutes les visites ont été traitées",
+      "rejected": "Aucune visite rejetée",
+      "rejectedDescription": "Aucune visite n'a été rejetée"
+    },
+    "retry": "Réessayer",
+    "defaultVisitReason": "Visite"
   }
 }
 

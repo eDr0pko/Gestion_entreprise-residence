@@ -28,14 +28,14 @@
   =====================================================================
   -->
 
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-xl font-bold text-gray-900 mb-6 text-center">{{ $t('components.avatarModal.title') }}</h3>
+  <div class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">{{ $t('components.avatarModal.title') }}</h3>
       
       <!-- Avatar actuel -->
       <div class="flex justify-center mb-6">
         <div class="relative">
-          <div v-if="currentAvatarUrl" class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200 shadow-lg">
+          <div v-if="currentAvatarUrl" class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600 shadow-lg">
             <img 
               :src="currentAvatarUrl" 
               :alt="`Photo de profil`"
@@ -43,7 +43,7 @@
               @error="avatarError = true"
             />
           </div>
-          <div v-else class="w-24 h-24 bg-gradient-to-br from-[#0097b2] to-[#008699] rounded-full flex items-center justify-center shadow-lg">
+          <div v-else class="w-24 h-24 bg-gradient-to-br from-[#0097b2] to-[#008699] dark:from-[#007a94] dark:to-[#006880] rounded-full flex items-center justify-center shadow-lg">
             <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
             </svg>
@@ -55,23 +55,20 @@
       <div class="mb-6">
         <div 
           class="border-2 border-dashed rounded-xl p-6 text-center transition-colors"
-          :class="[
-            dragover ? 'border-[#0097b2] bg-[#0097b2]/5' : 'border-gray-300',
-            'hover:border-[#0097b2] hover:bg-[#0097b2]/5 cursor-pointer'
-          ]"
+          :class="[ dragover ? 'border-[#0097b2] bg-[#0097b2]/5 dark:border-[#00b3d1] dark:bg-[#00b3d1]/5' : 'border-gray-300 dark:border-gray-600', 'hover:border-[#0097b2] hover:bg-[#0097b2]/5 dark:hover:border-[#00b3d1] dark:hover:bg-[#00b3d1]/5 cursor-pointer' ]"
           @dragover.prevent="dragover = true"
           @dragleave.prevent="dragover = false"
           @drop.prevent="handleDrop"
           @click="() => fileInput?.click()"
         >
-          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
           </svg>
-          <p class="text-gray-600 mb-2">
-            <span class="font-medium text-[#0097b2]">{{ $t('components.avatarModal.upload') }}</span>
+          <p class="text-gray-600 dark:text-gray-300 mb-2">
+            <span class="font-medium text-[#0097b2] dark:text-[#00b3d1]">{{ $t('components.avatarModal.upload') }}</span>
             {{ $t('components.avatarModal.orDragDrop') }}
           </p>
-          <p class="text-xs text-gray-500">{{ $t('components.avatarModal.fileInfo') }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('components.avatarModal.fileInfo') }}</p>
         </div>
         
         <input
@@ -86,7 +83,7 @@
       <div class="mb-4 flex justify-center space-x-3">
         <button
           type="button"
-          class="px-4 py-2 bg-gradient-to-r from-[#0097b2] to-[#008699] text-white rounded-xl shadow hover:from-[#008699] hover:to-[#007580] transition-all duration-300 flex items-center"
+          class="px-4 py-2 bg-gradient-to-r from-[#0097b2] to-[#008699] dark:from-[#007a94] dark:to-[#006880] text-white rounded-xl shadow hover:from-[#008699] hover:to-[#007580] dark:hover:from-[#006880] dark:hover:to-[#005d6b] transition-all duration-300 flex items-center"
           @click="openCameraModal('environment')"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,9 +97,9 @@
 
       <!-- Aperçu de la nouvelle image -->
       <div v-if="selectedFile" class="mb-6">
-        <h4 class="text-sm font-medium text-gray-700 mb-2">{{ $t('components.avatarModal.preview') }}</h4>
+        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('components.avatarModal.preview') }}</h4>
         <div class="flex justify-center">
-          <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-[#0097b2] shadow-md">
+          <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-[#0097b2] dark:border-[#00b3d1] shadow-md">
             <img 
               :src="previewUrl || undefined" 
               alt="Aperçu"
@@ -113,8 +110,8 @@
       </div>
 
       <!-- Message d'erreur -->
-      <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-        <p class="text-sm text-red-600">{{ $t(error) }}</p>
+      <div v-if="error" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p class="text-sm text-red-600 dark:text-red-400">{{ $t(error) }}</p>
       </div>
 
       <!-- Actions -->
@@ -125,7 +122,7 @@
           v-if="selectedFile"
           @click="uploadAvatar"
           :disabled="uploading"
-          class="w-full px-4 py-3 bg-gradient-to-r from-[#0097b2] to-[#008699] text-white font-semibold rounded-xl hover:from-[#008699] hover:to-[#007580] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full px-4 py-3 bg-gradient-to-r from-[#0097b2] to-[#008699] dark:from-[#007a94] dark:to-[#006880] text-white font-semibold rounded-xl hover:from-[#008699] hover:to-[#007580] dark:hover:from-[#006880] dark:hover:to-[#005d6b] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="uploading" class="flex items-center justify-center">
             <svg class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -142,7 +139,7 @@
           v-if="currentAvatarUrl && !selectedFile"
           @click="deleteAvatar"
           :disabled="deleting"
-          class="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white font-semibold rounded-xl hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="deleting" class="flex items-center justify-center">
             <svg class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -157,7 +154,7 @@
         <!-- Fermer -->
         <button
           @click="close"
-          class="w-full px-4 py-3 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors"
+          class="w-full px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
         >
           {{ selectedFile ? $t('components.avatarModal.cancel') : $t('components.avatarModal.close') }}
         </button>
@@ -165,9 +162,9 @@
     </div>
     
     <!-- Modal de caméra -->
-    <div v-if="showCameraModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60 p-4">
-      <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl">
-        <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">
+    <div v-if="showCameraModal" class="fixed inset-0 bg-black bg-opacity-75 dark:bg-black dark:bg-opacity-85 flex items-center justify-center z-60 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full p-6 shadow-2xl">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
           {{ cameraMode === 'user' ? 'Selfie' : 'Prendre une photo' }}
         </h3>
         
@@ -183,7 +180,7 @@
           ></video>
           
           <!-- Photo capturée -->
-          <div v-if="capturedPhoto" class="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+          <div v-if="capturedPhoto" class="w-full h-64 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
             <img 
               :src="capturedPhoto" 
               alt="Photo capturée"
@@ -196,8 +193,8 @@
         </div>
 
         <!-- Message d'erreur caméra -->
-        <div v-if="cameraError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p class="text-sm text-red-600">{{ cameraError }}</p>
+        <div v-if="cameraError" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p class="text-sm text-red-600 dark:text-red-400">{{ cameraError }}</p>
         </div>
 
         <!-- Contrôles de la caméra -->
@@ -206,7 +203,7 @@
             v-if="!capturedPhoto"
             @click="capturePhoto"
             :disabled="!cameraStream"
-            class="px-6 py-3 bg-gradient-to-r from-[#0097b2] to-[#008699] text-white rounded-xl shadow hover:from-[#008699] hover:to-[#007580] transition-all duration-300 disabled:opacity-50 flex items-center"
+            class="px-6 py-3 bg-gradient-to-r from-[#0097b2] to-[#008699] dark:from-[#007a94] dark:to-[#006880] text-white rounded-xl shadow hover:from-[#008699] hover:to-[#007580] dark:hover:from-[#006880] dark:hover:to-[#005d6b] transition-all duration-300 disabled:opacity-50 flex items-center"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
@@ -218,7 +215,7 @@
           <button
             v-if="capturedPhoto"
             @click="retakePhoto"
-            class="px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow hover:from-gray-600 hover:to-gray-700 transition-all duration-300 flex items-center"
+            class="px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 dark:from-gray-600 dark:to-gray-700 text-white rounded-xl shadow hover:from-gray-600 hover:to-gray-700 dark:hover:from-gray-700 dark:hover:to-gray-800 transition-all duration-300 flex items-center"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -229,7 +226,7 @@
           <button
             v-if="capturedPhoto"
             @click="useCapturedPhoto"
-            class="px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow hover:from-green-600 hover:to-green-700 transition-all duration-300 flex items-center"
+            class="px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl shadow hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 flex items-center"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -241,7 +238,7 @@
         <!-- Fermer le modal caméra -->
         <button
           @click="closeCameraModal"
-          class="w-full px-4 py-3 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors"
+          class="w-full px-4 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
         >
           Annuler
         </button>
@@ -252,7 +249,9 @@
 
 
 <script setup lang="ts">
-  /*
+  import { onMounted } from 'vue'
+
+/*
   ==========================================================================
   | Script principal du composant AvatarModal
   |--------------------------------------------------------------------------
@@ -262,6 +261,9 @@
   | - Nettoyage des ressources
   ==========================================================================
   */
+  
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   // ----------------------------------------------------------------------
   // Gestion de la caméra moderne avec getUserMedia
@@ -602,6 +604,11 @@
       URL.revokeObjectURL(previewUrl.value)
     }
     closeCameraModal()
+  })
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
   })
 
 </script>

@@ -7,11 +7,7 @@
         :key="emoji"
         @click="toggleReaction(emoji)"
         class="inline-flex items-center px-2 py-1 rounded-full text-xs transition-all duration-200 hover:scale-105 border"
-        :class="[
-          userHasReacted(emoji) 
-            ? 'bg-[#0097b2] text-white border-[#0097b2]' 
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200'
-        ]"
+        :class="[ userHasReacted(emoji) ? 'bg-[#0097b2] dark:bg-[#007a94] text-white border-[#0097b2] dark:border-[#007a94]' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600' ]"
         :title="getReactionTooltip(reactionData)"
       >
         <span class="mr-1">{{ emoji }}</span>
@@ -24,8 +20,8 @@
       <button
         ref="emojiButton"
         @click.stop="toggleEmojiPicker"
-        class="p-1 text-gray-400 hover:text-[#0097b2] hover:bg-gray-100 rounded transition-colors text-xs"
-        :class="{ 'text-[#0097b2] bg-gray-100': showReactionPicker }"
+        class="p-1 text-gray-400 dark:text-gray-500 hover:text-[#0097b2] dark:hover:text-[#00b3d1] hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-xs"
+        :class="{ 'text-[#0097b2] dark:text-[#00b3d1] bg-gray-100 dark:bg-gray-700': showReactionPicker }"
         title="Ajouter une réaction"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,16 +35,16 @@
           v-if="showReactionPicker"
           ref="emojiPicker"
           v-click-outside="closeReactionPicker"
-          class="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl p-3 z-[1000] min-w-max"
+          class="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3 z-[1000] min-w-max"
           @click.stop
         >
-          <div class="text-xs text-gray-500 mb-2 font-medium">Choisir une réaction</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">Choisir une réaction</div>
           <div class="grid grid-cols-6 gap-1">
             <button
               v-for="emoji in quickEmojis"
               :key="emoji"
               @click.stop="addReaction(emoji)"
-              class="p-2 rounded hover:bg-gray-100 transition-colors text-lg flex items-center justify-center w-10 h-10"
+              class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-lg flex items-center justify-center w-10 h-10"
               :title="`Réagir avec ${emoji}`"
             >
               {{ emoji }}
@@ -61,7 +57,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { ReactionData } from '~/types'
+  import { onMounted } from 'vue'
+
+import type { ReactionData } from '~/types'
+
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   interface Props {
     messageId: number
@@ -140,6 +141,11 @@
   // Debug: Observer les changements d'état
   watch(showReactionPicker, (newValue) => {
     console.log('showReactionPicker changed to:', newValue)
+  })
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
   })
 </script>
 

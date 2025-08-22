@@ -79,6 +79,7 @@
     "allRoles": "全部",
     "roles": "角色",
     "roleRequired": "至少选择一个角色。",
+    "addUser": "添加用户",
     "addUserTitle": "添加用户",
     "userInfoTitle": "用户信息",
     "address": "住房地址",
@@ -99,6 +100,9 @@
     "listView": "列表视图",
     "globalSearch": "全局搜索",
     "searchPlaceholder": "搜索...",
+    "addUser": "添加访客",
+    "addUserTitle": "添加客人",
+    "addButton": "添加",
     "filterActif": "按状态筛选",
     "allStatus": "全部",
     "active": "活跃",
@@ -387,28 +391,6 @@
     "noIncidents": "没有报告的事件。",
     "attachments": "附件："
   },
-  "adminConversations": {
-    "searchPlaceholder": "搜索内容...",
-    "allAuthors": "所有作者",
-    "allGroups": "所有群组",
-    "sortRecent": "最新优先",
-    "sortOld": "最早优先",
-    "refresh": "刷新",
-    "groupsTitle": "会话 / 群组",
-    "groupName": "群组名称",
-    "groupId": "ID",
-    "groupMembers": "成员",
-    "groupMessages": "消息",
-    "groupActions": "操作",
-    "deleteGroup": "删除会话",
-    "allMessagesTitle": "所有消息",
-    "date": "日期",
-    "author": "作者",
-    "content": "内容",
-    "loading": "加载中...",
-    "deleteConfirm": "删除会话“{group}”（ID {id}）？此操作不可逆，将删除该群组的所有消息。",
-    "noDate": "-"
-  },
   "messages": {
     "pageTitle": "消息 - 住宅管理",
     "newConversation": "新会话",
@@ -652,8 +634,8 @@
     },
     "notifications": {
       "title": "通知",
-      "subtitle": "访问请求",
-      "loading": "加载中...",
+      "subtitle": "管理您的访问通知",
+      "loading": "正在加载通知...",
       "retry": "重试",
       "defaultVisitReason": "访问",
       "upcomingVisit": "{time}内有预定访问",
@@ -688,12 +670,14 @@
         "pending": "没有待处理的请求",
         "rejected": "没有被拒绝的访问",
         "pendingDescription": "新请求将显示在这里",
-        "rejectedDescription": "被拒绝的访问将显示在这里"
+        "rejectedDescription": "被拒绝的访问将显示在这里",
+        "title": "没有通知",
+        "description": "您目前没有通知"
       },
       "errors": {
-        "fetchFailed": "获取通知时出错",
+        "fetchFailed": "加载通知失败",
         "invalidResponse": "服务器响应无效",
-        "statusChangeFailed": "更改状态时出错"
+        "statusChangeFailed": "更改状态失败"
       },
       "success": {
         "statusChanged": "状态更改成功"
@@ -1030,6 +1014,7 @@
       "active": "有效门禁卡",
       "inactive": "无效门禁卡",
       "suspended": "暂停门禁卡",
+      "assigned": "已分配门禁卡",
       "today": "今日使用次数"
     },
     "search": {
@@ -1172,6 +1157,15 @@
   "name": "姓名",
   "email": "邮箱",
   "phone": "电话"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "lightMode": "切换到浅色模式",
+    "darkMode": "切换到深色模式",
+    "switchToLight": "切换到浅色主题",
+    "switchToDark": "切换到深色主题",
+    "light": "浅色",
+    "dark": "深色"
   }
 }
 

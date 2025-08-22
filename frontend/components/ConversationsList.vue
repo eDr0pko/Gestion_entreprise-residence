@@ -1,19 +1,15 @@
 
 <template>
   <div 
-    class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300"
-    :class="[
-      'hidden lg:flex lg:w-80',
-      isMobile && !selectedConversation ? 'flex w-full' : '',
-      isMobile && selectedConversation ? 'hidden' : ''
-    ]"
+    class="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300"
+    :class="[ 'hidden lg:flex lg:w-80', isMobile && !selectedConversation ? 'flex w-full' : '', selectedConversation ? 'hidden' : '' ]"
   >
     <!-- Barre de recherche et bouton création -->
-    <div class="p-3 lg:p-4 border-b border-gray-100">
+    <div class="p-3 lg:p-4 border-b border-gray-100 dark:border-gray-700">
       <!-- Section Messages avec badge -->
       <div class="flex items-center justify-center mb-4">
         <div class="flex items-center space-x-3">
-          <h2 class="text-lg lg:text-xl font-semibold text-gray-900">{{ t('conversationsList.title') }}</h2>
+          <h2 class="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100">{{ t('conversationsList.title') }}</h2>
           <Transition name="badge">
             <div 
               v-if="totalMessagesNonLus > 0"
@@ -33,9 +29,9 @@
             @input="searchQuery = ($event.target as HTMLInputElement).value"
             type="text"
             :placeholder="t('conversationsList.searchPlaceholder')"
-            class="w-full pl-10 pr-4 py-2 text-sm lg:text-base border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#0097b2] focus:border-[#0097b2] transition-colors"
+            class="w-full pl-10 pr-4 py-2 text-sm lg:text-base border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-1 focus:ring-[#0097b2] dark:focus:ring-[#26c6da] focus:border-[#0097b2] dark:focus:border-[#26c6da] transition-colors"
           />
-          <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
@@ -196,8 +192,12 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { computed } from 'vue'
-  const { t } = useI18n()
+  import { computed, onMounted } from 'vue'
+
+const { t } = useI18n()
+
+  // Import du système de thème
+  const { initTheme } = useTheme()
 
   interface Conversation {
     id_groupe_message: number
@@ -244,6 +244,11 @@
   })
 
   const totalMessagesNonLus = computed(() => props.totalMessagesNonLus)
+
+  // Initialiser le thème au montage
+  onMounted(() => {
+    initTheme()
+  })
 
   const selectedConversation = computed(() => props.selectedConversation)
   const isMobile = computed(() => props.isMobile)

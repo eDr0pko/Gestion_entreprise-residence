@@ -9,10 +9,7 @@
       @dragleave="handleDragLeave"
       @click="triggerFileInput"
       class="border-2 border-dashed rounded-lg p-4 transition-all duration-200 cursor-pointer"
-      :class="[
-        isDragging ? 'border-[#0097b2] bg-blue-50' : 'border-gray-300 hover:border-gray-400',
-        files.length > 0 ? 'bg-gray-50' : ''
-      ]"
+      :class="[ isDragging ? 'border-[#0097b2] bg-blue-50 dark:border-[#00b3d1] dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500', files.length > 0 ? 'bg-gray-50 dark:bg-gray-800' : '' ]"
     >
       <input
         ref="fileInput"
@@ -24,25 +21,25 @@
       />
       
       <div v-if="files.length === 0" class="text-center py-2">
-        <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
         </svg>
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-gray-600 dark:text-gray-300">
           Glissez vos fichiers ici ou 
-          <span class="text-[#0097b2] hover:text-[#007a94] underline">cliquez pour parcourir</span>
+          <span class="text-[#0097b2] hover:text-[#007a94] dark:text-[#00b3d1] dark:hover:text-[#0097b2] underline">cliquez pour parcourir</span>
         </p>
-        <p class="text-xs text-gray-500 mt-1">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           Images, PDF, Documents (max 10MB chacun)
         </p>
       </div>
 
       <!-- Liste des fichiers sélectionnés -->
       <div v-else class="space-y-2">
-        <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+        <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
           <span>{{ files.length }} fichier{{ files.length > 1 ? 's' : '' }} sélectionné{{ files.length > 1 ? 's' : '' }}</span>
           <button
             @click.stop="clearFiles"
-            class="text-red-500 hover:text-red-700 text-xs"
+            class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs"
           >
             Tout supprimer
           </button>
@@ -51,31 +48,31 @@
         <div
           v-for="(file, index) in files"
           :key="index"
-          class="flex items-center justify-between p-2 bg-white rounded border"
+          class="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded border dark:border-gray-600"
         >
           <div class="flex items-center space-x-2 flex-1 min-w-0">
             <!-- Icône selon le type de fichier -->
             <div class="flex-shrink-0">
-              <svg v-if="isImage(file)" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="isImage(file)" class="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <svg v-else-if="isPDF(file)" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-else-if="isPDF(file)" class="w-5 h-5 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
-              <svg v-else class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-else class="w-5 h-5 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
             </div>
             
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900 truncate">{{ file.name }}</p>
-              <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ file.name }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatFileSize(file.size) }}</p>
             </div>
           </div>
           
           <button
             @click.stop="removeFile(index)"
-            class="p-1 text-red-500 hover:text-red-700 transition-colors"
+            class="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -90,7 +87,7 @@
       <div
         v-for="(error, index) in errors"
         :key="index"
-        class="text-sm text-red-600 bg-red-50 p-2 rounded"
+        class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded"
       >
         {{ error }}
       </div>
@@ -99,6 +96,11 @@
 </template>
 
 <script setup lang="ts">
+  import { onMounted } from 'vue'
+
+// Import du système de thème
+  const { initTheme } = useTheme()
+
   interface Props {
     maxFiles?: number
     maxFileSize?: number // en MB
@@ -248,6 +250,11 @@
   defineExpose({
     getFiles,
     clearFiles
+  })
+
+  // Initialisation du thème
+  onMounted(() => {
+    initTheme()
   })
 </script>
 
