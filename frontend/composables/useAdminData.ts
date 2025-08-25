@@ -300,21 +300,48 @@ export function useAdminData() {
     try {
       const headers = getAuthHeaders()
       const config = useRuntimeConfig()
+      console.log('Ajout d\'une personne avec les données:', data)
+      
       const response: any = await $fetch(`${config.public.apiBase}/admin/persons`, { 
         method: 'POST',
-        headers,
-        body: data
+        headers: {
+          ...headers,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: data,
+        responseType: 'json'
       })
       
-      if (response && response.success) {
+      console.log('Réponse reçue du backend:', response)
+      console.log('Type de la réponse:', typeof response)
+      
+      // Parse the response if it's a string
+      let parsedResponse = response
+      if (typeof response === 'string') {
+        try {
+          parsedResponse = JSON.parse(response)
+          console.log('Réponse parsée:', parsedResponse)
+        } catch (parseError) {
+          console.error('Erreur de parsing JSON:', parseError)
+          throw new Error('Réponse invalide du serveur')
+        }
+      }
+      
+      console.log('parsedResponse.success:', parsedResponse?.success)
+      
+      if (parsedResponse && parsedResponse.success === true) {
+        console.log('Succès confirmé, rechargement de la liste...')
         // Recharger la liste
         await fetchResidents()
-        return response
+        return parsedResponse
       } else {
-        throw new Error(response.message || 'Erreur lors de la création')
+        console.error('Réponse inattendue du backend:', parsedResponse)
+        throw new Error(parsedResponse?.message || 'Erreur lors de la création')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('[useAdminData] Error adding person:', error)
+      console.error('Détails de l\'erreur:', error.data || error.response || error)
       throw error
     }
   }

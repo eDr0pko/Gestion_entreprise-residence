@@ -532,6 +532,10 @@
   import { useTheme } from '~/composables/useTheme'
   import { useAuthStore } from '@/stores/auth'
 
+definePageMeta({
+  layout: 'dashboard'
+})
+
 const { t } = useI18n()
 
   useHead({

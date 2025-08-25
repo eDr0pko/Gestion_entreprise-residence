@@ -616,50 +616,46 @@
 
   async function saveAddGuest() {
     try {
-      await $fetch(`${apiBase}/admin/guests`, {
+      console.log('Ajout d\'invité avec les données:', addGuestForm.value)
+      const response = await $fetch(`${apiBase}/admin/guests`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authStore.token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(addGuestForm.value)
+        body: addGuestForm.value
       })
+      console.log('Réponse serveur:', response)
       showAddGuestModal.value = false
       await fetchPersons()
     } catch (e: any) {
       console.error('Erreur lors de l\'ajout de l\'invité:', e)
-      alert('Erreur lors de l\'ajout de l\'invité')
+      console.error('Détails de l\'erreur:', e.data || e.response || e)
+      alert('Erreur lors de l\'ajout de l\'invité: ' + (e.data?.message || e.message || 'Erreur inconnue'))
     }
   }
 
   async function saveEditPerson() {
     if (!editForm.value.id) return
     try {
+      console.log('Mise à jour du visiteur avec les données:', editForm.value)
       await $fetch(`${apiBase}/admin/guests/${editForm.value.id}`, {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        headers: { Authorization: `Bearer ${authStore.token}` },
+        body: {
           nom: editForm.value.nom,
           prenom: editForm.value.prenom,
           email: editForm.value.email,
           numero_telephone: editForm.value.numero_telephone,
           commentaire: editForm.value.commentaire,
-          // Ajoutez ici d'autres champs si besoin (date_expiration, actif...)
-        })
+        }
       })
       showEditModal.value = false
       await fetchPersons()
     } catch (e: any) {
-      if (e && e.data) {
-        console.error('Erreur de validation backend:', e.data)
-        alert('Erreur: ' + JSON.stringify(e.data))
-      } else {
-        console.error('Erreur inconnue lors de la mise à jour du visiteur', e)
-        alert('Erreur inconnue lors de la mise à jour du visiteur')
-      }
+      console.error('Erreur lors de la mise à jour du visiteur:', e)
+      console.error('Détails de l\'erreur:', e.data || e.response || e)
+      alert('Erreur lors de la mise à jour du visiteur: ' + (e.data?.message || e.message || 'Erreur inconnue'))
     }
   }
   function closeEditModal() {

@@ -499,10 +499,13 @@
       if (addUserForm.roles.includes('resident')) {
         body.adresse_logement = addUserForm.adresse_logement
       }
+      console.log('Soumission du formulaire utilisateur avec les données:', body)
       await addPerson(body);
       closeAddUser();
-    } catch (e) {
-      alert('Erreur lors de l\'ajout de l\'utilisateur.');
+    } catch (e: any) {
+      console.error('Erreur lors de l\'ajout de l\'utilisateur:', e)
+      console.error('Détails de l\'erreur:', e.data || e.response || e)
+      alert('Erreur lors de l\'ajout de l\'utilisateur: ' + (e.data?.message || e.message || 'Erreur inconnue'))
     }
   }
 

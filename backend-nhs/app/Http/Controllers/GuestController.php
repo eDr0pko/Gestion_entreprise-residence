@@ -375,7 +375,7 @@ class GuestController extends Controller
             $personne->prenom = $request->prenom;
             $personne->email = $request->email;
             $personne->numero_telephone = $request->numero_telephone;
-            $personne->password = Hash::make(\Str::random(10)); // Mot de passe temporaire
+            $personne->mot_de_passe = Hash::make(\Str::random(10)); // Mot de passe temporaire
             $personne->save();
 
             // Créer l'invitation

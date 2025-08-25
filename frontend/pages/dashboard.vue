@@ -35,7 +35,8 @@
 <script setup lang="ts">
   // Nuxt auto-imports
   definePageMeta({
-    middleware: 'auth'
+    middleware: 'auth',
+    layout: 'dashboard'
   })
 
   const authStore = useAuthStore()

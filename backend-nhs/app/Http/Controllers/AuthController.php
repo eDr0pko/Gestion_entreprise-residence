@@ -17,46 +17,68 @@ class AuthController extends Controller
          */
         public function createPerson(Request $request)
         {
-            $user = $request->user();
-            if (!$user || !$user->admin) {
-                $this->logAction($user ? $user->id_personne : null, 'unauthorized_create_person', "Tentative non autorisée de création d'utilisateur", $request);
-                return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
-            }
-            $roles = $request->input('roles', []);
-            if (!is_array($roles) || count($roles) === 0) {
-                $this->logAction($user ? $user->id_personne : null, 'invalid_create_person', "Tentative de création d'utilisateur sans rôle.", $request);
-                return response()->json(['success' => false, 'message' => 'Au moins un rôle doit être sélectionné.'], 422);
-            }
-            $data = $request->only(['nom', 'prenom', 'numero_telephone', 'email']);
-            if (!$request->filled('password')) {
-                $this->logAction($user ? $user->id_personne : null, 'invalid_create_person', "Tentative de création d'utilisateur sans mot de passe.", $request);
-                return response()->json(['success' => false, 'message' => 'Mot de passe requis.'], 422);
-            }
-            $data['mot_de_passe'] = \Hash::make($request->input('password'));
-            // Vérifier unicité email
-            if (\App\Models\Personne::where('email', $data['email'])->exists()) {
-                $this->logAction($user ? $user->id_personne : null, 'duplicate_email_create_person', "Tentative de création d'utilisateur avec email déjà utilisé: " . $data['email'], $request);
-                return response()->json(['success' => false, 'message' => 'Email déjà utilisé.'], 422);
-            }
-            $personne = \App\Models\Personne::create($data);
-            // ADMIN
-            if (in_array('admin', $roles)) {
-                \App\Models\Admin::create(['id_personne' => $personne->id_personne, 'niveau_acces' => 1, 'date_nomination' => now()]);
-            }
-            // GARDIEN
-            if (in_array('gardien', $roles)) {
-                \App\Models\Gardien::create(['id_personne' => $personne->id_personne]);
-            }
-            // RESIDENT
-            if (in_array('resident', $roles)) {
-                \App\Models\Resident::create([
-                    'id_personne' => $personne->id_personne,
-                    'adresse_logement' => $request->input('adresse_logement', null)
+            try {
+                $user = $request->user();
+                if (!$user || !$user->admin) {
+                    $this->logAction($user ? $user->id_personne : null, 'unauthorized_create_person', "Tentative non autorisée de création d'utilisateur", $request);
+                    return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+                }
+                
+                \Log::info('Tentative de création d\'utilisateur', ['données' => $request->all()]);
+                
+                $roles = $request->input('roles', []);
+                if (!is_array($roles) || count($roles) === 0) {
+                    $this->logAction($user ? $user->id_personne : null, 'invalid_create_person', "Tentative de création d'utilisateur sans rôle.", $request);
+                    return response()->json(['success' => false, 'message' => 'Au moins un rôle doit être sélectionné.'], 422);
+                }
+                $data = $request->only(['nom', 'prenom', 'numero_telephone', 'email']);
+                if (!$request->filled('password')) {
+                    $this->logAction($user ? $user->id_personne : null, 'invalid_create_person', "Tentative de création d'utilisateur sans mot de passe.", $request);
+                    return response()->json(['success' => false, 'message' => 'Mot de passe requis.'], 422);
+                }
+                $data['mot_de_passe'] = \Hash::make($request->input('password'));
+                
+                \Log::info('Données à insérer dans personne', ['data' => $data]);
+                
+                // Vérifier unicité email
+                if (\App\Models\Personne::where('email', $data['email'])->exists()) {
+                    $this->logAction($user ? $user->id_personne : null, 'duplicate_email_create_person', "Tentative de création d'utilisateur avec email déjà utilisé: " . $data['email'], $request);
+                    return response()->json(['success' => false, 'message' => 'Email déjà utilisé.'], 422);
+                }
+                
+                $personne = \App\Models\Personne::create($data);
+                \Log::info('Personne créée avec succès', ['id' => $personne->id_personne]);
+                
+                // ADMIN
+                if (in_array('admin', $roles)) {
+                    \Log::info('Création du rôle admin');
+                    \App\Models\Admin::create(['id_personne' => $personne->id_personne, 'niveau_acces' => 'admin_standard', 'date_nomination' => now()]);
+                }
+                // GARDIEN
+                if (in_array('gardien', $roles)) {
+                    \Log::info('Création du rôle gardien');
+                    \App\Models\Gardien::create(['id_personne' => $personne->id_personne]);
+                }
+                // RESIDENT
+                if (in_array('resident', $roles)) {
+                    \Log::info('Création du rôle resident', ['adresse' => $request->input('adresse_logement', null)]);
+                    \App\Models\Resident::create([
+                        'id_personne' => $personne->id_personne,
+                        'adresse_logement' => $request->input('adresse_logement', null)
+                    ]);
+                }
+                // Log creation
+                $this->logAction($user ? $user->id_personne : null, 'create_person', 'Création d\'un nouvel utilisateur: ' . $data['email'], $request);
+                return response()->json(['success' => true, 'personne' => $personne->fresh()]);
+            } catch (\Exception $e) {
+                \Log::error('Erreur lors de la création d\'utilisateur:', [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
                 ]);
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la création: ' . $e->getMessage()], 500);
             }
-            // Log creation
-            $this->logAction($user ? $user->id_personne : null, 'create_person', 'Création d\'un nouvel utilisateur: ' . $data['email'], $request);
-            return response()->json(['success' => true, 'personne' => $personne->fresh()]);
         }
         
         public function getAllPersons(Request $request)

@@ -167,7 +167,8 @@
 
 // Middleware pour vérifier l'authentification
   definePageMeta({
-    middleware: 'auth'
+    middleware: 'auth',
+    layout: 'dashboard'
   })
 
   const { t } = useI18n()
